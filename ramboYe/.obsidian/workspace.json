@@ -1,0 +1,288 @@
+{
+  "main": {
+    "id": "f395072c0c7b90b6",
+    "type": "split",
+    "children": [
+      {
+        "id": "cf4a95692590f96b",
+        "type": "tabs",
+        "dimension": 33.07692307692307,
+        "children": [
+          {
+            "id": "025e30661ba87a74",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "AI试卷排版工具/架构总览.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "架构总览 的大纲"
+            },
+            "group": "4a01c26bc7e9f4f6"
+          }
+        ]
+      },
+      {
+        "id": "ad0d51c9fefb7b90",
+        "type": "tabs",
+        "dimension": 66.92307692307692,
+        "children": [
+          {
+            "id": "d1afe0dddc86a1bd",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "AI试卷排版工具/架构总览.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "架构总览"
+            },
+            "group": "4a01c26bc7e9f4f6"
+          }
+        ],
+        "stacked": true
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "8c518d575461cc13",
+    "type": "split",
+    "children": [
+      {
+        "id": "0f74725448424074",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "47a6ab1cd12accf1",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "0b405364135d9d0b",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "44519e3d02312118",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 200
+  },
+  "right": {
+    "id": "2452b41b07d5d369",
+    "type": "split",
+    "children": [
+      {
+        "id": "7532dc6f152b5cf7",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4462531ba8e67eb7",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "游戏开发/模块设计/冰髓争夺战.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "冰髓争夺战 的反向链接列表"
+            }
+          },
+          {
+            "id": "4389c6aa0bb57d7c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "创建链接.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": true,
+                "backlinkOpts": {
+                  "collapseAll": false,
+                  "extraContext": false,
+                  "sortOrder": "alphabetical",
+                  "showSearch": false,
+                  "searchQuery": "",
+                  "backlinkCollapsed": false,
+                  "unlinkedCollapsed": true
+                }
+              },
+              "icon": "lucide-file",
+              "title": "创建链接"
+            }
+          },
+          {
+            "id": "eb10b45da9694476",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "创建链接.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "创建链接 的出链列表"
+            }
+          },
+          {
+            "id": "ac4fa193e66a3091",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "01241e73de9ac708",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "添加笔记属性"
+            }
+          },
+          {
+            "id": "82e067a8b8873fcc",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "密码.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "密码 的大纲"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 200,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:新建数据库": false
+    }
+  },
+  "active": "d1afe0dddc86a1bd",
+  "lastOpenFiles": [
+    "游戏开发/模块设计/冰髓争夺战.md",
+    "游戏开发/AI试卷排版工具/架构总览.md",
+    "AI试卷排版工具/架构总览.md",
+    "AI试卷排版工具",
+    "游戏开发/AI试卷排版工具/架构总览.md.tmp.10472.b16a56182c26",
+    "游戏开发/AI试卷排版工具",
+    "游戏开发/模块设计/AI试卷排版工具架构.md",
+    "游戏开发/模块设计/AI试卷排版工具架构.md.tmp.10472.9f1e037ebace",
+    "游戏开发/模块设计/登录流程.md",
+    "游戏开发/模块设计/行军流程.md",
+    "游戏开发/模块设计/战斗流程.md",
+    "MonoDB 导入.md",
+    "CC定理.md",
+    "密码.md",
+    "总览.md",
+    "游戏开发/Bug/H5-9953 远征挑战阵亡任务计数错误.md",
+    "游戏开发/版本/v1045.md",
+    "assets/0419601dd0b34ecc91e870e32ef1db7d.png",
+    "assets/aa2b66d4e1cd4a69adb12cbc51e411e7.png",
+    "assets/eea28bc4fd0341ae87243302951eb0ed.png",
+    "游戏开发/Bug/assets/Pasted image 20260612165257.png",
+    "游戏开发/Bug/assets",
+    "创建链接.md",
+    "游戏开发/模板/_模板-模块设计.md",
+    "游戏开发/模板/_模板-需求.md",
+    "游戏开发/模板/_模板-Bug.md",
+    "游戏开发/工作日志/2026-06-12.md",
+    "游戏开发/模块设计/登录流程.md.tmp.3232.9e027baec4b8",
+    "临时记录.md",
+    "游戏开发/工作日志/2026-06-12.md.tmp.3232.ffaa617eb8e3",
+    "游戏开发/版本/v1045.md.tmp.3232.49c9ddf77739",
+    "游戏开发/Bug/H5-9953 远征挑战阵亡任务计数错误.md.tmp.3232.a24b6a16cf8d",
+    "游戏开发/模板/_模板-模块设计.md.tmp.3232.a8d56b2a8fd1",
+    "游戏开发/00-总览.md",
+    "0419601dd0b34ecc91e870e32ef1db7d.png",
+    "eea28bc4fd0341ae87243302951eb0ed.png",
+    "aa2b66d4e1cd4a69adb12cbc51e411e7.png",
+    "欢迎.md",
+    "test.md"
+  ]
+}
