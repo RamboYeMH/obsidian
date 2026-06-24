@@ -14,13 +14,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "游戏开发/Bug/H5-9953 远征挑战阵亡任务计数错误.md",
+                "file": "工具/Claude Code 状态栏配置.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "H5-9953 远征挑战阵亡任务计数错误 的大纲"
+              "title": "Claude Code 状态栏配置 的大纲"
             },
             "group": "4a01c26bc7e9f4f6"
           }
@@ -37,7 +37,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "游戏开发/Bug/H5-9953 远征挑战阵亡任务计数错误.md",
+                "file": "工具/Claude Code 状态栏配置.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -52,7 +52,7 @@
                 }
               },
               "icon": "lucide-file",
-              "title": "H5-9953 远征挑战阵亡任务计数错误"
+              "title": "Claude Code 状态栏配置"
             },
             "group": "4a01c26bc7e9f4f6"
           }
@@ -246,8 +246,24 @@
   },
   "active": "d1afe0dddc86a1bd",
   "lastOpenFiles": [
-    "游戏开发/Bug/阵营领袖踢人未结算阵营中心与水晶塔驻防分钟.md",
+    "游戏开发/版本/v1045.md",
     "游戏开发/Bug/H5-9953 远征挑战阵亡任务计数错误.md",
+    "工具/Claude Code 状态栏配置.md",
+    "游戏开发/模块设计/奖励规则-RewardCfg.md",
+    "游戏开发/模块设计/奖励规则-RewardCfg.md.tmp.78052.0fa629ae41cd",
+    "游戏开发/模板/_模板-模块设计.md",
+    "游戏开发/模板/_模板-需求.md",
+    "游戏开发/模板/_模板-Bug.md",
+    "游戏开发/模块设计/魔物入侵-城防部队生成.md",
+    "游戏开发/模块设计/game停服-gateway断联客户端流程.md",
+    "AI试卷排版工具/架构总览.md",
+    "游戏开发/备份/door_gs_meta_data/door_gs_meta_data 备份.md",
+    "游戏开发/模块设计/game停服-gateway断联客户端流程.md.tmp.8986.4f9c322fd443",
+    "游戏开发/备份/door_gs_meta_data/door_gs_meta_data 备份.md.tmp.8986.265c662def3d",
+    "游戏开发/备份/door_gs_meta_data/gs_meta_data_20260618.json",
+    "游戏开发/备份/door_gs_meta_data",
+    "游戏开发/备份",
+    "游戏开发/Bug/阵营领袖踢人未结算阵营中心与水晶塔驻防分钟.md",
     "工具/tmux 常用操作.md",
     "游戏开发/Bug/阵营领袖踢人未结算阵营中心与水晶塔驻防分钟.md.tmp.8986.293bb8afff91",
     "游戏开发/模块设计/冰髓争夺战-防守方被攻击预警.md",
@@ -256,15 +272,8 @@
     "游戏开发/模块设计/冰髓争夺战.md",
     "游戏开发/模块设计/冰髓争夺战.md.tmp.168831.3cde568df04e",
     "游戏开发/模块设计/冰髓争夺战-防守方被攻击预警.md.tmp.168831.8d997a3dddf3",
-    "AI试卷排版工具/架构总览.md",
-    "工具/tmux 常用操作.md.tmp.152855.6121195be3d6",
-    "工具",
     "游戏开发/模块设计/tmux 常用操作.md",
-    "游戏开发/模块设计/tmux 常用操作.md.tmp.152855.cf6f2b778bf2",
     "游戏开发/AI试卷排版工具/架构总览.md",
-    "AI试卷排版工具",
-    "游戏开发/AI试卷排版工具/架构总览.md.tmp.10472.b16a56182c26",
-    "游戏开发/AI试卷排版工具",
     "游戏开发/模块设计/AI试卷排版工具架构.md",
     "游戏开发/模块设计/登录流程.md",
     "游戏开发/模块设计/行军流程.md",
@@ -273,21 +282,12 @@
     "CC定理.md",
     "密码.md",
     "总览.md",
-    "游戏开发/版本/v1045.md",
     "assets/0419601dd0b34ecc91e870e32ef1db7d.png",
     "assets/aa2b66d4e1cd4a69adb12cbc51e411e7.png",
     "assets/eea28bc4fd0341ae87243302951eb0ed.png",
     "游戏开发/Bug/assets/Pasted image 20260612165257.png",
-    "创建链接.md",
-    "游戏开发/模板/_模板-模块设计.md",
-    "游戏开发/模板/_模板-需求.md",
-    "游戏开发/模板/_模板-Bug.md",
-    "游戏开发/工作日志/2026-06-12.md",
-    "临时记录.md",
-    "游戏开发/00-总览.md",
     "0419601dd0b34ecc91e870e32ef1db7d.png",
     "eea28bc4fd0341ae87243302951eb0ed.png",
-    "aa2b66d4e1cd4a69adb12cbc51e411e7.png",
-    "欢迎.md"
+    "aa2b66d4e1cd4a69adb12cbc51e411e7.png"
   ]
 }
