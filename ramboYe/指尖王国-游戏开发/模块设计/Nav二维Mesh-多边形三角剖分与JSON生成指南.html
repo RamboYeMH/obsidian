@@ -1,0 +1,503 @@
+<!doctype html>
+<!--
+---
+类型: 模块设计
+模块: cmlib/nav
+版本: 当前分支
+状态: 定稿
+创建日期: 2026-07-16
+tags: [nav, NavMesh, 寻路, 三角剖分, Mesh编辑器]
+---
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Nav 二维 Mesh：从多边形到寻路 JSON</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink:#17212b; --muted:#647280; --paper:#fff; --bg:#edf2f4;
+      --line:#cfd9df; --blue:#1769aa; --cyan:#13a6a6; --green:#16845b;
+      --orange:#d47a13; --red:#c94444; --purple:#7257b5; --grid:#dce7eb;
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.65 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif; }
+    header { background:linear-gradient(135deg,#102d40,#174c61); color:#fff; padding:34px clamp(18px,5vw,70px); }
+    header h1 { margin:0 0 8px; font-size:clamp(26px,4vw,42px); line-height:1.2; }
+    header p { margin:0; max-width:980px; color:#d5e8ef; font-size:16px; }
+    nav { position:sticky; top:0; z-index:10; display:flex; gap:8px; overflow:auto; padding:9px clamp(12px,3vw,32px); background:#ffffffed; border-bottom:1px solid var(--line); backdrop-filter:blur(8px); }
+    nav a { white-space:nowrap; color:#29404e; text-decoration:none; padding:5px 9px; border-radius:5px; }
+    nav a:hover { background:#e8f1f4; }
+    main { width:min(1240px,100%); margin:auto; padding:22px 16px 60px; }
+    section { margin:0 0 18px; padding:22px; background:var(--paper); border:1px solid var(--line); border-radius:10px; box-shadow:0 3px 13px #1632460a; }
+    h2 { margin:0 0 12px; font-size:23px; line-height:1.3; }
+    h3 { margin:22px 0 8px; font-size:18px; }
+    p { margin:8px 0; }
+    ul,ol { padding-left:22px; }
+    li { margin:5px 0; }
+    code { padding:1px 5px; border-radius:4px; background:#edf3f5; color:#194d68; }
+    pre { overflow:auto; margin:10px 0; padding:14px; border-radius:7px; background:#102630; color:#e8f1f4; line-height:1.5; }
+    pre code { padding:0; color:inherit; background:none; }
+    .lead { font-size:17px; color:#304756; }
+    .callout { margin:13px 0; padding:12px 14px; border-left:4px solid var(--blue); background:#edf7fc; border-radius:0 7px 7px 0; }
+    .callout.warn { border-color:var(--orange); background:#fff7ea; }
+    .callout.bad { border-color:var(--red); background:#fff0f0; }
+    .callout.good { border-color:var(--green); background:#edf9f4; }
+    .cols { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+    .cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+    .card { padding:14px; border:1px solid var(--line); border-radius:8px; background:#fafcfd; }
+    .card strong { display:block; margin-bottom:4px; color:#173d51; }
+    .step { display:grid; grid-template-columns:42px 1fr; gap:10px; margin:12px 0; }
+    .step b { width:34px; height:34px; display:grid; place-items:center; border-radius:50%; color:#fff; background:var(--blue); }
+    .step h3 { margin:3px 0 4px; }
+    .diagram { margin:14px 0; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:#f8fbfc; }
+    .diagram svg { display:block; width:100%; height:auto; }
+    .caption { padding:9px 12px; color:var(--muted); border-top:1px solid var(--line); font-size:13px; }
+    table { width:100%; border-collapse:collapse; margin:10px 0; }
+    th,td { padding:9px 10px; text-align:left; vertical-align:top; border:1px solid var(--line); }
+    th { background:#edf3f5; }
+    .editor { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(320px,.8fr); gap:14px; }
+    .stage { position:relative; min-height:560px; border:1px solid #9fb3be; border-radius:8px; overflow:hidden; background:#f9fcfd; }
+    #meshSvg { width:100%; height:560px; display:block; touch-action:none; cursor:crosshair; }
+    .toolbar { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 10px; }
+    button { border:1px solid #9dafb9; border-radius:6px; padding:8px 11px; background:#fff; color:var(--ink); cursor:pointer; font-weight:650; }
+    button:hover { background:#eef5f7; }
+    button.primary { color:#fff; background:var(--blue); border-color:var(--blue); }
+    button.danger { color:var(--red); }
+    label { display:block; color:#354b58; font-weight:650; }
+    input,textarea { width:100%; border:1px solid #aebdc5; border-radius:6px; padding:8px; background:#fff; color:var(--ink); font:14px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace; }
+    textarea { min-height:246px; resize:vertical; }
+    .fields { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:10px; }
+    .side { display:flex; flex-direction:column; gap:10px; }
+    .sidebox { padding:12px; border:1px solid var(--line); border-radius:8px; background:#fafcfd; }
+    .sidebox h3 { margin:0 0 7px; }
+    #status { min-height:44px; padding:9px 11px; border-radius:6px; background:#eef4f6; color:#304956; }
+    #status.ok { color:#0d6445; background:#e9f8f1; }
+    #status.error { color:#922f2f; background:#ffeded; }
+    .legend { display:flex; flex-wrap:wrap; gap:12px; color:var(--muted); font-size:13px; }
+    .swatch::before { content:""; display:inline-block; width:15px; height:9px; margin-right:5px; border-radius:2px; background:var(--c); }
+    .checklist li::marker { color:var(--green); }
+    .source { color:var(--muted); font-size:13px; }
+    @media (max-width:900px) { .cards{grid-template-columns:1fr}.editor{grid-template-columns:1fr}.cols{grid-template-columns:1fr}.stage,#meshSvg{min-height:460px;height:460px}.fields{grid-template-columns:1fr 1fr}.fields label:last-child{grid-column:1/-1} }
+    @media print { nav,.toolbar button{display:none} body{background:#fff} section{box-shadow:none;break-inside:avoid} main{width:100%} }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Nav 二维 Mesh：从多边形到寻路 JSON</h1>
+    <p>在 X–Z 二维世界坐标中画出可行走区域，把区域三角剖分，再导出可被 <code>cmlib/nav</code> 读取的 <code>Vertices + Triangles</code>。页面末尾附带一个可实际操作的单多边形编辑器。</p>
+  </header>
+  <nav>
+    <a href="#mental">核心概念</a><a href="#coords">坐标系</a><a href="#polygon">创建轮廓</a><a href="#holes">障碍与洞</a><a href="#triangulate">三角剖分</a><a href="#json">JSON</a><a href="#editor">在线编辑器</a><a href="#production">生产方案</a><a href="#validate">验收清单</a>
+  </nav>
+  <main>
+    <section id="mental">
+      <h2>先建立正确心智模型</h2>
+      <p class="lead">你交给 <code>nav</code> 的不是“障碍物列表”，而是<strong>已经剖分好的可通行面积</strong>。每个三角形都是可以站立和移动的区域；没有被三角形覆盖的地方，就是不可通行区域。</p>
+      <div class="cards">
+        <div class="card"><strong>Vertices：全局点表</strong>每个点只有整数 <code>X</code>、<code>Z</code>。三角形不复制坐标，只引用点表下标。</div>
+        <div class="card"><strong>Triangles：可走三角形</strong>每项三个整数，例如 <code>[0,1,4]</code>，表示用顶点 0、1、4 构成一个可走三角形。</div>
+        <div class="card"><strong>公共边：通行门户</strong>两个三角形使用完全相同的两个顶点下标时，公共边才会被识别为可穿越门户。</div>
+      </div>
+      <div class="callout warn"><strong>关键：</strong>只让两条边在几何位置上重合还不够。它们必须引用同一对顶点 ID，否则会产生 T-junction 或裂缝，寻路图不会连通。</div>
+      <p class="source">代码依据：<code>cmlib/nav/navmesh.go:26-30</code> 定义配置；<code>navmesh.go:136-216</code> 根据公共边建 Mesh；<code>matrix.go:206-238</code> 根据门户边建寻路图。</p>
+    </section>
+
+    <section id="coords">
+      <h2>1. 二维坐标系：用 X 和 Z，不用屏幕 Y</h2>
+      <div class="cols">
+        <div>
+          <p><code>geo.Coord</code> 只有两个 <code>int32</code> 字段：</p>
+          <pre><code>type Coord struct {
+    X int32
+    Z int32
+}</code></pre>
+          <ul>
+            <li><strong>X 轴</strong>：向右增加。</li>
+            <li><strong>Z 轴</strong>：建议在编辑器中画成向上增加。</li>
+            <li><strong>屏幕坐标换算</strong>：浏览器像素 Y 向下，所以显示时使用 <code>screenY = bottom - Z * scale</code>。</li>
+            <li><strong>整数单位</strong>：项目注释中 <code>60000</code> 对应 60 米，因此现有数据可理解为 1000 单位约 1 米。</li>
+          </ul>
+        </div>
+        <div class="diagram">
+          <svg viewBox="0 0 520 320" aria-label="X-Z 世界坐标与屏幕坐标示意">
+            <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3z" fill="#1769aa"/></marker></defs>
+            <rect x="0" y="0" width="520" height="320" fill="#f8fbfc"/>
+            <g stroke="#dce7eb"><path d="M70 40V270M140 40V270M210 40V270M280 40V270M350 40V270M420 40V270M35 70H480M35 120H480M35 170H480M35 220H480"/></g>
+            <path d="M70 270H470M70 270V35" stroke="#1769aa" stroke-width="3" marker-end="url(#arr)"/>
+            <text x="470" y="292" fill="#1769aa" font-weight="700">X+</text><text x="43" y="39" fill="#1769aa" font-weight="700">Z+</text>
+            <polygon points="140,220 385,220 350,90 210,70 120,140" fill="#13a6a626" stroke="#13a6a6" stroke-width="3"/>
+            <circle cx="140" cy="220" r="6" fill="#c94444"/><text x="149" y="242" font-size="13">P0 (70,50)</text>
+            <circle cx="350" cy="90" r="6" fill="#c94444"/><text x="358" y="84" font-size="13">P2 (280,180)</text>
+            <text x="205" y="157" fill="#176b6b" font-weight="700">可通行轮廓</text>
+          </svg>
+          <div class="caption">数据始终保存世界 X/Z；屏幕翻转只属于编辑器显示层。</div>
+        </div>
+      </div>
+      <div class="callout"><strong>推荐地图范围：</strong><code>0 ≤ X &lt; width</code>、<code>0 ≤ Z &lt; height</code>。现有 <code>SearchGrid</code> 也按照非负坐标定位。</div>
+    </section>
+
+    <section id="polygon">
+      <h2>2. 你应该怎样创建一个可通行多边形</h2>
+      <div class="step"><b>1</b><div><h3>先画外轮廓</h3><p>沿着可通行区域边界连续点选顶点。建议统一使用逆时针顺序。最后一条边由最后一个点自动连回第一个点，不要重复写首点。</p></div></div>
+      <div class="step"><b>2</b><div><h3>轮廓必须是简单多边形</h3><p>边不能自相交；不能出现相邻重复点；尽量移除完全共线的中间点；至少需要 3 个点，面积不能为 0。</p></div></div>
+      <div class="step"><b>3</b><div><h3>控制精度和吸附</h3><p>编辑器应提供网格吸附，例如 1000 单位。相邻区域必须吸附到同一个顶点对象，不能各自生成“坐标相同、ID 不同”的点。</p></div></div>
+      <div class="step"><b>4</b><div><h3>保留足够通道宽度</h3><p><code>nav</code> 会在门户边两端各取一个距端点 1000 单位的拐点（<code>geo.TruncEdge</code>）。因此共享边最好明显长于 2000 单位，实际还应叠加单位半径和安全边距。</p></div></div>
+      <div class="diagram">
+        <svg viewBox="0 0 1000 300" aria-label="合法与非法多边形示例">
+          <rect width="1000" height="300" fill="#fafcfd"/>
+          <g transform="translate(40 30)"><polygon points="20,210 250,220 290,75 170,25 55,80" fill="#16845b20" stroke="#16845b" stroke-width="4"/><text x="85" y="258" fill="#16845b" font-weight="700">正确：简单轮廓、点序连续</text></g>
+          <g transform="translate(360 30)"><polygon points="15,210 280,55 45,55 275,210" fill="#c9444415" stroke="#c94444" stroke-width="4"/><circle cx="147" cy="132" r="8" fill="#c94444"/><text x="72" y="258" fill="#c94444" font-weight="700">错误：轮廓自相交</text></g>
+          <g transform="translate(700 30)"><path d="M15 210H260V55H120V125H15Z" fill="#d47a1320" stroke="#d47a13" stroke-width="4"/><circle cx="15" cy="210" r="7" fill="#7257b5"/><circle cx="260" cy="210" r="7" fill="#7257b5"/><text x="31" y="258" fill="#9a5910" font-weight="700">合法凹多边形：需要剖分</text></g>
+        </svg>
+      </div>
+    </section>
+
+    <section id="holes">
+      <h2>3. 障碍物不是额外字段，而是“洞”</h2>
+      <p>假设整个矩形地图可走，中间有一栋建筑不可走。编辑器中的原始几何应保存为：</p>
+      <ul>
+        <li>一个外轮廓：地图可行走边界。</li>
+        <li>零到多个洞轮廓：建筑、水面、悬崖等障碍。</li>
+      </ul>
+      <div class="diagram">
+        <svg viewBox="0 0 1000 390" aria-label="带洞多边形三角剖分与公共边">
+          <rect width="1000" height="390" fill="#f8fbfc"/>
+          <g transform="translate(35 30)">
+            <rect x="15" y="15" width="380" height="280" fill="#13a6a622" stroke="#13a6a6" stroke-width="4"/>
+            <rect x="145" y="95" width="125" height="110" fill="#5e6870" stroke="#17212b" stroke-width="4"/>
+            <text x="96" y="330" font-weight="700">编辑数据：外轮廓 + 障碍洞</text>
+            <text x="169" y="155" fill="#fff" font-weight="700">洞</text>
+          </g>
+          <path d="M545 45H925V325H545Z M675 125H800V235H675Z" fill="#13a6a61e" fill-rule="evenodd" stroke="#13a6a6" stroke-width="4"/>
+          <g stroke="#7257b5" stroke-width="2" fill="none"><path d="M545 45L675 125M545 45L800 125M925 45L800 125M925 45L800 235M925 325L800 235M925 325L675 235M545 325L675 235M545 325L675 125"/></g>
+          <rect x="675" y="125" width="125" height="110" fill="#5e6870" stroke="#17212b" stroke-width="3"/>
+          <text x="622" y="365" font-weight="700">导出数据：只输出洞外侧的三角形</text>
+        </svg>
+      </div>
+      <div class="callout bad"><strong>不要</strong>把整个外矩形先剖分，再额外输出障碍多边形。<code>MeshCfg</code> 没有障碍字段，障碍内部如果仍有三角形，寻路就会把它当成可走区域。</div>
+      <p>生产编辑器应使用支持洞和约束边的三角剖分算法。页面内置的教学编辑器只处理<strong>单个简单多边形、无洞</strong>；障碍洞的完整支持应放在正式编辑器导出器中。</p>
+    </section>
+
+    <section id="triangulate">
+      <h2>4. 从轮廓到三角形</h2>
+      <p>对一个有 <code>n</code> 个点、无洞的简单多边形，最终会生成 <code>n-2</code> 个三角形。教学编辑器采用耳切法：</p>
+      <ol>
+        <li>把轮廓统一为逆时针。</li>
+        <li>找到一个凸顶点，取“前一点—当前点—后一点”作为候选耳朵。</li>
+        <li>若其他轮廓顶点都不在候选三角形内，就输出该三角形，并从轮廓中移除当前点。</li>
+        <li>重复，直到只剩最后一个三角形。</li>
+      </ol>
+      <div class="callout good"><strong>为什么三角形适合寻路：</strong>三角形一定是凸的，三角形内部任意两点可以直接连线；两个三角形共享边时，这条边自然成为通行门户。</div>
+      <h3>一个 L 形示例</h3>
+      <pre><code>Vertices:
+0=(100000,100000)  1=(500000,100000)  2=(500000,300000)
+3=(300000,300000)  4=(300000,500000)  5=(100000,500000)
+
+可能的 Triangles：
+[0,1,3], [1,2,3], [5,0,3], [3,4,5]
+
+注意：三角剖分结果不唯一，只要覆盖完整、互不重叠、没有越过边界即可。</code></pre>
+    </section>
+
+    <section id="json">
+      <h2>5. 最终 JSON 必须长什么样</h2>
+      <p><code>GenMeshCfg</code> 读取的是 <code>[]*MeshCfg</code>，所以文件最外层是数组。建议明确输出 <code>ID</code>：</p>
+      <pre><code>[
+  {
+    "ID": 1,
+    "Vertices": [
+      {"X": 100000, "Z": 100000},
+      {"X": 500000, "Z": 100000},
+      {"X": 500000, "Z": 300000},
+      {"X": 300000, "Z": 300000},
+      {"X": 300000, "Z": 500000},
+      {"X": 100000, "Z": 500000}
+    ],
+    "Triangles": [
+      [0, 1, 3],
+      [1, 2, 3],
+      [5, 0, 3],
+      [3, 4, 5]
+    ]
+  }
+]</code></pre>
+      <table>
+        <thead><tr><th>字段</th><th>约束</th><th>典型错误</th></tr></thead>
+        <tbody>
+          <tr><td><code>ID</code></td><td><code>int32</code>；用于区分配置项</td><td>单配置可省略，但建议编辑器始终输出</td></tr>
+          <tr><td><code>Vertices</code></td><td><code>X/Z</code> 都必须是 int32 整数</td><td>输出小数、屏幕 Y、负坐标或越界坐标</td></tr>
+          <tr><td><code>Triangles</code></td><td>每项恰好三个合法顶点下标</td><td>下标越界、重复点、零面积、交叉覆盖</td></tr>
+          <tr><td>共享边</td><td>相邻三角形引用同一对顶点 ID</td><td>坐标相同但点 ID 不同，导致图断开</td></tr>
+        </tbody>
+      </table>
+      <p class="source">代码依据：<code>cmlib/nav/navmesh.go:33-44</code> 读取数组；<code>navmesh.go:47-64</code> 按三点下标创建三角形。</p>
+    </section>
+
+    <section id="editor">
+      <h2>6. 可操作的单多边形 Mesh 编辑器</h2>
+      <p>点击左侧坐标系依次添加轮廓点，然后点击“闭合并三角剖分”。适合验证点序、坐标换算和 JSON 格式；不支持洞、多块独立区域及相交轮廓。</p>
+      <div class="fields">
+        <label>地图宽度 X<input id="mapW" type="number" min="1" max="2147483647" step="1000" value="600000"></label>
+        <label>地图高度 Z<input id="mapH" type="number" min="1" max="2147483647" step="1000" value="600000"></label>
+        <label>吸附步长<input id="snap" type="number" min="1" step="1" value="1000"></label>
+      </div>
+      <div class="toolbar">
+        <button id="sampleBtn">载入 L 形示例</button>
+        <button id="undoBtn">撤销一点</button>
+        <button id="triBtn" class="primary">闭合并三角剖分</button>
+        <button id="clearBtn" class="danger">清空</button>
+        <button id="copyBtn">复制 JSON</button>
+        <button id="downloadBtn">保存 mesh.json</button>
+      </div>
+      <div class="legend"><span class="swatch" style="--c:#13a6a6">轮廓</span><span class="swatch" style="--c:#7257b5">三角形边</span><span class="swatch" style="--c:#c94444">顶点</span></div>
+      <div class="editor">
+        <div class="stage"><svg id="meshSvg" role="img" aria-label="二维 Mesh 编辑画布"></svg></div>
+        <div class="side">
+          <div id="status">点击画布添加第一个点。</div>
+          <div class="sidebox"><h3>当前坐标</h3><div id="cursor">X = —，Z = —</div><div id="summary">顶点 0，三角形 0</div></div>
+          <div class="sidebox">
+            <h3>MeshCfg JSON</h3>
+            <textarea id="jsonOut" spellcheck="false" aria-label="Mesh JSON"></textarea>
+            <div class="toolbar" style="margin-top:8px;margin-bottom:0"><button id="importBtn">从文本导入预览</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="callout warn"><strong>编辑器边界：</strong>从 JSON 导入时可以预览已有三角形；继续在画布点选会开始新的单轮廓。正式关卡工具应另外保存“外轮廓/洞/语义区域”等源数据，Mesh JSON 只是构建产物，不应作为唯一可编辑源文件。</div>
+    </section>
+
+    <section id="production">
+      <h2>7. 正式编辑器建议的生成流水线</h2>
+      <div class="step"><b>A</b><div><h3>编辑层</h3><p>保存地图边界、多个可走轮廓、障碍洞、区域标签、单位半径和安全边距。源文件可以是编辑器自己的 JSON。</p></div></div>
+      <div class="step"><b>B</b><div><h3>几何清洗</h3><p>坐标量化为 int32；按容差吸附/合并重复点；删除短边和共线点；检查自相交、洞是否位于外轮廓内、轮廓之间是否重叠。</p></div></div>
+      <div class="step"><b>C</b><div><h3>按单位半径膨胀障碍</h3><p>如果寻路坐标代表单位中心，障碍边界应向外扩张“单位半径 + 安全距离”，或者将可走边界向内收缩。否则点路径合法，实际模型仍可能擦墙。</p></div></div>
+      <div class="step"><b>D</b><div><h3>约束三角剖分</h3><p>输入外轮廓和洞，所有轮廓边都是不可跨越约束边。输出只覆盖可走面积的三角形。复杂地图优先选择成熟的约束剖分实现，而不是自行扩展教学耳切。</p></div></div>
+      <div class="step"><b>E</b><div><h3>全局顶点去重与索引</h3><p>为坐标建立唯一顶点表，三角形统一引用全局下标。共享边必须引用同一对下标。</p></div></div>
+      <div class="step"><b>F</b><div><h3>验证、预览、导出</h3><p>可视化三角形、边界边、公共门户和连通分量；验证通过后输出 <code>[]MeshCfg</code> JSON，并在服务端实际加载、抽样寻路。</p></div></div>
+      <h3>推荐保留两份文件</h3>
+      <table><thead><tr><th>文件</th><th>用途</th></tr></thead><tbody>
+        <tr><td><code>map.navsource.json</code></td><td>编辑器源数据：外轮廓、洞、区域语义、构建参数，可反复修改。</td></tr>
+        <tr><td><code>mesh.json</code></td><td>运行时构建产物：只有 <code>ID / Vertices / Triangles</code>，直接交给 <code>GenMeshCfg</code>。</td></tr>
+      </tbody></table>
+    </section>
+
+    <section id="validate">
+      <h2>8. 导出前验收清单</h2>
+      <ul class="checklist">
+        <li>所有坐标均为 int32，且处于地图宽高范围内。</li>
+        <li>轮廓没有自相交、重复相邻点和零长度边。</li>
+        <li>每个三角形三个下标均合法且互不相同，面积不为 0。</li>
+        <li>三角形完整覆盖可走区域，互不重叠，没有覆盖任何障碍洞。</li>
+        <li>内部边恰好被两个三角形共享；边界边只被一个三角形使用；不存在超过两个三角形共享同一边。</li>
+        <li>所有相邻三角形真正复用相同顶点 ID，不存在 T-junction。</li>
+        <li>门户边宽度满足单位半径和 <code>TruncEdge</code> 的安全要求。</li>
+        <li>按玩法预期检查连通分量：该连通的区域必须连通，该隔离的区域不能误连。</li>
+        <li>用 <code>GenMeshCfg → NewNaviMgr → Route</code> 跑边界点、障碍附近、狭窄通道和跨区域抽样测试。</li>
+      </ul>
+      <div class="callout"><strong>最终一句话：</strong>编辑器负责“画可走面并可靠三角剖分”，<code>nav</code> 负责“把共享三角形边变成图，再在图上寻路”。两者的契约就是这个 Mesh JSON。</div>
+      <p class="source">相关代码位置：<code>cmlib/nav/navmesh.go:26-216</code>、<code>cmlib/nav/searchgrid.go:21-87</code>、<code>cmlib/nav/matrix.go:70-80,206-238</code>、<code>cmlib/nav/navigate.go:37-166</code>、<code>cmlib/nav/algo.go:169-278</code>。</p>
+    </section>
+  </main>
+
+  <script>
+  (() => {
+    const svg = document.getElementById('meshSvg');
+    const mapW = document.getElementById('mapW');
+    const mapH = document.getElementById('mapH');
+    const snapInput = document.getElementById('snap');
+    const jsonOut = document.getElementById('jsonOut');
+    const status = document.getElementById('status');
+    const cursor = document.getElementById('cursor');
+    const summary = document.getElementById('summary');
+    let points = [];
+    let triangles = [];
+    let importedPreview = false;
+
+    const NS = 'http://www.w3.org/2000/svg';
+    const size = () => ({ w: Math.max(1, Number(mapW.value) || 1), h: Math.max(1, Number(mapH.value) || 1) });
+    const snap = value => {
+      const s = Math.max(1, Number(snapInput.value) || 1);
+      return Math.round(value / s) * s;
+    };
+    const fmt = n => Math.round(n).toLocaleString('zh-CN');
+    const cross = (a,b,c) => (b.X-a.X)*(c.Z-a.Z) - (b.Z-a.Z)*(c.X-a.X);
+    const signedArea = ps => ps.reduce((sum,p,i) => {
+      const q = ps[(i+1)%ps.length];
+      return sum + p.X*q.Z - q.X*p.Z;
+    },0)/2;
+    const same = (a,b) => a.X === b.X && a.Z === b.Z;
+    const orient = (a,b,c) => Math.sign(cross(a,b,c));
+    const onSeg = (a,b,p) => Math.min(a.X,b.X) <= p.X && p.X <= Math.max(a.X,b.X) && Math.min(a.Z,b.Z) <= p.Z && p.Z <= Math.max(a.Z,b.Z) && cross(a,b,p) === 0;
+    const segIntersects = (a,b,c,d) => {
+      const o1=orient(a,b,c), o2=orient(a,b,d), o3=orient(c,d,a), o4=orient(c,d,b);
+      if (o1 !== o2 && o3 !== o4) return true;
+      return (o1===0&&onSeg(a,b,c)) || (o2===0&&onSeg(a,b,d)) || (o3===0&&onSeg(c,d,a)) || (o4===0&&onSeg(c,d,b));
+    };
+
+    function validatePolygon(ps) {
+      if (ps.length < 3) throw new Error('至少需要 3 个顶点。');
+      for (let i=0;i<ps.length;i++) {
+        if (same(ps[i], ps[(i+1)%ps.length])) throw new Error(`顶点 ${i} 与下一点重复。`);
+      }
+      if (signedArea(ps) === 0) throw new Error('多边形面积为 0。');
+      for (let i=0;i<ps.length;i++) {
+        const a=ps[i], b=ps[(i+1)%ps.length];
+        for (let j=i+1;j<ps.length;j++) {
+          if (j===i || (j+1)%ps.length===i || (i+1)%ps.length===j) continue;
+          const c=ps[j], d=ps[(j+1)%ps.length];
+          if (segIntersects(a,b,c,d)) throw new Error(`边 ${i}-${(i+1)%ps.length} 与边 ${j}-${(j+1)%ps.length} 相交。`);
+        }
+      }
+    }
+
+    function pointInTriangle(p,a,b,c) {
+      const c1=cross(a,b,p), c2=cross(b,c,p), c3=cross(c,a,p);
+      return c1 >= 0 && c2 >= 0 && c3 >= 0;
+    }
+
+    function earClip(input) {
+      validatePolygon(input);
+      const ps = input.map(p => ({X:p.X,Z:p.Z}));
+      if (signedArea(ps) < 0) ps.reverse();
+      const ids = ps.map((_,i)=>i);
+      const out = [];
+      let guard = ps.length * ps.length;
+      while (ids.length > 3 && guard-- > 0) {
+        let cut = false;
+        for (let k=0;k<ids.length;k++) {
+          const ia=ids[(k-1+ids.length)%ids.length], ib=ids[k], ic=ids[(k+1)%ids.length];
+          const a=ps[ia], b=ps[ib], c=ps[ic];
+          if (cross(a,b,c) <= 0) continue;
+          let contains = false;
+          for (const ip of ids) {
+            if (ip===ia || ip===ib || ip===ic) continue;
+            if (pointInTriangle(ps[ip],a,b,c)) { contains=true; break; }
+          }
+          if (contains) continue;
+          out.push([ia,ib,ic]);
+          ids.splice(k,1);
+          cut=true;
+          break;
+        }
+        if (!cut) throw new Error('无法继续耳切：请移除共线点、极短边，或检查轮廓是否自相交。');
+      }
+      if (ids.length===3) out.push([ids[0],ids[1],ids[2]]);
+      return { points:ps, triangles:out };
+    }
+
+    function setStatus(message,type='') {
+      status.textContent=message;
+      status.className=type;
+    }
+
+    function screenFromWorld(p, width, height) {
+      const pad=48, innerW=width-pad*2, innerH=height-pad*2;
+      const {w,h}=size();
+      return { x:pad+(p.X/w)*innerW, y:height-pad-(p.Z/h)*innerH };
+    }
+
+    function worldFromEvent(ev) {
+      const rect=svg.getBoundingClientRect(), pad=48;
+      const x=Math.max(pad,Math.min(rect.width-pad,ev.clientX-rect.left));
+      const y=Math.max(pad,Math.min(rect.height-pad,ev.clientY-rect.top));
+      const {w,h}=size();
+      return { X:Math.max(0,Math.min(w-1,snap((x-pad)/(rect.width-pad*2)*w))), Z:Math.max(0,Math.min(h-1,snap((rect.height-pad-y)/(rect.height-pad*2)*h))) };
+    }
+
+    function el(name,attrs={}) {
+      const node=document.createElementNS(NS,name);
+      Object.entries(attrs).forEach(([k,v])=>node.setAttribute(k,v));
+      return node;
+    }
+
+    function render() {
+      const rect=svg.getBoundingClientRect();
+      const width=Math.max(500,rect.width||700), height=Math.max(420,rect.height||560), pad=48;
+      svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
+      svg.replaceChildren();
+      const defs=el('defs');
+      const pattern=el('pattern',{id:'minorGrid',width:(width-pad*2)/10,height:(height-pad*2)/10,patternUnits:'userSpaceOnUse'});
+      pattern.append(el('path',{d:`M ${(width-pad*2)/10} 0 L 0 0 0 ${(height-pad*2)/10}`,fill:'none',stroke:'#dce7eb','stroke-width':'1'}));
+      defs.append(pattern); svg.append(defs);
+      svg.append(el('rect',{x:pad,y:pad,width:width-pad*2,height:height-pad*2,fill:'url(#minorGrid)',stroke:'#8ea5b1','stroke-width':'2'}));
+      for (let i=0;i<=10;i+=2) {
+        const tx=el('text',{x:pad+(width-pad*2)*i/10,y:height-pad+24,'text-anchor':'middle',fill:'#647280','font-size':'12'}); tx.textContent=fmt(size().w*i/10); svg.append(tx);
+        const tz=el('text',{x:pad-9,y:height-pad-(height-pad*2)*i/10+4,'text-anchor':'end',fill:'#647280','font-size':'12'}); tz.textContent=fmt(size().h*i/10); svg.append(tz);
+      }
+      const xl=el('text',{x:width-pad+22,y:height-pad+5,fill:'#1769aa','font-weight':'700'}); xl.textContent='X'; svg.append(xl);
+      const zl=el('text',{x:pad-5,y:pad-18,fill:'#1769aa','font-weight':'700'}); zl.textContent='Z'; svg.append(zl);
+      if (points.length) {
+        if (triangles.length) {
+          triangles.forEach((tri,i)=>{
+            const p=tri.map(id=>screenFromWorld(points[id],width,height));
+            svg.append(el('polygon',{points:p.map(q=>`${q.x},${q.y}`).join(' '),fill:i%2?'#7257b520':'#13a6a625',stroke:'#7257b5','stroke-width':'2'}));
+            const cx=(p[0].x+p[1].x+p[2].x)/3, cy=(p[0].y+p[1].y+p[2].y)/3;
+            const t=el('text',{x:cx,y:cy+4,'text-anchor':'middle',fill:'#59418f','font-size':'12','font-weight':'700'}); t.textContent=`T${i}`; svg.append(t);
+          });
+        }
+        const ps=points.map(p=>screenFromWorld(p,width,height));
+        const path=el('polyline',{points:ps.map(p=>`${p.x},${p.y}`).join(' '),fill:triangles.length?'none':'#13a6a615',stroke:'#13a6a6','stroke-width':'4','stroke-linejoin':'round'});
+        svg.append(path);
+        if (triangles.length) svg.append(el('line',{x1:ps.at(-1).x,y1:ps.at(-1).y,x2:ps[0].x,y2:ps[0].y,stroke:'#13a6a6','stroke-width':'4'}));
+        ps.forEach((p,i)=>{
+          svg.append(el('circle',{cx:p.x,cy:p.y,r:'7',fill:'#fff',stroke:'#c94444','stroke-width':'4'}));
+          const t=el('text',{x:p.x+10,y:p.y-10,fill:'#8f2929','font-size':'13','font-weight':'700'}); t.textContent=`${i} (${fmt(points[i].X)}, ${fmt(points[i].Z)})`; svg.append(t);
+        });
+      }
+      summary.textContent=`顶点 ${points.length}，三角形 ${triangles.length}${importedPreview?'（导入预览）':''}`;
+      updateJson();
+    }
+
+    function updateJson() {
+      const data=[{ID:1,Vertices:points.map(p=>({X:Math.round(p.X),Z:Math.round(p.Z)})),Triangles:triangles.map(t=>[...t])}];
+      jsonOut.value=JSON.stringify(data,null,2);
+    }
+
+    svg.addEventListener('pointermove',ev=>{
+      const p=worldFromEvent(ev); cursor.textContent=`X = ${fmt(p.X)}，Z = ${fmt(p.Z)}`;
+    });
+    svg.addEventListener('pointerleave',()=>cursor.textContent='X = —，Z = —');
+    svg.addEventListener('click',ev=>{
+      const p=worldFromEvent(ev);
+      if (triangles.length || importedPreview) { points=[]; triangles=[]; importedPreview=false; }
+      if (points.some(q=>same(q,p))) { setStatus('这个坐标已经存在，请选择另一个点。','error'); return; }
+      points.push(p); setStatus(`已添加顶点 ${points.length-1}：(${fmt(p.X)}, ${fmt(p.Z)})`); render();
+    });
+    document.getElementById('undoBtn').onclick=()=>{ if(triangles.length){triangles=[]} else {points.pop()} importedPreview=false; setStatus('已撤销。'); render(); };
+    document.getElementById('clearBtn').onclick=()=>{ points=[];triangles=[];importedPreview=false;setStatus('已清空，点击画布添加第一个点。');render(); };
+    document.getElementById('sampleBtn').onclick=()=>{
+      mapW.value=600000;mapH.value=600000;
+      points=[{X:100000,Z:100000},{X:500000,Z:100000},{X:500000,Z:300000},{X:300000,Z:300000},{X:300000,Z:500000},{X:100000,Z:500000}];
+      triangles=[]; importedPreview=false; setStatus('已载入 L 形轮廓，请点击“闭合并三角剖分”。'); render();
+    };
+    document.getElementById('triBtn').onclick=()=>{
+      try { const out=earClip(points); points=out.points; triangles=out.triangles; importedPreview=false; setStatus(`剖分成功：${points.length} 个顶点，${triangles.length} 个三角形。`,'ok'); render(); }
+      catch(err){ setStatus(err.message,'error'); }
+    };
+    document.getElementById('copyBtn').onclick=async()=>{
+      updateJson();
+      try { await navigator.clipboard.writeText(jsonOut.value); setStatus('JSON 已复制到剪贴板。','ok'); }
+      catch { jsonOut.focus();jsonOut.select();document.execCommand('copy');setStatus('JSON 已选中并尝试复制。','ok'); }
+    };
+    document.getElementById('downloadBtn').onclick=()=>{
+      updateJson(); const blob=new Blob([jsonOut.value+'\n'],{type:'application/json;charset=utf-8'}); const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);a.download='mesh.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);setStatus('已生成 mesh.json。','ok');
+    };
+    document.getElementById('importBtn').onclick=()=>{
+      try {
+        const raw=JSON.parse(jsonOut.value), cfg=Array.isArray(raw)?raw[0]:raw;
+        if(!cfg || !Array.isArray(cfg.Vertices) || !Array.isArray(cfg.Triangles)) throw new Error('需要 Vertices 和 Triangles 数组。');
+        const ps=cfg.Vertices.map((p,i)=>{ if(!Number.isInteger(p.X)||!Number.isInteger(p.Z)) throw new Error(`顶点 ${i} 的 X/Z 必须是整数。`); return {X:p.X,Z:p.Z}; });
+        cfg.Triangles.forEach((t,i)=>{ if(!Array.isArray(t)||t.length!==3||t.some(id=>!Number.isInteger(id)||id<0||id>=ps.length)) throw new Error(`三角形 ${i} 的下标不合法。`); if(new Set(t).size!==3||cross(ps[t[0]],ps[t[1]],ps[t[2]])===0) throw new Error(`三角形 ${i} 重复顶点或面积为 0。`); });
+        points=ps;triangles=cfg.Triangles.map(t=>[...t]);importedPreview=true;setStatus('导入成功。当前为三角形预览；点击画布会开始新轮廓。','ok');render();
+      } catch(err){setStatus(`导入失败：${err.message}`,'error');}
+    };
+    [mapW,mapH,snapInput].forEach(input=>input.addEventListener('change',()=>{triangles=[];importedPreview=false;setStatus('地图参数已改变，请重新剖分。');render();}));
+    new ResizeObserver(render).observe(svg);
+    render();
+  })();
+  </script>
+</body>
+</html>

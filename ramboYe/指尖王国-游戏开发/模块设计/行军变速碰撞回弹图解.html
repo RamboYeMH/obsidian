@@ -1,0 +1,134 @@
+<!doctype html>
+<!--
+---
+类型: 模块设计
+模块: 世界地图行军
+版本: 当前分支
+状态: 定稿
+创建日期: 2026-07-13
+tags: [行军, 寻路, 碰撞, 变速]
+---
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>行军变速碰撞回弹图解</title>
+  <style>
+    :root { color-scheme: light; --ink:#17202a; --muted:#66727f; --line:#ccd4dc; --panel:#f7f9fa; --bad:#d64545; --good:#16856b; --warn:#e6a23c; --route:#2674c7; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:#eef1f3; color:var(--ink); font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif; letter-spacing:0; }
+    header { padding:22px clamp(18px,4vw,52px) 16px; background:#fff; border-bottom:1px solid var(--line); }
+    h1 { margin:0 0 6px; font-size:clamp(23px,3vw,34px); letter-spacing:0; }
+    header p { margin:0; color:var(--muted); }
+    main { width:min(1280px,100%); margin:auto; padding:18px; }
+    .toolbar { display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+    button { border:1px solid #aeb9c3; background:#fff; color:var(--ink); padding:8px 12px; border-radius:6px; cursor:pointer; font-weight:650; }
+    button[aria-pressed="true"] { background:#17202a; color:#fff; border-color:#17202a; }
+    .legend { margin-left:auto; display:flex; gap:14px; color:var(--muted); font-size:13px; flex-wrap:wrap; }
+    .key::before { content:""; display:inline-block; width:16px; height:3px; margin-right:5px; vertical-align:middle; background:var(--c); }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    section { background:#fff; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+    section h2 { margin:0; padding:13px 15px 2px; font-size:18px; letter-spacing:0; }
+    section .sub { margin:0; padding:0 15px 10px; color:var(--muted); font-size:13px; }
+    .stage { position:relative; aspect-ratio:16/9; min-height:290px; background:var(--panel); border-top:1px solid #e1e6ea; }
+    svg { width:100%; height:100%; display:block; }
+    .obstacle { fill:#606b75; stroke:#313940; stroke-width:2; }
+    .danger { fill:#d6454514; stroke:var(--bad); stroke-width:2; stroke-dasharray:7 5; }
+    .old { fill:none; stroke:#9ba6af; stroke-width:3; stroke-dasharray:7 6; }
+    .bad { fill:none; stroke:var(--bad); stroke-width:5; }
+    .good { fill:none; stroke:var(--good); stroke-width:5; }
+    .node { fill:#fff; stroke:var(--route); stroke-width:3; }
+    .unit { fill:#fff; stroke:#17202a; stroke-width:3; }
+    .push { fill:none; stroke:var(--warn); stroke-width:4; marker-end:url(#arrow); opacity:0; }
+    .label { font-size:13px; font-weight:700; fill:#26313b; }
+    .small { font-size:11px; fill:#66727f; }
+    .step-note { padding:12px 15px; min-height:70px; border-top:1px solid #e1e6ea; }
+    .step-note strong { color:var(--accent); }
+    .timeline { margin-top:14px; padding:16px; background:#fff; border:1px solid var(--line); border-radius:8px; }
+    .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:0; margin-top:12px; }
+    .step { position:relative; padding:34px 12px 10px; border-top:3px solid #cbd3da; color:var(--muted); }
+    .step::before { content:attr(data-n); position:absolute; top:-15px; left:12px; width:27px; height:27px; border-radius:50%; display:grid; place-items:center; background:#cbd3da; color:#fff; font-weight:800; }
+    .step.active { border-color:#17202a; color:var(--ink); }
+    .step.active::before { background:#17202a; }
+    code { background:#edf1f4; padding:1px 5px; border-radius:4px; }
+    [data-step] .unit { transition:transform .45s ease; }
+    body.s1 .u-left, body.s1 .u-right { transform:translate(90px,0); }
+    body.s2 .u-left { transform:translate(185px,35px); }
+    body.s2 .u-right { transform:translate(165px,-42px); }
+    body.s3 .u-left { transform:translate(112px,70px); }
+    body.s3 .u-right { transform:translate(280px,-20px); }
+    body.s3 .push { opacity:1; }
+    @media (max-width:800px) { .grid{grid-template-columns:1fr}.legend{width:100%;margin-left:0}.steps{grid-template-columns:1fr}.step{border-top:0;border-left:3px solid #cbd3da;padding:10px 12px 18px 42px}.step::before{top:8px;left:-15px}.step.active{border-left-color:#17202a}.stage{min-height:260px} }
+  </style>
+</head>
+<body class="s0">
+  <header>
+    <h1>行军变速后，为什么会碰撞回弹？</h1>
+    <p>核心区别不在"速度"，而在变速后是否继续拼接已被切断的旧绕行路径。</p>
+  </header>
+  <main>
+    <div class="toolbar" role="group" aria-label="演示步骤">
+      <button data-go="0" aria-pressed="true">1 正在绕行</button><button data-go="1" aria-pressed="false">2 速度变化</button><button data-go="2" aria-pressed="false">3 下一帧检测</button><button data-go="3" aria-pressed="false">4 结果</button>
+      <div class="legend"><span class="key" style="--c:#9ba6af">旧绕行路径</span><span class="key" style="--c:#d64545">错误拼接</span><span class="key" style="--c:#16856b">重新寻路</span></div>
+    </div>
+    <div class="grid">
+      <section style="--accent:var(--bad)">
+        <h2>旧方式：拼接旧节点</h2><p class="sub">当前坐标 → 旧路径的下一节点</p>
+        <div class="stage">
+          <svg viewBox="0 0 560 315" aria-label="旧路径穿过碰撞区图解">
+            <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#e6a23c"/></marker></defs>
+            <circle class="danger" cx="300" cy="157" r="91"/><circle class="obstacle" cx="300" cy="157" r="58"/>
+            <text class="label" x="270" y="153">阻挡点</text><text class="small" x="252" y="174">push 判定范围</text>
+            <path class="old" d="M75 220 C170 80 280 45 420 78 L505 128"/>
+            <circle class="node" cx="420" cy="78" r="7"/><text class="small" x="430" y="68">旧下一节点</text>
+            <path class="bad" d="M165 220 L420 78"/>
+            <circle class="unit u-left" cx="75" cy="220" r="13"/><text class="label" x="47" y="248">部队</text>
+            <path class="push" d="M260 190 L205 230"/><text class="small" x="188" y="253">回弹 doPush</text>
+          </svg>
+        </div>
+        <div class="step-note" id="left-note"><strong>初始：</strong>部队正在执行碰撞系统生成的绕行节点。</div>
+      </section>
+      <section style="--accent:var(--good)">
+        <h2>现方式：从当前位置重新寻路</h2><p class="sub"><code>GetPaths(e, target)</code> 生成完整可通行路线</p>
+        <div class="stage">
+          <svg viewBox="0 0 560 315" aria-label="重新寻路绕开碰撞区图解">
+            <circle class="danger" cx="300" cy="157" r="91"/><circle class="obstacle" cx="300" cy="157" r="58"/>
+            <text class="label" x="270" y="153">阻挡点</text><text class="small" x="252" y="174">push 判定范围</text>
+            <path class="old" d="M75 220 C170 80 280 45 420 78 L505 128"/>
+            <path class="good" d="M165 220 C185 92 275 43 392 67 C447 78 475 101 505 128"/>
+            <circle class="node" cx="205" cy="103" r="7"/><circle class="node" cx="392" cy="67" r="7"/>
+            <circle class="unit u-right" cx="75" cy="220" r="13"/><text class="label" x="47" y="248">部队</text>
+            <text class="small" x="350" y="48">导航重新生成节点</text>
+          </svg>
+        </div>
+        <div class="step-note" id="right-note"><strong>初始：</strong>速度变化前的部队位置与左侧相同。</div>
+      </section>
+    </div>
+    <div class="timeline">
+      <strong>服务器逐帧调用关系</strong>
+      <div class="steps">
+        <div class="step active" data-n="1"><code>doDetour</code><br>生成绕行节点</div>
+        <div class="step" data-n="2"><code>SpeedChange</code><br>速度属性变化</div>
+        <div class="step" data-n="3"><code>CheckCollision</code><br>检查当前点和下一帧点</div>
+        <div class="step" data-n="4"><code>doPush</code> / 继续行军<br>是否进入扩展阻挡半径</div>
+      </div>
+    </div>
+    <div class="timeline">
+      <strong>代码依据</strong>
+      <p><code>game/wmap/internal/mmap/melem/marching.go:174</code> 负责变速重新寻路；<code>game/wmap/internal/mmap/melem/munit/mentity/moving.go:60</code> 执行碰撞检测；<code>moving.go:169</code> 对进入扩展阻挡半径的单位执行 <code>doPush</code>。</p>
+    </div>
+  </main>
+  <script>
+    const notes = [
+      ["初始：","部队正在执行碰撞系统生成的绕行节点。","初始：","速度变化前的部队位置与左侧相同。"],
+      ["变速：","旧实现切断当前段，将当前坐标直连到旧节点。","变速：","以当前坐标为起点，调用导航生成新的完整路径。"],
+      ["检测：","直连线段穿过扩展阻挡区，下一帧坐标被判定为碰撞。","检测：","新路径的节点均在可通行区域，不触发挤出。"],
+      ["结果：","当前坐标落入 blockR + MarchingClosestDistance，执行 doPush 回弹。","结果：","部队沿新路径继续前进，新速度从当前时间生效。"]
+    ];
+    const buttons=[...document.querySelectorAll("button[data-go]")], steps=[...document.querySelectorAll(".step")];
+    function go(i){ document.body.className="s"+i; buttons.forEach((b,n)=>b.setAttribute("aria-pressed",n===i)); steps.forEach((s,n)=>s.classList.toggle("active",n===i)); const n=notes[i]; document.querySelector("#left-note").innerHTML=`<strong>${n[0]}</strong>${n[1]}`; document.querySelector("#right-note").innerHTML=`<strong>${n[2]}</strong>${n[3]}`; }
+    buttons.forEach((b)=>b.addEventListener("click",()=>go(Number(b.dataset.go))));
+  </script>
+</body>
+</html>
