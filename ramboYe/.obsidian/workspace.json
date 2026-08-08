@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "指尖王国-游戏开发/模块设计/登录流程.md",
+                "file": "技术学习/etcd/Raft源码-Leader选举.md",
                 "mode": "source",
                 "source": false,
                 "backlinks": true,
@@ -24,11 +24,11 @@
                   "showSearch": false,
                   "searchQuery": "",
                   "backlinkCollapsed": false,
-                  "unlinkedCollapsed": false
+                  "unlinkedCollapsed": true
                 }
               },
               "icon": "lucide-file",
-              "title": "登录流程"
+              "title": "Raft源码-Leader选举"
             }
           }
         ],
@@ -105,7 +105,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "游戏开发/模块设计/冰髓争夺战.md",
+                "file": "技术学习/etcd/Raft源码-Leader选举.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -115,7 +115,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "冰髓争夺战 的反向链接列表"
+              "title": "Raft源码-Leader选举 的反向链接列表"
             }
           },
           {
@@ -219,53 +219,54 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "47a6ab1cd12accf1",
+  "active": "a258f053309fdb49",
   "lastOpenFiles": [
+    "技术学习/etcd/Raft共识算法.md",
+    "技术学习/etcd/etcd启动流程与双循环架构.md",
+    "大地图游戏/《新倩女幽魂》迈向千人同屏：Avatar系统.md",
+    "大地图游戏/assets/v2-2bff46d96177209c3493653543ca5b1f_1440w.jpg",
+    "大地图游戏/assets/v2-6d3109da676e0e6471303d7c6e9e80bb_1440w.jpg",
+    "大地图游戏/assets/v2-52b538b93028b9ccf3c943bc590ba4db_1440w.jpg",
+    "大地图游戏/assets/v2-894a10ad98ccd8bca68f561bc4f0a1e7_1440w.jpg",
+    "大地图游戏/assets/v2-f7574e28b3a07dcf2a45bc49c0709e3e_b.jpg",
+    "大地图游戏/assets/v2-2eb705577b4a98f24b867c566941d320_1440w.jpg",
+    "大地图游戏/assets/v2-a76043ff60cc263eec7f94986abb6509_1440w.jpg",
+    "大地图游戏/assets/v2-6461d9e644ffd30481e7a034db334a73_1440w.jpg",
+    "大地图游戏/assets/v2-d6b0159af7ea899812fb05ee82cecfa5_1440w.jpg",
+    "大地图游戏/assets/v2-75e2055ed4cd47f5736b199d27d2e551_1440w.jpg",
+    "大地图游戏/assets",
+    "指尖王国-游戏开发/MonoDB 导入.md",
+    "大地图游戏",
+    "操作系统/03-Linux目录结构.md",
+    "操作系统/02-学习日志.md",
+    "操作系统/01-学习路线.md",
+    "操作系统/00-操作系统学习主页.md",
+    "密码/密码.md",
+    "密码",
+    "《Go语言圣经》中文版/00-Go语言学习索引.md",
+    "《Go语言圣经》中文版/Go语言学习补充建议.md",
+    "设计模式/设计模式二三事  美团 · 技术团队.md",
+    "设计模式/assets",
+    "Clippings/图解NavMesh寻路中的漏斗算法.md",
+    "未命名.canvas",
+    "Clippings/assets",
+    "Clippings/互联网已经将绝大部分信息差抹除了，知识已经随处可以获得，为何大部分人依旧无法获得大幅突破？ - 跑酱er 的回答.md",
+    "Clippings/连续21天十点睡六点起，我真的会变健康吗？.md",
+    "Clippings/Claude Code神级技巧：让AI编程更省心.md",
+    "指尖王国-游戏开发/游戏总结/大纲.md",
+    "Clippings",
+    "Claude/Claude Code 启动出口与时区门禁.md",
+    "指尖王国-游戏开发/Bug/活动兑换终身限购未考虑线上老数据兼容.md.tmp.52567.85f5f69bd7d7",
+    "指尖王国-游戏开发/Bug/活动兑换终身限购未考虑线上老数据兼容.md",
+    "指尖王国-游戏开发/Bug/活动兑换终身限购未考虑线上老数据兼容.md.tmp.52567.290214706f96",
+    "指尖王国-游戏开发/模块设计/登录流程.md",
     "指尖王国-游戏开发/模块设计/远征火车-玩法逻辑.md.tmp.12820.1409e0375c47",
     "指尖王国-游戏开发/模块设计/远征火车-玩法逻辑.md",
     "指尖王国-游戏开发/模块设计/远征火车-玩法逻辑.md.tmp.10686.da1b9788efd1",
     "指尖王国-游戏开发/模块设计/冰髓争夺战-积分计算.md",
     "指尖王国-游戏开发/模块设计/冰髓争夺战-防守方被攻击预警.md",
     "指尖王国-游戏开发/模块设计/远征火车-提交配置与协议变更.md",
-    "指尖王国-游戏开发/游戏总结/大纲.md",
     "指尖王国-游戏开发/总览.md",
-    "指尖王国-游戏开发/模块设计/支付流程.md",
-    "工具/supervisor/slog 日志快捷查看.md.tmp.365531.27c1bb1e5d69",
-    "工具/supervisor/slog-completion.bash",
-    "工具/supervisor/slog 日志快捷查看.md.tmp.365531.692c6f1faa5f",
-    "指尖王国-游戏开发/模块设计/assets/Pasted image 20260805113746.png",
-    "指尖王国-游戏开发/模块设计/assets/Pasted image 20260805113716.png",
-    "指尖王国-游戏开发/模块设计/assets/Pasted image 20260805113639.png",
-    "指尖王国-游戏开发/模块设计/assets",
-    "工具/supervisor/slog 日志快捷查看.md",
-    "工具/supervisor/slog 日志快捷查看.md.tmp.365531.f7d5a7d257d4",
-    "工具/supervisor/supervisor 常用操作.md",
-    "工具/supervisor/supervisor 常用操作.md.tmp.365531.52723270edd2",
-    "工具/supervisor/slog 日志快捷查看.md.tmp.365531.651151812f2a",
-    "工具/supervisor/slog.sh",
-    "工具/supervisor/slog 日志快捷查看.md.tmp.365531.b98f15436b31",
-    "MonoDB 导入.md",
-    "总览.md",
-    "指尖王国-游戏开发/Bug/2026-07-16-Redis慢查询雪崩-跨服宴会筹备delLeaderboardCmd.md",
-    "CC定理.md",
-    "指尖王国-游戏开发/Bug/2026-07-10-远征图编队行军靠近城堡寻路转圈.md",
-    "工具/tmux 常用操作.md",
-    "Claude/Hook.md",
-    "技术学习/etcd/Raft共识算法.md",
-    "技术学习/etcd/etcd启动流程与双循环架构.md",
-    "技术学习/etcd/Raft源码-Leader选举.md",
-    "Go语言学习/Go语言学习补充建议.md",
-    "密码.md",
-    "指尖王国-游戏开发/技术学习/etcd/Raft共识算法.md",
-    "指尖王国-游戏开发/模块设计/远征-H5 1039~1048版本Bug修复清单.md",
-    "Claude/Claude Code 启动出口与时区门禁.md",
-    "Claude/00-Claude 索引.md",
-    "assets/eea28bc4fd0341ae87243302951eb0ed.png",
-    "assets/aa2b66d4e1cd4a69adb12cbc51e411e7.png",
-    "assets/0419601dd0b34ecc91e870e32ef1db7d.png",
-    "游戏开发/Bug/assets/Pasted image 20260612165257.png",
-    "0419601dd0b34ecc91e870e32ef1db7d.png",
-    "eea28bc4fd0341ae87243302951eb0ed.png",
-    "aa2b66d4e1cd4a69adb12cbc51e411e7.png"
+    "指尖王国-游戏开发/模块设计/支付流程.md"
   ]
 }
