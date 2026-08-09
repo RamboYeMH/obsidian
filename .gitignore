@@ -1,0 +1,8 @@
+# macOS
+.DS_Store
+
+# Obsidian 本地状态（每次开关笔记都会变，不需要版本控制）
+**/.obsidian/workspace.json
+**/.obsidian/workspace-mobile.json
+**/.obsidian/cache
+.trash/
