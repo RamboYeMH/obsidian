@@ -670,7 +670,7 @@ Addy Osmani（Google Chrome 团队工程主管，个人博客）
 
 扫码领取腾讯云开发者专属服务器代金券！
 
-![图片](https://mmbiz.qpic.cn/mmbiz_png/ZRhjO8xAWr4nU3obq4B4URKhzJMmibw1uR1ZehOtyeel5hYevARgDqdKxqXvtzclLhu7g28g6PBib8M2uaQegic6MrCdBic0SdHh4XUQODQkmKk/640?wx_fmt=png&from=appmsg&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=16)
+
 
 腾讯技术人原创集 · 目录
 
