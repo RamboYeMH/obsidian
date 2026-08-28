@@ -17,6 +17,11 @@ tags:
 - [[Claude Code 状态栏配置]] — 自定义 statusline：用户@主机、目录、git 分支、模型、上下文用量
 - [[Claude Code 启动出口与时区门禁]] — 启动前校验出口 IP 国家与系统时区，命中上海时区硬拦截
 
+## 机制
+
+- [[Hook]] — 挂在生命周期上的 shell 命令。判断标准：「每次 X 必须 Y」→ hook，而非 CLAUDE.md
+- [[00-Skill 索引]] — 本机全部 skill 的归档（根目录 `Skill/`），含三种机制（CLAUDE.md / Skill / Hook）的分工
+
 ## 本机关键路径
 
 | 路径 | 说明 |
