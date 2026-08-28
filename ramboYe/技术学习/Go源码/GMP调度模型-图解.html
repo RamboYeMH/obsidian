@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Go 的 GMP —— 看图就懂</title>
+<style>
+  :root{
+    --g:#4ecdc4; --m:#ff6b6b; --p:#ffd93d; --bg:#12141c; --card:#1c1f2b; --txt:#f2f4f8; --dim:#8a93a8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--txt);
+    font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    line-height:1.6; padding:0 0 120px;
+  }
+  .wrap{max-width:1000px;margin:0 auto;padding:0 24px}
+
+  h1{font-size:64px;text-align:center;padding:80px 0 10px;letter-spacing:2px}
+  .sub{text-align:center;font-size:24px;color:var(--dim);padding-bottom:60px}
+
+  section{
+    background:var(--card); border-radius:28px; padding:56px 44px; margin:36px 0;
+  }
+  h2{font-size:42px;margin-bottom:12px}
+  .lead{font-size:24px;color:var(--dim);margin-bottom:40px}
+
+  /* 三个角色卡 */
+  .roles{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .role{border-radius:24px;padding:36px 24px;text-align:center;color:#12141c}
+  .role .big{font-size:80px;line-height:1}
+  .role .letter{font-size:56px;font-weight:900;margin:8px 0}
+  .role .name{font-size:26px;font-weight:700}
+  .role .desc{font-size:19px;opacity:.75;margin-top:8px}
+  .rG{background:var(--g)} .rM{background:var(--m)} .rP{background:var(--p)}
+
+  /* 餐厅类比 */
+  .analogy{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;text-align:center}
+  .analogy div{font-size:22px}
+  .analogy .ico{font-size:72px;display:block}
+  .analogy b{font-size:28px;display:block;margin:10px 0 4px}
+
+  /* 核心图 */
+  .stage{
+    background:#0d0f16;border-radius:24px;padding:40px 28px;display:grid;
+    grid-template-columns:1fr 1fr;gap:28px;
+  }
+  .lane{background:#171a24;border-radius:20px;padding:24px;border:3px solid transparent}
+  .lane.hl{border-color:var(--p)}
+  .lane h3{font-size:24px;margin-bottom:16px;color:var(--dim);font-weight:600}
+  .chef{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .chef .m{font-size:52px}
+  .chef .p{
+    background:var(--p);color:#12141c;font-weight:900;font-size:28px;
+    width:60px;height:60px;border-radius:16px;display:grid;place-items:center
+  }
+  .queue{display:flex;gap:10px;flex-wrap:wrap}
+  .g{
+    background:var(--g);color:#12141c;font-weight:800;font-size:20px;
+    width:52px;height:52px;border-radius:14px;display:grid;place-items:center
+  }
+  .g.ghost{background:#2a2f3d;color:#5a6377}
+  .label{font-size:18px;color:var(--dim);margin-top:14px}
+
+  .global{
+    grid-column:1/-1;background:#171a24;border-radius:20px;padding:24px;text-align:center
+  }
+  .global h3{color:var(--dim);font-size:24px;margin-bottom:14px}
+  .global .queue{justify-content:center}
+
+  /* 大字规则 */
+  .rule{
+    font-size:40px;font-weight:800;text-align:center;padding:44px 20px;
+    background:#0d0f16;border-radius:24px;margin-top:32px;line-height:1.4
+  }
+  .rule .k{color:var(--p)}
+  .rule small{display:block;font-size:22px;font-weight:400;color:var(--dim);margin-top:14px}
+
+  /* 步骤流 */
+  .flow{display:grid;gap:20px}
+  .step{display:grid;grid-template-columns:90px 1fr;gap:24px;align-items:center;
+        background:#0d0f16;border-radius:20px;padding:26px}
+  .step .n{font-size:56px;text-align:center}
+  .step .t{font-size:26px;font-weight:700}
+  .step .d{font-size:20px;color:var(--dim);margin-top:4px}
+
+  .why{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:32px}
+  .why div{background:#0d0f16;border-radius:20px;padding:30px;text-align:center}
+  .why .ico{font-size:64px}
+  .why b{display:block;font-size:26px;margin:10px 0 6px}
+  .why span{font-size:19px;color:var(--dim)}
+
+  .bad{border:3px solid var(--m)}
+  .good{border:3px solid var(--g)}
+
+  code{background:#0d0f16;padding:4px 12px;border-radius:8px;font-size:.9em;color:var(--p)}
+
+  .final{
+    text-align:center;padding:70px 30px;font-size:34px;font-weight:700;line-height:1.7
+  }
+  .final em{color:var(--g);font-style:normal}
+  .final .s{color:var(--m)} .final .t{color:var(--p)}
+
+  @media(max-width:820px){
+    h1{font-size:40px}.sub{font-size:18px}
+    h2{font-size:30px}.lead{font-size:19px}
+    .roles,.analogy,.stage,.why{grid-template-columns:1fr}
+    .rule{font-size:28px}.final{font-size:24px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Go 的 <span style="color:var(--g)">G</span><span style="color:var(--m)">M</span><span style="color:var(--p)">P</span></h1>
+  <p class="sub">一家餐厅是怎么同时上几万道菜的</p>
+
+  <!-- 1 -->
+  <section>
+    <h2>三个角色</h2>
+    <p class="lead">就三个字母，记住它们就懂一半了。</p>
+    <div class="roles">
+      <div class="role rG">
+        <span class="big">📋</span>
+        <div class="letter">G</div>
+        <div class="name">Goroutine</div>
+        <div class="desc">一张任务单<br>你写的 <code style="color:#12141c;background:#0002">go func()</code></div>
+      </div>
+      <div class="role rM">
+        <span class="big">👨‍🍳</span>
+        <div class="letter">M</div>
+        <div class="name">Machine</div>
+        <div class="desc">厨师<br>真正干活的操作系统线程</div>
+      </div>
+      <div class="role rP">
+        <span class="big">🔥</span>
+        <div class="letter">P</div>
+        <div class="name">Processor</div>
+        <div class="desc">灶台<br>做菜的许可证，数量有限</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section>
+    <h2>为什么要有"灶台"？</h2>
+    <p class="lead">厨师可以很多，但灶台就那么几个。</p>
+    <div class="analogy">
+      <div><span class="ico">📋📋📋📋📋</span><b>任务单：几万张</b>很便宜，随便开</div>
+      <div><span class="ico">👨‍🍳👨‍🍳👨‍🍳</span><b>厨师：几十个</b>有点贵</div>
+      <div><span class="ico">🔥🔥🔥🔥</span><b>灶台：8 个</b>= 你的 CPU 核心数</div>
+    </div>
+    <div class="rule">
+      厨师<span class="k"> 必须先抢到灶台 </span>才能做菜
+      <small>没有 P 的 M，只能干等着 —— 这样同时干活的人数就被卡死在 CPU 核心数，不会乱抢</small>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section>
+    <h2>它们怎么摆在一起</h2>
+    <p class="lead">每个灶台，自带一叠自己的任务单。</p>
+    <div class="stage">
+      <div class="lane hl">
+        <h3>灶台 1</h3>
+        <div class="chef"><span class="m">👨‍🍳</span><span class="p">P</span></div>
+        <div class="queue">
+          <div class="g">G</div><div class="g">G</div><div class="g">G</div><div class="g">G</div>
+        </div>
+        <div class="label">本地队列（最多 256 张，取用飞快，不用抢锁）</div>
+      </div>
+      <div class="lane hl">
+        <h3>灶台 2</h3>
+        <div class="chef"><span class="m">👨‍🍳</span><span class="p">P</span></div>
+        <div class="queue">
+          <div class="g">G</div><div class="g ghost">空</div><div class="g ghost">空</div><div class="g ghost">空</div>
+        </div>
+        <div class="label">快做完了…有点闲</div>
+      </div>
+      <div class="global">
+        <h3>🗂 全局队列（大家共享的公共单堆）</h3>
+        <div class="queue">
+          <div class="g">G</div><div class="g">G</div><div class="g">G</div><div class="g">G</div><div class="g">G</div><div class="g">G</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section>
+    <h2>三个聪明的小把戏</h2>
+    <p class="lead">GMP 之所以快，全靠这三招。</p>
+    <div class="flow">
+      <div class="step">
+        <div class="n">🫳</div>
+        <div>
+          <div class="t">偷任务（Work Stealing）</div>
+          <div class="d">灶台 2 闲下来了，不会站着发呆 —— 它跑去灶台 1 那儿<b>偷走一半</b>任务单。没人闲着。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="n">🤝</div>
+        <div>
+          <div class="t">让出灶台（Handoff）</div>
+          <div class="d">厨师在等一锅汤（读文件、等网络），要卡好几秒。他<b>把灶台让给别的厨师</b>，自己端着锅去旁边等。灶台一秒都不空着。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="n">⏱️</div>
+        <div>
+          <div class="t">按时换人（抢占）</div>
+          <div class="d">一张单子做太久（约 10ms），系统会<b>拍拍他肩膀</b>：先歇会儿，让别人也上上灶。没人能霸占。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section>
+    <h2>所以好在哪</h2>
+    <p class="lead">对比一下没有 GMP 的做法。</p>
+    <div class="why">
+      <div class="bad">
+        <span class="ico">😵</span>
+        <b>一张单配一个厨师</b>
+        <span>= 一个任务一个线程<br>开 1 万个线程 → 内存爆炸，<br>光切换就把 CPU 累死</span>
+      </div>
+      <div class="good">
+        <span class="ico">😎</span>
+        <b>GMP</b>
+        <span>1 万张单，8 个灶台，几十个厨师<br>一个 G 只要 <b>2KB</b><br>切换在用户态，不打扰操作系统</span>
+      </div>
+    </div>
+    <div class="rule">
+      <span class="k">GOMAXPROCS</span> = 灶台数量
+      <small>默认等于你的 CPU 核心数。这是你唯一需要调的那个旋钮（大多数时候别动它）</small>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="final">
+    <em>G</em> 是要做的事，<span class="s">M</span> 是干活的人，<span class="t">P</span> 是干活的名额。<br><br>
+    Go 帮你把<em>几万件事</em>，<br>
+    塞进<span class="t">几个名额</span>里，<br>
+    榨干每一个<span class="s">干活的人</span>。<br><br>
+    <span style="font-size:.7em;color:var(--dim)">你只要写 <code>go doSomething()</code>，剩下的它全包了。</span>
+  </section>
+
+</div>
+</body>
+</html>
