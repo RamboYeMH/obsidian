@@ -1,0 +1,23 @@
+A_INT_id	A_INT_level_group	A_INT_max_level	A_ARR_skin_reward
+cs	cs	cs	cs
+int	int	int	ext[]
+Id	LevelGroup	MaxLevel	SkinReward
+			
+			TypIDVal_P_cspb
+SSR英雄真实ID(D2HeroCfg.MutexId)	战魂等级组(对应WarSoulLevelCfg)	战魂最大等级	阵营节点全解锁奖励(领主档案皮肤)
+			
+			
+32	1	30	[]
+35	1	30	[]
+42	1	30	[]
+49	1	30	[]
+51	1	30	[]
+52	1	30	[]
+53	1	30	[]
+54	1	30	[]
+55	1	30	[]
+56	1	30	[]
+57	1	30	[]
+58	1	30	[]
+64	1	30	[]
+65	1	30	[]

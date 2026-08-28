@@ -1,0 +1,20 @@
+A_INT_id	A_INT_material_type	A_INT_hero_type	A_INT_exp
+cs	cs	cs	cs
+int	int	int	long
+Id	MaterialType	HeroType	Exp
+			
+			
+编号(材料类型*100+品质)	材料类型 1英雄碎片 2英雄本体	英雄品质(D2HeroCfg.HeroType) 0表示通用碎片	单个材料提供的战魂经验
+			
+			
+100	1	0	10
+101	1	1	10
+102	1	2	20
+103	1	3	40
+104	1	4	80
+105	1	5	160
+201	2	1	100
+202	2	2	200
+203	2	3	400
+204	2	4	800
+205	2	5	1600
