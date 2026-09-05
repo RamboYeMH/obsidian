@@ -16,6 +16,7 @@ tags:
 
 - [[Claude Code 状态栏配置]] — 自定义 statusline：用户@主机、目录、git 分支、模型、上下文用量
 - [[Claude Code 启动出口与时区门禁]] — 启动前校验出口 IP 国家与系统时区，命中上海时区硬拦截
+- [[Claude Code Skill 与 MCP 迁移到 Codex]] — Claude skills 与 MCP 迁移到 Codex 的清单、差异、安全处理和验证记录
 
 ## 机制
 

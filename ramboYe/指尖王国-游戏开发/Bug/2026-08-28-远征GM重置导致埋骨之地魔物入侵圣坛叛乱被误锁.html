@@ -1,0 +1,492 @@
+<!doctype html>
+<!--
+---
+类型: Bug
+单号: 无（线上日志排查发现）
+版本: 线上 h5prod / 待修复分支 h5_new_tf_v1049
+状态: 待修复
+创建日期: 2026-08-28
+tags: [bug, 远征, 埋骨之地, 魔物入侵, 圣坛叛乱, GM命令, 线上问题]
+---
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>远征 GM 重置导致埋骨之地/魔物入侵/圣坛叛乱被误锁</title>
+<style>
+  :root { color-scheme: light; --ink:#17202a; --muted:#66727f; --line:#ccd4dc; --panel:#f7f9fa;
+          --bad:#d64545; --good:#16856b; --warn:#e6a23c; --accent:#2674c7; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#eef1f3; color:var(--ink);
+         font:15px/1.65 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+  header { padding:24px clamp(18px,4vw,52px) 18px; background:#fff; border-bottom:1px solid var(--line); }
+  h1 { margin:0 0 8px; font-size:clamp(21px,2.6vw,30px); }
+  header p { margin:0; color:var(--muted); }
+  .meta { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+  .tag { font-size:12px; padding:3px 9px; border-radius:999px; background:#eef2f6; color:#4a5560; border:1px solid #dde3e9; }
+  .tag.bad { background:#fdecec; color:#a83232; border-color:#f5cccc; }
+  .tag.warn { background:#fdf4e5; color:#8a6115; border-color:#f2e0bd; }
+  main { width:min(1180px,100%); margin:auto; padding:20px clamp(12px,3vw,20px) 60px; }
+  section { background:#fff; border:1px solid var(--line); border-radius:9px; padding:20px 22px; margin-bottom:16px; }
+  section > h2 { margin:0 0 4px; font-size:19px; display:flex; align-items:center; gap:9px; }
+  section > h2 .n { display:inline-grid; place-items:center; width:25px; height:25px; border-radius:6px;
+                    background:#17202a; color:#fff; font-size:13px; font-weight:700; flex:none; }
+  section > .sub { margin:0 0 16px; color:var(--muted); font-size:13.5px; padding-left:34px; }
+  h3 { margin:20px 0 8px; font-size:15.5px; }
+  h3:first-of-type { margin-top:8px; }
+  p { margin:9px 0; }
+  ul,ol { margin:9px 0; padding-left:22px; }
+  li { margin:5px 0; }
+  code { background:#eef1f4; padding:1.5px 5px; border-radius:4px; font-size:13px;
+         font-family:"JetBrains Mono",Consolas,monospace; }
+  pre { background:#1e2530; color:#e6edf3; padding:14px 16px; border-radius:7px; overflow-x:auto;
+        font:13px/1.6 "JetBrains Mono",Consolas,monospace; margin:10px 0; }
+  pre .c { color:#8b98a5; }
+  pre .k { color:#ff9d70; }
+  pre .s { color:#a5d6a7; }
+  pre .del { color:#ff8b8b; }
+  pre .add { color:#9be89b; }
+  table { border-collapse:collapse; width:100%; margin:12px 0; font-size:13.5px; }
+  th,td { border:1px solid #dde3e9; padding:7px 10px; text-align:left; vertical-align:top; }
+  th { background:#f3f6f8; font-weight:650; white-space:nowrap; }
+  td.num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  tr.hl td { background:#fff8e8; }
+  tr.hl2 td { background:#fdecec; }
+  .callout { border-left:4px solid var(--accent); background:#f2f7fd; padding:12px 15px; border-radius:0 6px 6px 0; margin:14px 0; }
+  .callout.bad { border-color:var(--bad); background:#fdf1f1; }
+  .callout.good { border-color:var(--good); background:#f0f8f5; }
+  .callout.warn { border-color:var(--warn); background:#fdf8ee; }
+  .callout > :first-child { margin-top:0; }
+  .callout > :last-child { margin-bottom:0; }
+  .pill { display:inline-block; font-size:12px; padding:2px 8px; border-radius:4px; font-weight:650; white-space:nowrap; }
+  .pill.bad { background:#fdecec; color:#a83232; }
+  .pill.good { background:#e8f5f0; color:#0f6b56; }
+  .pill.warn { background:#fdf4e5; color:#8a6115; }
+  .pill.gray { background:#eef1f4; color:#5b6670; }
+  .tl { margin:14px 0; border-left:2px solid #d4dbe2; padding-left:0; }
+  .tl-row { display:grid; grid-template-columns:118px 1fr; gap:14px; padding:9px 0 9px 18px; position:relative; }
+  .tl-row::before { content:""; position:absolute; left:-6px; top:16px; width:10px; height:10px; border-radius:50%;
+                    background:#fff; border:2px solid #9aa7b3; }
+  .tl-row.key::before { background:var(--bad); border-color:var(--bad); }
+  .tl-row.act::before { background:var(--warn); border-color:var(--warn); }
+  .tl-t { color:var(--muted); font-size:13px; font-variant-numeric:tabular-nums; }
+  .tl-b strong { display:block; }
+  .tl-b span { color:var(--muted); font-size:13px; }
+  footer { color:var(--muted); font-size:13px; text-align:center; padding:10px; }
+  @media (max-width:760px){ .tl-row{grid-template-columns:1fr; gap:2px} table{font-size:12.5px} }
+</style>
+</head>
+<body>
+<header>
+  <h1>远征 GM 重置导致埋骨之地 / 魔物入侵 / 圣坛叛乱被误锁</h1>
+  <p><code>IsExpInToEndStage()</code> 只按时间戳判断"是否在远征战斗期"，不看 <code>Match</code> / <code>Phase</code> 状态字段。GM 把 <code>StartTs</code> 拨回历史日期后，5 个服的三个玩法被静默锁死约 35 天。</p>
+  <div class="meta">
+    <span class="tag">影响服：644 / 645 / 647 / 648 / 649</span>
+    <span class="tag warn">状态：待修复</span>
+    <span class="tag">发现日期：2026-08-28</span>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ 1 摘要 ============ -->
+<section>
+  <h2><span class="n">1</span>结论摘要</h2>
+  <p class="sub">一句话版本，赶时间只看这一节。</p>
+
+  <div class="callout bad">
+    <p><strong>根因</strong>：<code>IsExpInToEndStage()</code>（<code>game/play/internal/ctl_battlefield.go:2225</code>）判断"当前是否处于远征进驻→结算阶段"时，<strong>只用 <code>basic.StartTs</code> 加配置阶段时长做纯算术</strong>，完全不读 <code>basic.Match</code> 和 <code>basic.Phase</code>。</p>
+    <p>2026-08-28 11:41 GM 执行 <code>battlefield reset 2026-07-26 154</code> 把 <code>StartTs</code> 拨回 7/26，随后 <code>setmatchflag 0</code> / <code>setphase 8</code> 关闭远征。<code>IsExpeditionOpen()</code> 因此正确地变为 false（玩家进不去远征地图），但 <code>IsExpInToEndStage()</code> 按 7/26 推算出的时间窗 <strong>[07-30 00:00, 09-03 00:00]</strong> 恰好覆盖"今天"，于是恒为 true。</p>
+    <p>两个恒真条件相撞 → <code>IsExpInToEndStage() &amp;&amp; !p.InExpedition()</code> 永远成立 → 玩法被永久拦截，玩家无任何操作可以绕过。</p>
+  </div>
+
+  <table>
+    <tr><th>受影响玩法</th><th>表现</th><th>玩家可感知</th></tr>
+    <tr><td>埋骨之地</td><td>建造被拒，提示"请到远征地图开启埋骨之地"</td><td><span class="pill bad">有报错</span></td></tr>
+    <tr><td>魔物入侵</td><td>联盟无法开启/预约，报 <code>ErrCodeNotInExpCanotOpen</code></td><td><span class="pill bad">有报错</span></td></tr>
+    <tr><td>圣坛叛乱</td><td>每日定时器直接跳过，玩法静默消失</td><td><span class="pill warn">无提示，更隐蔽</span></td></tr>
+    <tr><td>埋骨/魔物排行奖励</td><td>内容 ID 走远征档而非普通档</td><td><span class="pill gray">发奖档位错</span></td></tr>
+  </table>
+
+  <p><strong>修复</strong>：在 <code>IsExpInToEndStage()</code> 内补 <code>Match</code> + <code>Phase</code> 闸门（一处改动，覆盖全部 10 个调用点，无需洗数据）。</p>
+</section>
+
+<!-- ============ 2 现象 ============ -->
+<section>
+  <h2><span class="n">2</span>线上现象与证据</h2>
+  <p class="sub">数据来源：Kibana <code>game-h5prod-2026.08.26 ~ 08.28</code>，以及 h5prod 各服 mongo <code>battlefield</code> 集合。</p>
+
+  <h3>2.1 报错日志分布</h3>
+  <p>检索 <code>src_location = internal/ctl_bone.go:92</code>（即 <code>OnBoneBuildReq ... in exp time but not in exp map</code>），近 3 天共 <strong>28 条</strong>，<strong>全部集中在 08-28 19:01 ~ 20:21</strong>：</p>
+  <table>
+    <tr><th>服</th><th class="num">条数</th><th>涉及玩家</th></tr>
+    <tr><td>game647</td><td class="num">11</td><td>8411881（连点 6 次）、8394437、8364596</td></tr>
+    <tr><td>game648</td><td class="num">10</td><td>8484539、8371008、8373992、8454393</td></tr>
+    <tr><td>game645</td><td class="num">3</td><td>8442393（2 次）、8450437</td></tr>
+    <tr><td>game649</td><td class="num">3</td><td>8422337、8424784、8425734</td></tr>
+    <tr><td>game644</td><td class="num">1</td><td>8493478</td></tr>
+  </table>
+  <p>同一玩家反复重试，是"按提示做了也没用"的典型特征——因为远征根本没开，玩家不可能进到远征地图。</p>
+
+  <h3>2.2 玩家侧佐证（645 服玩家 8442393）</h3>
+  <ul>
+    <li><code>internal/ctl_push.go:100</code> — <code>GetMapInfo:MapInfo{ServerId:645, MapType:0, MapId:1}</code>，<code>MapType=0</code> 即本服大地图，<code>InExpedition()</code>（要求 <code>MAP_EXPEDITION=13</code>）恒为 false。</li>
+    <li><code>internal/ctl_battlefield.go:3049</code> — <code>OnActvBattlefieldCalendarReq: battlefield not open</code>，说明 <code>IsExpeditionOpen()</code> 同时刻返回 false。</li>
+  </ul>
+  <div class="callout">
+    <p><strong>同一时刻，两个函数给出了互相矛盾的答案</strong>：<code>IsExpeditionOpen()=false</code>（远征没开）而 <code>IsExpInToEndStage()=true</code>（在远征战斗期）。这就是 bug 的指纹。</p>
+  </div>
+
+  <h3>2.3 服务器数据（645 / 647 / 648 完全一致）</h3>
+  <pre>db.battlefield.find({}, {basic:1, marchinfo:1})
+
+{ "_id": 645, "basic": {
+    "match":       false,            <span class="c">// 未匹配成功</span>
+    "phase":       8,                <span class="c">// BFPBattleClose，已关闭</span>
+    "startts":     1784995200000,    <span class="c">// 2026-07-26 00:00</span>
+    "laststartts": 1787760000000,    <span class="c">// 2026-08-27 00:00  ← 比 startts 还晚，倒挂</span>
+    "playbook":    1, "season": 1, "actvtype": 154 },
+  "marchinfo": { "groupid":3, "mapinfo": null, "campid":0, "servercount":0 } }</pre>
+  <p><code>startts &lt; laststartts</code> 的倒挂是这次事故的直接指标——正常流程下 <code>Reset()</code> 会把旧 <code>StartTs</code> 存进 <code>LastStartTs</code> 再写新值，二者必然递增。</p>
+</section>
+
+<!-- ============ 3 时间线 ============ -->
+<section>
+  <h2><span class="n">3</span>事故时间线</h2>
+  <p class="sub">北京时间。645 / 648 服日志完全同步，说明是这一批服的统一操作。</p>
+
+  <div class="tl">
+    <div class="tl-row">
+      <div class="tl-t">08-26 23:00</div>
+      <div class="tl-b"><strong>远征正常开启</strong><span><code>battlefield/mgr.go:238</code> <code>BattleFieldReset Start</code>，<code>StartTs</code> 置为 08-27 00:00，<code>LastStartTs</code>=07-26，<code>Match=true</code></span></div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-t">08-26 23:31</div>
+      <div class="tl-b"><strong>匹配下发，但地图为空</strong><span><code>ctl_battlefield.go:508</code> <code>downMatch battlefield CampMap: map[1:[647 716 717 733 735] 2:[648 ...] 3:[...] 4:[644 645 ...]], <b>MapInfo:&lt;nil&gt;</b></code></span></div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-t">08-27 23:58</div>
+      <div class="tl-b"><strong>再次匹配，地图仍为空</strong><span><code>CampMap: map[1:[645 649] 2:[648] 3:[643] 4:[644 647]]，MapInfo:&lt;nil&gt;</code>，阵营数够但远征副本没建起来</span></div>
+    </div>
+    <div class="tl-row">
+      <div class="tl-t">08-28 11:24~11:27</div>
+      <div class="tl-b"><strong>又一次匹配下发，MapInfo 依旧 nil</strong><span>此时玩家侧已持续报 <code>battlefield not open</code></span></div>
+    </div>
+    <div class="tl-row act">
+      <div class="tl-t">08-28 11:34:30</div>
+      <div class="tl-b"><strong>GM 介入</strong><span><code>ctl_battlefield_cmd.go:92</code> <code>battlefield setSeason 1</code></span></div>
+    </div>
+    <div class="tl-row key">
+      <div class="tl-t">08-28 11:41:47</div>
+      <div class="tl-b"><strong>GM 执行 reset —— 埋雷点</strong><span><code>battlefield reset 2026-07-26 154</code> → <code>play.Reset(2026-07-26 00:00, BFPPrediction, 154)</code>，<code>StartTs</code> 被拨回 <b>07-26</b>，<code>LastStartTs</code> 记为 08-27（倒挂由此产生）</span></div>
+    </div>
+    <div class="tl-row act">
+      <div class="tl-t">08-28 11:41:50</div>
+      <div class="tl-b"><strong>关闭匹配标记</strong><span><code>battlefield setmatchflag 0</code> → <code>Match=false</code></span></div>
+    </div>
+    <div class="tl-row act">
+      <div class="tl-t">08-28 11:41:57</div>
+      <div class="tl-b"><strong>置为已关闭阶段</strong><span><code>battlefield setphase 8</code> → <code>Phase=BFPBattleClose</code>。至此 <code>IsExpeditionOpen()</code> 正确变 false，但 <code>IsExpInToEndStage()</code> 开始误判</span></div>
+    </div>
+    <div class="tl-row key">
+      <div class="tl-t">08-28 19:01~20:21</div>
+      <div class="tl-b"><strong>玩家陆续撞墙</strong><span>5 个服 28 条 <code>ErrCodeBoneNotInExp</code>，晚间正是联盟开埋骨/魔物的时段</span></div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>为什么 8/26、8/27 没报、偏偏 8/28 晚上集中爆发？</strong></p>
+    <p>GM reset 之前 <code>StartTs=08-27</code>，推算窗口是 [08-31, 10-05]，不含当时；reset 后 <code>StartTs=07-26</code>，窗口瞬间变成 [07-30, 09-03]，把"现在"包了进去。<strong>误锁是从 11:41:47 那一刻开始生效的</strong>，晚间只是玩家上线撞上的高峰。</p>
+  </div>
+</section>
+
+<!-- ============ 4 根因 ============ -->
+<section>
+  <h2><span class="n">4</span>根因分析</h2>
+  <p class="sub">三层：状态字段被绕过 → 时间窗计算 → 两个恒真条件相撞。</p>
+
+  <h3>4.1 <code>IsExpInToEndStage()</code> 是纯时间判断</h3>
+  <pre><span class="c">// game/play/internal/ctl_battlefield.go:2225</span>
+<span class="c">// 远征阶段是否为 &gt;=3 &amp;&amp; &lt;= 7        ← 注释说的是"阶段"，实现却是"时间"</span>
+<span class="k">func</span> (play *Play) IsExpInToEndStage() <span class="k">bool</span> {
+    base := play.GetExpeditionBasic()
+    <span class="k">if</span> base == <span class="k">nil</span> { <span class="c">/* ... */</span> <span class="k">return false</span> }
+    startTime, _ := play.GetPhaseStartTime(cspb.BFPBattleIn)   <span class="c">// 阶段 2 的起点</span>
+    _, endTime  := play.GetPhaseStartTime(cspb.BFPBattleEnd)   <span class="c">// 阶段 7 的终点</span>
+    nowTime := util.NowTs()
+    <span class="k">return</span> startTime &lt;= nowTime &amp;&amp; nowTime &lt;= endTime        <span class="c">// 只有区间比较</span>
+}</pre>
+  <p><code>GetPhaseStartTime()</code>（<code>game/play/internal/battlefield/mgr.go:303</code>）同样是纯算术，输入只有两样：<code>basic.StartTs</code> 与剧本配置的阶段时长数组，<strong>不读 <code>Phase</code>，不读 <code>Match</code></strong>：</p>
+  <pre>phaseCfg := playbookCfg.ExpeditionStageTimes   <span class="c">// playbook=0 或配置缺失时回落 D2Const</span>
+startTime := base.GetStartTs()
+endTime   := base.GetStartTs()
+<span class="k">for</span> index, durTime := <span class="k">range</span> phaseCfg {
+    <span class="k">if</span> <span class="k">int</span>(phase) &gt;= index {
+        dur := <span class="k">int64</span>(durTime) * util.SecMs
+        endTime += dur
+        startTime = endTime - dur
+    }
+}</pre>
+
+  <div class="callout">
+    <p><strong>同文件里的对照组</strong>：<code>IsExpeditionOpen()</code> → <code>BattlefieldMgr.IsOpen()</code>（<code>mgr.go:502</code>）老老实实检查 <code>StartTs&gt;0</code> + <code>Match</code> + <code>Phase</code> 区间；<code>IsExpeditionFiery()</code> 也看 <code>Match</code> + <code>Phase</code>。<strong>10 个"远征是否进行中"的判断里，只有 <code>IsExpInToEndStage()</code> 走时间</strong>——它是这套判断族里唯一的异类。</p>
+  </div>
+
+  <h3>4.2 误判窗口是怎么算出来的</h3>
+  <p>645 服 <code>playbook=1</code>，配置 <code>gdconfig/tsv/ExpPlayBookCfg.tsv</code> 中 <code>expedition_stage_times = [86400, 259200, 590400, 604800, 604800, 691200, 532200, 600]</code>（秒）。以 <code>StartTs = 2026-07-26 00:00</code> 累加：</p>
+  <table>
+    <tr><th>index</th><th>阶段</th><th class="num">本阶段时长(s)</th><th class="num">累计(s)</th><th>该阶段结束时刻</th></tr>
+    <tr><td>0</td><td>BFPPrediction 预告</td><td class="num">86,400</td><td class="num">86,400</td><td>07-27 00:00</td></tr>
+    <tr class="hl"><td>1</td><td>BFPFiery 前夕</td><td class="num">259,200</td><td class="num">345,600</td><td>07-30 00:00 <span class="pill warn">窗口起点</span></td></tr>
+    <tr><td>2</td><td>BFPBattleIn 进驻</td><td class="num">590,400</td><td class="num">936,000</td><td>08-05 20:00</td></tr>
+    <tr><td>3</td><td>BattleDoor1</td><td class="num">604,800</td><td class="num">1,540,800</td><td>08-12 20:00</td></tr>
+    <tr><td>4</td><td>BattleDoor2</td><td class="num">604,800</td><td class="num">2,145,600</td><td>08-19 20:00</td></tr>
+    <tr><td>5</td><td>BattleDoor3</td><td class="num">691,200</td><td class="num">2,836,800</td><td>08-27 20:00</td></tr>
+    <tr><td>6</td><td>BattleKing 王城</td><td class="num">532,200</td><td class="num">3,369,000</td><td>09-02 23:50</td></tr>
+    <tr class="hl"><td>7</td><td>BFPBattleEnd 结算</td><td class="num">600</td><td class="num">3,369,600</td><td>09-03 00:00 <span class="pill warn">窗口终点</span></td></tr>
+  </table>
+  <p><code>GetPhaseStartTime(BFPBattleIn)</code> 返回的起点 = 累计到 index 1 = <code>StartTs + 345,600s</code> = <strong>07-30 00:00</strong>；<code>GetPhaseStartTime(BFPBattleEnd)</code> 返回的终点 = 全部累加 = <code>StartTs + 3,369,600s</code>（正好 39 天）= <strong>09-03 00:00</strong>。</p>
+
+  <div class="callout bad">
+    <p><strong>误锁窗口 = 2026-07-30 00:00 ~ 2026-09-03 00:00，共 35 天</strong>，"今天"（08-28）落在正中间。</p>
+    <p>GM 用 <code>2026-07-26</code> 的本意是"退回上一次远征"，但一个远征周期按配置长达 <strong>39 天</strong>，退回 39 天以内的任何日期，都会让窗口重新覆盖当前时刻。要让窗口真正落在过去，reset 日期必须早于 <code>今天 − 39 天</code>（即早于 07-20）。<strong>这个陷阱对 GM 是完全不可见的。</strong></p>
+  </div>
+
+  <h3>4.3 两个条件同时恒真</h3>
+  <pre><span class="c">// game/play/internal/ctl_bone.go:90</span>
+<span class="k">if</span> play.IsExpInToEndStage() &amp;&amp; !p.InExpedition() {
+    ack.ErrCode = cspb.ErrCodeBoneNotInExp   <span class="c">// 25419 → "请到远征地图开启埋骨之地"</span>
+    tlog.Infof(<span class="s">"OnBoneBuildReq player:%v in exp time but not in exp map"</span>, playerId)
+    <span class="k">return</span>
+}</pre>
+  <ul>
+    <li><strong>条件一恒真</strong>：<code>StartTs=07-26</code> 使时间窗覆盖今天。</li>
+    <li><strong>条件二恒真</strong>：<code>Match=false</code> + <code>marchinfo.mapinfo=null</code>，远征副本根本不存在，玩家 <code>MapType</code> 永远是 0，进不去也就永远 <code>!InExpedition()</code>。</li>
+  </ul>
+  <p>两者相乘 = 死锁。玩家做任何操作都无法自救，客服也无法指导。</p>
+
+  <h3>4.4 同源隐患：<code>battlefieldMatchFail()</code></h3>
+  <p>本次事故的触发路径是 GM 命令，但代码里还埋着一条<strong>会自动触发同样问题</strong>的路径：</p>
+  <pre><span class="c">// game/play/internal/ctl_battlefield.go:528  远征匹配失败</span>
+<span class="k">func</span> (play *Play) battlefieldMatchFail() {
+    base.SetPhase(cspb.BFPBattleClose)
+    base.SetMatch(<span class="k">false</span>)
+    base.StartTs = base.LastStartTs   <span class="c">// ← 回滚到上次开启日，LastStartTs 自身不更新 → 同样倒挂</span>
+    mgr.DecSeason()
+    <span class="c">// ...</span>
+}</pre>
+  <p>只要"上一次开启日"距今不足 39 天（正常月度节奏下几乎必然成立），匹配失败就会自动复现本次事故。<strong>即使这次没有 GM 操作，问题也迟早会自己发生。</strong></p>
+</section>
+
+<!-- ============ 5 影响范围 ============ -->
+<section>
+  <h2><span class="n">5</span>影响范围</h2>
+  <p class="sub"><code>grep -rn "IsExpInToEndStage()" game/</code> 共 <strong>10 处调用</strong>，分布在 4 个文件、5 个玩法。逐个按"当前数据下会不会出问题"分类。</p>
+
+  <h3>5.1 受影响</h3>
+  <table>
+    <tr><th>#</th><th>位置</th><th>玩法</th><th>后果</th><th>玩家感知</th></tr>
+    <tr class="hl2">
+      <td>1</td><td><code>ctl_bone.go:90</code></td><td>埋骨之地</td>
+      <td>建造直接被拒，返回 <code>ErrCodeBoneNotInExp</code>（25419）</td>
+      <td><span class="pill bad">已在线上报错</span></td>
+    </tr>
+    <tr>
+      <td>2</td><td><code>ctl_bone.go:27</code><br><small>ExpBoneTimeCheckInvaliad</small></td><td>埋骨之地</td>
+      <td>即便绕过 #1，也会按远征结束时间（09-03）卡"结束前 N 秒禁止开启"，返回 <code>ErrCodeBanquetExpTimerInvaliad</code></td>
+      <td><span class="pill bad">第二道墙</span></td>
+    </tr>
+    <tr class="hl2">
+      <td>3</td><td><code>ctl_devil_attack.go:172</code></td><td>魔物入侵</td>
+      <td>与埋骨同构：<code>if IsExpInToEndStage() { if !p.InExpedition() { → ErrCodeNotInExpCanotOpen } }</code>，联盟无法开启</td>
+      <td><span class="pill bad">开不了</span></td>
+    </tr>
+    <tr>
+      <td>4</td><td><code>ctl_devil_attack.go:211</code><br><small>ExpDevilTimeCheckInvaliad</small></td><td>魔物入侵</td>
+      <td>预约/开启按远征时间轴卡点，报 <code>ErrCodeDevilActvBFPBattleEndCantJoin/CantBook</code></td>
+      <td><span class="pill bad">约不了</span></td>
+    </tr>
+    <tr class="hl2">
+      <td>5</td><td><code>ctl_union_altar.go:398</code><br><small>UnionAltarNextDay</small></td><td>圣坛叛乱</td>
+      <td>判定"远征期间"，<strong>不创建当天叛乱定时器</strong>，改走 <code>AltarExpCheckReward(false)</code>。日志可见 <code>[AltarRebellion] step=daily_schedule_skipped reason:expedition</code></td>
+      <td><span class="pill warn">静默消失，无报错</span></td>
+    </tr>
+    <tr>
+      <td>6</td><td><code>ctl_union_altar.go:217</code><br><small>TriggerAltarRebellion</small></td><td>圣坛叛乱</td>
+      <td>即使定时器被别的路径触发，也会 <code>step=trigger_skipped reason:expedition</code> 直接跳过</td>
+      <td><span class="pill warn">同上</span></td>
+    </tr>
+    <tr>
+      <td>7</td><td><code>ctl_bone.go:447</code><br><small>OnA2PGetBoneContentID</small></td><td>埋骨排行奖励</td>
+      <td>返回 <code>ExpBonePersonRankContentID / ExpBoneUnionRankContentID</code>（远征档）而非普通档</td>
+      <td><span class="pill gray">发奖档位错</span></td>
+    </tr>
+    <tr>
+      <td>8</td><td><code>ctl_devil_attack.go:1341</code><br><small>OnA2PGetDevilContentID</small></td><td>魔物排行奖励</td>
+      <td>返回 <code>ExpDevilPersonContent / ExpDevilUnionContent</code> 而非普通档</td>
+      <td><span class="pill gray">发奖档位错</span></td>
+    </tr>
+    <tr>
+      <td>9</td><td><code>ctl_devil_attack.go:199</code><br><small>GetDevilAttackOpenMapInfo</small></td><td>魔物入侵路由</td>
+      <td>因 <code>marchinfo.mapinfo=null</code>，返回的是零值 <code>&amp;MapInfo{}</code> 而非 <code>nil</code>，被塞进 <code>req.MapInfo</code> 传给 wmap（5 个调用点：<code>ctl_actv.go:623</code>、<code>ctl_devil_attack.go:258/326/1236/1384</code>）</td>
+      <td><span class="pill warn">暂未爆炸的雷</span></td>
+    </tr>
+  </table>
+
+  <div class="callout">
+    <p><strong>关于 #9 为什么暂时没炸</strong>：<code>Cast2Map()</code>（<code>module.go:639</code>）拿到非 nil 的零值 MapInfo 后，<code>IsLocalServer("", 0)</code>（<code>module.go:682</code>）因 <code>serverID==0</code> 短路返回 true，<code>GetMapModuleName()</code>（<code>ctl_common.go:64</code>）因 <code>InstId==0</code> 回落到 <code>conf.WMAPMOD</code>，最终等价于投递本服大地图。<strong>路由侥幸正确，但 <code>req.MapInfo</code> 里那个零值对象会一路传到 wmap 侧</strong>，对端如何解释它是另一回事。属于埋着的雷，不是本次爆点。</p>
+  </div>
+
+  <h3>5.2 不受影响</h3>
+  <table>
+    <tr><th>位置</th><th>说明</th></tr>
+    <tr><td><code>ctl_banquet.go:340</code><br><small>ExpBanquetTimeCheckInvaliad</small></td>
+        <td><strong>全仓库无任何调用点，是死代码。</strong>宴会实际未走这条路径，本次未受影响。（顺带：这也说明宴会有另一套判断，与埋骨/魔物不一致，值得后续统一）</td></tr>
+    <tr><td><code>ctl_bone.go:377</code><br><small>GetBoneOpenMapInfo</small></td>
+        <td>用的是 <code>IsExpeditionOpen()</code> 而非 <code>IsExpInToEndStage()</code>，正确返回 <code>nil</code>。<strong>同一个文件里两个函数用了两套标准</strong>，恰好证明 <code>IsExpInToEndStage()</code> 的用法是历史遗留的不一致。</td></tr>
+  </table>
+
+  <h3>5.3 影响面量化</h3>
+  <ul>
+    <li><strong>服务器</strong>：644、645、647、648、649（同一远征分组，<code>groupid=3</code>，mongo 数据完全一致）。643 及 71x/73x 段服务器出现在同批 CampMap 中，<strong>需按同样方法逐一核查</strong>。</li>
+    <li><strong>时长</strong>：若不修复，误锁持续到 <strong>2026-09-03 00:00</strong>（窗口自然结束）。</li>
+    <li><strong>已知损失</strong>：埋骨/魔物 08-28 全天无法开启；圣坛叛乱自 GM 操作起每日跳过。</li>
+  </ul>
+</section>
+
+<!-- ============ 6 改动方案 ============ -->
+<section>
+  <h2><span class="n">6</span>改动方案</h2>
+  <p class="sub">主方案一处改动覆盖全部 10 个调用点，不需要洗数据、不需要停服。</p>
+
+  <h3>6.1 主方案：给 <code>IsExpInToEndStage()</code> 加状态闸门</h3>
+  <p>文件 <code>game/play/internal/ctl_battlefield.go:2225</code>：</p>
+  <pre><span class="c">// 远征是否处于「进驻 → 结算」阶段（BFPBattleIn ~ BFPBattleEnd）</span>
+<span class="k">func</span> (play *Play) IsExpInToEndStage() <span class="k">bool</span> {
+    base := play.GetExpeditionBasic()
+    <span class="k">if</span> base == <span class="k">nil</span> {
+<span class="del">-       tlog.Infof("IsExpDevilTime base is nil")</span>
+<span class="add">+       tlog.Infof("IsExpInToEndStage base is nil")</span>
+        <span class="k">return false</span>
+    }
+<span class="add">+
++   // StartTs 可能被 GM reset 或 battlefieldMatchFail 回滚成历史日期，
++   // 此时纯时间判断会误判为"远征进行中"，必须先用状态字段闸门。
++   if !base.GetMatch() {
++       return false
++   }
++   if phase := base.GetPhase(); phase &lt; cspb.BFPBattleIn || phase &gt; cspb.BFPBattleEnd {
++       return false
++   }
++</span>
+    startTime, _ := play.GetPhaseStartTime(cspb.BFPBattleIn)
+    _, endTime := play.GetPhaseStartTime(cspb.BFPBattleEnd)
+    nowTime := util.NowTs()
+    <span class="k">return</span> startTime &lt;= nowTime &amp;&amp; nowTime &lt;= endTime
+}</pre>
+  <p>顺带把 <code>base == nil</code> 分支里从别处拷来的日志文案 <code>IsExpDevilTime</code> 改对，否则以后按关键字查日志会查错函数。</p>
+
+  <h3>6.2 配套方案：修掉 <code>LastStartTs</code> 倒挂</h3>
+  <p>文件 <code>game/play/internal/ctl_battlefield.go:528</code>，让回滚保持数据自洽：</p>
+  <pre><span class="k">func</span> (play *Play) battlefieldMatchFail() {
+    <span class="c">// ...</span>
+    base.SetPhase(cspb.BFPBattleClose)
+    base.SetMatch(<span class="k">false</span>)
+<span class="del">-   base.StartTs = base.LastStartTs</span>
+<span class="add">+   // 回滚 StartTs 的同时同步 LastStartTs，避免 startts &lt; laststartts 倒挂，
++   // 否则任何按时间轴推算的逻辑都会踩坑
++   base.StartTs = base.LastStartTs
++   tlog.Infof("battlefieldMatchFail rollback StartTs:%v LastStartTs:%v Phase:%v Match:%v",
++       base.GetStartTs(), base.LastStartTs, base.GetPhase(), base.GetMatch())</span>
+    mgr.DecSeason()</pre>
+  <p class="sub" style="padding-left:0">注：主方案生效后倒挂本身不再致命（状态闸门先短路），此处以补日志为主，便于下次排查；是否真要改写 <code>LastStartTs</code> 语义需与远征负责人确认，不建议在同一个补丁里动。</p>
+
+  <h3>6.3 配套方案：补齐拦截日志字段</h3>
+  <p><code>ctl_bone.go:92</code> 与 <code>ctl_devil_attack.go:175</code> 现在只打 <code>playerId</code>，导致这次必须翻 mongo 才能定性：</p>
+  <pre>tlog.Infof(<span class="s">"OnBoneBuildReq player:%v blocked, mapType:%v phase:%v match:%v startTs:%v unionID:%v"</span>,
+    playerId, p.GetMapType(), base.GetPhase(), base.GetMatch(), base.GetStartTs(), union.ID)</pre>
+
+  <h3>6.4 线上止血（不发版，可立即执行）</h3>
+  <div class="callout warn">
+    <p>对已受影响的 5 个服，把 GM reset 的日期改到<strong>早于 <code>今天 − 39 天</code></strong>，让时间窗整体落到过去即可解锁：</p>
+    <pre>battlefield reset 2026-07-01 154
+battlefield setmatchflag 0
+battlefield setphase 8</pre>
+    <p>此时窗口变为 [07-05, 08-09]，不含当前时刻，三个玩法立即恢复。</p>
+    <p><strong>风险提示</strong>：<code>reset</code> 分支（<code>ctl_battlefield_cmd.go:118</code>）会顺带取消报名定时器并调用 <code>CheckBattlefieldNextOpen()</code> 重算下次开启时间，且 <code>Reset()</code> 会清空远征科技队列等数据。<strong>务必先在测试服验证一遍，确认 <code>nextopentime</code> 仍是预期的 09-10，再上线上执行。</strong>若发版节奏允许，优先走 6.1 的代码修复。</p>
+  </div>
+</section>
+
+<!-- ============ 7 方案影响范围 ============ -->
+<section>
+  <h2><span class="n">7</span>方案影响范围评估</h2>
+  <p class="sub">改的是一个被 10 处引用的公共判断，必须逐点确认不产生回归。</p>
+
+  <h3>7.1 行为变化矩阵</h3>
+  <p>新增闸门只在 <code>Match=false</code> 或 <code>Phase</code> 越界时改变返回值。把三种运行态摊开看：</p>
+  <table>
+    <tr><th>运行态</th><th>Match</th><th>Phase</th><th>旧返回</th><th>新返回</th><th>评价</th></tr>
+    <tr>
+      <td>远征正常进行中</td><td>true</td><td>2 ~ 7</td>
+      <td>true</td><td>true</td>
+      <td><span class="pill good">完全一致，无回归</span></td>
+    </tr>
+    <tr>
+      <td>远征未开 / 预告 / 前夕</td><td>true</td><td>0 ~ 1</td>
+      <td>false<small>（时间窗也不含）</small></td><td>false</td>
+      <td><span class="pill good">一致</span></td>
+    </tr>
+    <tr class="hl">
+      <td><strong>匹配失败 / GM 关闭</strong></td><td>false</td><td>8</td>
+      <td><strong>true</strong>（错）</td><td><strong>false</strong>（对）</td>
+      <td><span class="pill bad">唯一变化点，正是要修的</span></td>
+    </tr>
+  </table>
+  <p>结论：<strong>正常远征期间新旧逻辑完全等价</strong>，改动不影响正在打远征的服。唯一行为翻转发生在"远征没在开"的场景，而该场景下旧行为本身就是错的。</p>
+
+  <h3>7.2 逐调用点确认</h3>
+  <table>
+    <tr><th>调用点</th><th>修复后行为</th></tr>
+    <tr><td>埋骨 <code>ctl_bone.go:90 / :27</code></td><td>非远征期不再拦截，玩家可在本服大地图正常建造；远征真正开启时仍按原逻辑要求进远征地图 <span class="pill good">符合策划预期</span></td></tr>
+    <tr><td>魔物 <code>ctl_devil_attack.go:172 / :211</code></td><td>同上，恢复正常开启与预约</td></tr>
+    <tr><td>圣坛 <code>ctl_union_altar.go:398 / :217</code></td><td>次日 <code>UnionAltarNextDay</code> 重新按 <code>InsurrectionOpenInterval</code> 建定时器，叛乱恢复。<strong>注意：当天已跳过的排期不会补，需确认策划是否要补发</strong> <span class="pill warn">待确认</span></td></tr>
+    <tr><td>内容 ID <code>ctl_bone.go:447</code> / <code>ctl_devil_attack.go:1341</code></td><td>回到普通档 <code>NormalDevilPersonContent</code> / <code>BonePersonRankContentID</code>，发奖档位正确</td></tr>
+    <tr><td>MapInfo <code>ctl_devil_attack.go:199</code></td><td>返回 <code>nil</code> 而非零值对象，<code>Cast2Map</code> 走"本服大地图"正路，顺带消除 5.1#9 的隐患 <span class="pill good">附带收益</span></td></tr>
+    <tr><td>宴会 <code>ctl_banquet.go:340</code></td><td>死代码，无影响</td></tr>
+  </table>
+
+  <h3>7.3 风险与遗留</h3>
+  <ul>
+    <li><strong>阶段字段与时间轴的短暂不同步</strong>：阶段推进由定时器驱动，理论上存在"时间已过点、<code>Phase</code> 字段尚未更新"的秒级窗口。此时新逻辑返回 false 而旧逻辑返回 true。影响仅限边界数秒内的玩法判定，且新行为更贴近真实状态，<strong>判定为可接受</strong>。</li>
+    <li><strong>脏数据服</strong>：若线上存在 <code>Match=true</code> 但 <code>Phase</code> 长期未推进的服，修复后这些服的远征限制会提前解除。<strong>上线前应抽查一批服的 <code>battlefield.basic</code> 确认不存在此类数据。</strong></li>
+    <li><strong>未覆盖</strong>：本方案不解决"远征匹配出 CampMap 却 <code>MapInfo=nil</code>"这个上游问题（08-26 起连续三次匹配都是 nil），那是远征副本创建链路的独立故障，<strong>需另立单跟进</strong>。</li>
+    <li><strong>GM 命令易用性</strong>：<code>battlefield reset &lt;日期&gt;</code> 的日期语义（必须早于今天减一个完整远征周期）对使用者不可见，建议在命令内加校验或提示，否则同类误操作还会发生。</li>
+  </ul>
+
+  <h3>7.4 验证方式</h3>
+  <ol>
+    <li>本地/测试服构造 <code>Match=false, Phase=8, StartTs=今天−30天</code> 的数据，确认 <code>IsExpInToEndStage()</code> 返回 false，埋骨可正常建造。</li>
+    <li>构造远征正常进行中的数据（<code>Match=true, Phase=4</code>），确认拦截逻辑仍生效、玩家必须在远征地图才能开。</li>
+    <li>上线后观察 <code>src_location: internal/ctl_bone.go:92</code> 与 <code>[AltarRebellion] step=daily_schedule_skipped</code> 两条日志归零。</li>
+    <li>核对 645 服次日 <code>UnionAltarNextDay</code> 是否正常创建定时器。</li>
+  </ol>
+</section>
+
+<!-- ============ 8 经验 ============ -->
+<section>
+  <h2><span class="n">8</span>经验教训</h2>
+  <ul>
+    <li><strong>同一个语义不要有两套实现。</strong>"远征是否进行中"在代码里存在 <code>IsExpeditionOpen()</code>（看状态）和 <code>IsExpInToEndStage()</code>（看时间）两套答案，甚至同一个文件 <code>ctl_bone.go</code> 里两个函数各用一套。平时等价，异常时分叉——而异常正是最需要判断正确的时候。</li>
+    <li><strong>派生值不能当事实源。</strong><code>StartTs</code> 是可被 GM、可被回滚逻辑改写的字段，由它推算出的"当前阶段"不能反过来当作状态判断依据。状态字段（<code>Match</code>/<code>Phase</code>）才是事实源。</li>
+    <li><strong>注释与实现不一致会误导排查。</strong><code>IsExpInToEndStage()</code> 的注释写着"远征阶段是否为 &gt;=3 &amp;&amp; &lt;=7"，读注释的人会以为它检查了 <code>Phase</code> 字段，实际一行都没读。</li>
+    <li><strong>拦截类日志要打上判断依据。</strong>只打 <code>playerId</code> 的日志，只能证明"有人被拦了"，证明不了"为什么被拦"。把参与判断的字段一起打出来，排查成本从翻 mongo 降到看一行日志。</li>
+    <li><strong>静默跳过比报错更危险。</strong>埋骨/魔物至少有报错码能被玩家反馈上来；圣坛叛乱只是当天不生成定时器，没有任何人会发现——直到有人问"为什么这个月没叛乱"。</li>
+  </ul>
+  <p style="margin-top:16px;color:var(--muted);font-size:13.5px">相关：<a href="#">[[远征挑战阵亡任务计数错误]]</a> · <a href="#">[[活动兑换终身限购未考虑线上老数据兼容]]</a>（同属"改已上线功能未考虑存量数据/状态"一类）</p>
+</section>
+
+<footer>排查数据来源：Kibana h5prod 2026-08-26~28 · h5prod mongo <code>battlefield</code> · 代码基线 <code>h5_new_tf_v1049_remote_fight_light</code></footer>
+</main>
+</body>
+</html>

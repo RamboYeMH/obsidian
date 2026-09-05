@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TCP —— 看图就懂</title>
+<style>
+  :root{
+    --a:#4ecdc4; --b:#ff6b6b; --c:#ffd93d; --d:#a78bfa;
+    --bg:#12141c; --card:#1c1f2b; --txt:#f2f4f8; --dim:#8a93a8; --deep:#0d0f16;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--txt);
+    font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    line-height:1.6; padding:0 0 120px;
+  }
+  .wrap{max-width:1000px;margin:0 auto;padding:0 24px}
+
+  h1{font-size:64px;text-align:center;padding:80px 0 10px;letter-spacing:4px}
+  .sub{text-align:center;font-size:24px;color:var(--dim);padding-bottom:60px}
+
+  section{background:var(--card);border-radius:28px;padding:56px 44px;margin:36px 0}
+  h2{font-size:42px;margin-bottom:12px}
+  .lead{font-size:24px;color:var(--dim);margin-bottom:40px}
+
+  /* 三种坏事 */
+  .bads{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;text-align:center}
+  .bads div{background:var(--deep);border-radius:20px;padding:34px 20px}
+  .bads .ico{font-size:72px;display:block}
+  .bads b{display:block;font-size:28px;margin:12px 0 6px}
+  .bads span{font-size:19px;color:var(--dim)}
+
+  /* 大字规则 */
+  .rule{
+    font-size:40px;font-weight:800;text-align:center;padding:44px 20px;
+    background:var(--deep);border-radius:24px;margin-top:32px;line-height:1.4
+  }
+  .rule .k{color:var(--c)}
+  .rule small{display:block;font-size:22px;font-weight:400;color:var(--dim);margin-top:14px}
+
+  /* 对话（握手 / 挥手） */
+  .talk{display:grid;gap:16px}
+  .line{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center}
+  .bub{font-size:22px;padding:18px 22px;border-radius:20px;background:var(--deep)}
+  .bub.me{background:var(--a);color:#12141c;font-weight:700;text-align:right}
+  .bub.you{background:var(--b);color:#12141c;font-weight:700}
+  .arrow{font-size:34px;color:var(--dim)}
+  .who{display:grid;grid-template-columns:1fr 1fr;font-size:26px;font-weight:700;
+       text-align:center;margin-bottom:22px}
+  .who span:first-child{color:var(--a)} .who span:last-child{color:var(--b)}
+
+  /* 编号包 */
+  .pkts{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:10px 0 6px}
+  .p{
+    width:64px;height:64px;border-radius:16px;display:grid;place-items:center;
+    font-size:26px;font-weight:900;background:var(--a);color:#12141c
+  }
+  .p.lost{background:#2a2f3d;color:var(--b);border:3px dashed var(--b)}
+  .p.re{background:var(--c);color:#12141c}
+  .cap{text-align:center;font-size:19px;color:var(--dim);margin-bottom:26px}
+
+  /* 步骤流 */
+  .flow{display:grid;gap:20px}
+  .step{display:grid;grid-template-columns:90px 1fr;gap:24px;align-items:center;
+        background:var(--deep);border-radius:20px;padding:26px}
+  .step .n{font-size:56px;text-align:center}
+  .step .t{font-size:26px;font-weight:700}
+  .step .d{font-size:20px;color:var(--dim);margin-top:4px}
+
+  /* 窗口 */
+  .win{background:var(--deep);border-radius:24px;padding:36px;text-align:center}
+  .win .row{font-size:56px;letter-spacing:6px;margin:6px 0}
+  .win .t{font-size:24px;color:var(--dim)}
+
+  /* 两栏对比 */
+  .vs{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:32px}
+  .vs div{background:var(--deep);border-radius:20px;padding:30px;text-align:center}
+  .vs .ico{font-size:64px}
+  .vs b{display:block;font-size:26px;margin:10px 0 6px}
+  .vs span{font-size:19px;color:var(--dim)}
+  .tcp{border:3px solid var(--a)} .udp{border:3px solid var(--b)}
+
+  code{background:var(--deep);padding:4px 12px;border-radius:8px;font-size:.9em;color:var(--c)}
+
+  .final{text-align:center;padding:70px 30px;font-size:34px;font-weight:700;line-height:1.7}
+  .final em{color:var(--a);font-style:normal}
+  .final .s{color:var(--b)} .final .t{color:var(--c)}
+
+  @media(max-width:820px){
+    h1{font-size:40px}.sub{font-size:18px}
+    h2{font-size:30px}.lead{font-size:19px}
+    .bads,.vs{grid-template-columns:1fr}
+    .rule{font-size:28px}.final{font-size:24px}
+    .win .row{font-size:34px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>T<span style="color:var(--a)">C</span>P</h1>
+  <p class="sub">怎么让一堆会丢、会乱、会重的纸条，变成一句完整的话</p>
+
+  <!-- 1 -->
+  <section>
+    <h2>先看问题</h2>
+    <p class="lead">网络就是一群人帮你往前传纸条。传纸条会出三种事故。</p>
+    <div class="bads">
+      <div>
+        <span class="ico">🕳️</span>
+        <b>会丢</b>
+        <span>有人手滑，纸条掉了<br>你完全不知道</span>
+      </div>
+      <div>
+        <span class="ico">🔀</span>
+        <b>会乱</b>
+        <span>走了不同的路<br>第 3 张比第 2 张先到</span>
+      </div>
+      <div>
+        <span class="ico">👯</span>
+        <b>会重</b>
+        <span>以为丢了又抄一张<br>结果两张都到了</span>
+      </div>
+    </div>
+    <div class="rule">
+      TCP 就是<span class="k">帮你处理这三件事</span>的那层
+      <small>你只管说话，它保证对面听到的，和你说的一模一样、一个不少、顺序不乱</small>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section>
+    <h2>第一招：先打个招呼</h2>
+    <p class="lead">说话之前，得先确认对面在、而且听得见。</p>
+    <div class="who"><span>🙋 你</span><span>对面 🙎</span></div>
+    <div class="talk">
+      <div class="line">
+        <div class="bub me">喂，能听见吗？</div>
+        <div class="arrow">➡️</div>
+        <div></div>
+      </div>
+      <div class="line">
+        <div></div>
+        <div class="arrow">⬅️</div>
+        <div class="bub you">能！那我说话你能听见吗？</div>
+      </div>
+      <div class="line">
+        <div class="bub me">能，开始吧</div>
+        <div class="arrow">➡️</div>
+        <div></div>
+      </div>
+    </div>
+    <div class="rule">
+      为什么要<span class="k">三</span>句，两句不行？
+      <small>两句只证明了「你说的它听见了」。第三句才证明「它说的你也听见了」——两个方向都得验一遍</small>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section>
+    <h2>第二招：给每张纸条编号</h2>
+    <p class="lead">编了号，乱序和重复就自动解决了。</p>
+    <div class="pkts">
+      <div class="p">1</div><div class="p">2</div><div class="p">3</div><div class="p">4</div><div class="p">5</div>
+    </div>
+    <p class="cap">发出去的样子</p>
+    <div class="pkts">
+      <div class="p">1</div><div class="p">3</div><div class="p">2</div><div class="p">5</div><div class="p">3</div>
+    </div>
+    <p class="cap">到达的样子 —— 乱了，还多了一张重复的 3</p>
+    <div class="pkts">
+      <div class="p">1</div><div class="p">2</div><div class="p">3</div><div class="p">4</div><div class="p">5</div>
+    </div>
+    <p class="cap">TCP 交给你的样子：排好序，重复的扔掉，缺的先等着</p>
+    <div class="rule">
+      收到就<span class="k">回一声「到了」</span>
+      <small>没听到回音的那张，过一会儿自己再发一遍 —— 这就是「重传」</small>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section>
+    <h2>丢了怎么办</h2>
+    <p class="lead">发现丢，有快慢两条路。</p>
+    <div class="pkts">
+      <div class="p">1</div><div class="p">2</div><div class="p lost">3</div><div class="p">4</div><div class="p">5</div>
+      <div class="p re">3</div>
+    </div>
+    <p class="cap">3 号丢了，补发一张 3</p>
+    <div class="flow">
+      <div class="step">
+        <div class="n">⏰</div>
+        <div>
+          <div class="t">慢的：等超时</div>
+          <div class="d">回音迟迟不来，等够时间就重发。稳，但要干等。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="n">⚡</div>
+        <div>
+          <div class="t">快的：听重复的抱怨</div>
+          <div class="d">对面收到 4、5 时会一直喊「我还差 3！我还差 3！」。连喊三次，不用等超时，立刻补发。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section>
+    <h2>第三招：别把人淹了</h2>
+    <p class="lead">对面桌子小，你一次塞一百张，它只能扔。</p>
+    <div class="win">
+      <div class="t">对面：「我桌上还能放 <b style="color:var(--c)">4</b> 张」</div>
+      <div class="row">📄📄📄📄</div>
+      <div class="t">那你就一次只发 4 张，等它处理完再发下一批</div>
+    </div>
+    <div class="rule">
+      这个数字<span class="k">对面每次回音都会报</span>一遍
+      <small>它忙不过来就报小一点，缓过来了就报大一点 —— 叫「窗口」，是接收方在给发送方踩刹车</small>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section>
+    <h2>第四招：也别把路堵死</h2>
+    <p class="lead">上一招看的是「对面能不能收」，这一招看的是「路上挤不挤」。</p>
+    <div class="flow">
+      <div class="step">
+        <div class="n">🐢</div>
+        <div>
+          <div class="t">一开始试探着来</div>
+          <div class="d">先发 1 张，顺利就 2 张、4 张、8 张 —— 翻倍加速，很快就能试出路有多宽。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="n">🚦</div>
+        <div>
+          <div class="t">快到极限就改成慢慢加</div>
+          <div class="d">不再翻倍，一次只多加一张，小心逼近上限。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="n">💥</div>
+        <div>
+          <div class="t">一丢包，立刻踩刹车</div>
+          <div class="d">丢包 = 路堵了。速度砍掉一半重新往上爬。所有人都这么谦让，路才不会彻底瘫掉。</div>
+        </div>
+      </div>
+    </div>
+    <div class="rule">
+      没人指挥，<span class="k">每台机器自己让</span>
+      <small>整个互联网不堵死，靠的就是这个「见丢就退让」的默契</small>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section>
+    <h2>说完了，好好道别</h2>
+    <p class="lead">挂电话要挂两次 —— 你说完了，不代表它说完了。</p>
+    <div class="who"><span>🙋 你</span><span>对面 🙎</span></div>
+    <div class="talk">
+      <div class="line">
+        <div class="bub me">我说完了</div>
+        <div class="arrow">➡️</div>
+        <div></div>
+      </div>
+      <div class="line">
+        <div></div>
+        <div class="arrow">⬅️</div>
+        <div class="bub you">好，知道了（但我还有几句）</div>
+      </div>
+      <div class="line">
+        <div></div>
+        <div class="arrow">⬅️</div>
+        <div class="bub you">…好了，我也说完了</div>
+      </div>
+      <div class="line">
+        <div class="bub me">好，再见 👋</div>
+        <div class="arrow">➡️</div>
+        <div></div>
+      </div>
+    </div>
+    <div class="rule">
+      先挂的那个人要<span class="k">在原地多站一会儿</span>
+      <small>怕最后那句「再见」也丢了，得留着，好补说一次。这就是那个著名的 TIME_WAIT</small>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section>
+    <h2>那不用 TCP 行吗</h2>
+    <p class="lead">行。旁边那位叫 UDP，它什么都不管。</p>
+    <div class="vs">
+      <div class="tcp">
+        <span class="ico">📮</span>
+        <b>TCP 挂号信</b>
+        <span>保证送到、保证顺序<br>丢了会重寄<br>代价：要等，要慢一点</span>
+      </div>
+      <div class="udp">
+        <span class="ico">📢</span>
+        <b>UDP 大喇叭</b>
+        <span>喊出去就完事<br>丢了就丢了<br>好处：快，不等人</span>
+      </div>
+    </div>
+    <div class="rule">
+      看你怕<span class="k">错</span>，还是怕<span class="k">慢</span>
+      <small>网页、聊天记录、转账 → TCP。<br>语音、直播、游戏里的位置同步 → UDP，晚到的那一帧还不如丢掉</small>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="final">
+    路是<span class="s">不可靠</span>的，<br>
+    TCP 用<em>编号</em>、<em>回音</em>、<em>重发</em>、<span class="t">刹车</span>，<br>
+    在上面架出一根<em>可靠的管子</em>。<br><br>
+    <span style="font-size:.7em;color:var(--dim)">你这边写进去什么，对面就读出来什么。<br>中间那些丢的乱的重的，它替你收拾干净了。</span>
+  </section>
+
+</div>
+</body>
+</html>

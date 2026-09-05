@@ -11,7 +11,7 @@ tags:
 
 # Skill 索引
 
-本机所有 Claude Code skill 的归档副本。**源文件在本地 `.claude/skills/` 下，这里是可查阅的备份 + 写法参考**，改动以源文件为准。
+本机 Claude Code 与 Codex skill 的归档副本。这里是可查阅的脱敏备份、迁移记录与写法参考，实际执行以本机对应 skill 源文件为准。
 
 ## 清单
 
@@ -23,8 +23,9 @@ tags:
 | [[online-logs]] | 项目 gs | 206 | Kibana/ES API 查线上 h5prod 日志排查玩家问题 |
 | [[switch-branch]] | 项目 gs | 85 | gdconfig / gs / protocol 三仓库联动切分支 |
 | [[check-afterload]] | 项目 gs | 71 | 检测 gdconf afterLoad 回调漏注册 |
+| [[jumpserver]] | 全局 | 81 | 通过 JumpServer 堡垒机搜索资产并执行命令 |
 
-> `jira` / `online-logs` 归档时已**脱敏**（原文含明文密码）。真凭据只在本机 `.claude/` 下，该目录已进 `.gitignore`。
+> `jira` / `online-logs` 归档已**脱敏**。Claude 原凭据仍在本机 `.claude/`；Codex 副本已把凭据拆到各 skill 的 `credentials.env`（权限 `600`）。两处都不要提交或复制到笔记。
 
 ## 源文件位置
 
@@ -33,6 +34,7 @@ tags:
 | 全局 | `~/.claude/skills/<name>/SKILL.md` | 所有项目 |
 | 项目 | `<项目>/.claude/skills/<name>/SKILL.md` | 仅该项目 |
 | 停用 | `<项目>/.claude/skills-disabled/` | 不加载（改名即停用） |
+| Codex 用户级 | `~/.codex/skills/<name>/SKILL.md` | 本机 Codex 全局可用 |
 
 ## 三种机制的分工（关键）
 
@@ -54,7 +56,7 @@ tags:
          └─ 无 → CLAUDE.md（常驻，但要克制）
 ```
 
-## 写 skill 的经验（从现有 6 个里提炼）
+## 写 skill 的经验（从现有 skill 中提炼）
 
 1. **description 是唯一的路由依据**。要把用户可能说的**原话**列进去（「看下我的 jira」「玩家说他没收到」），不要只写抽象功能描述 —— 命不中就等于没写。
 2. **把踩过的坑写进去**，这是 skill 最大价值。例：`jira` 里「只有 `Open`/`Reopened` 用英文，其余用中文」；`online-logs` 里「只查玩家所在服会得出错误结论」；`check-afterload` 里「早期只认两张注册表导致误报」。这些是查一次文档得不到的。
@@ -66,3 +68,4 @@ tags:
 
 - [[Hook]] — 强制性动作该用 hook 而不是 skill
 - [[00-Claude 索引]]
+- [[Claude Code Skill 与 MCP 迁移到 Codex]]
