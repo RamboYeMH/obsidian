@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>家园功能代码审查 · 2026-05-21</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; background: #0d1117; color: #c9d1d9; line-height: 1.7; padding: 40px 24px 80px; }
+    .container { max-width: 900px; margin: 0 auto; }
+
+    header { border-bottom: 1px solid #21262d; padding-bottom: 24px; margin-bottom: 40px; }
+    header h1 { font-size: 24px; font-weight: 700; color: #e6edf3; margin-bottom: 8px; }
+    .meta { font-size: 13px; color: #8b949e; display: flex; gap: 24px; flex-wrap: wrap; }
+
+    .section-title { font-size: 13px; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+
+    .card { background: #161b22; border: 1px solid #21262d; border-radius: 10px; margin-bottom: 28px; overflow: hidden; }
+    .card-header { display: flex; align-items: flex-start; gap: 14px; padding: 18px 22px; border-bottom: 1px solid #21262d; }
+    .card-body { padding: 18px 22px; }
+    .card-body p { margin-bottom: 12px; font-size: 14px; }
+    .card-body p:last-child { margin-bottom: 0; }
+
+    .badge { flex-shrink: 0; font-size: 11px; font-weight: 700; letter-spacing: .5px; padding: 3px 9px; border-radius: 20px; margin-top: 2px; }
+    .badge.p0 { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .badge.p1 { background: #2a2000; color: #f0a500; border: 1px solid #5a4000; }
+    .badge.p2 { background: #1a2a1a; color: #56d364; border: 1px solid #1f4d1f; }
+    .badge.ok { background: #0d2233; color: #58a6ff; border: 1px solid #0f4070; }
+    .badge.fixed { background: #001a0d; color: #34d399; border: 1px solid #1f4d35; font-size: 10px; margin-left: 6px; }
+
+    .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 4px; margin-right: 4px; }
+    .tag.logic  { background: #2d1f3d; color: #d2a8ff; border: 1px solid #4a3060; }
+    .tag.style  { background: #162032; color: #79c0ff; border: 1px solid #1f4060; }
+    .tag.safety { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .tag.spec   { background: #1a2a1a; color: #56d364; border: 1px solid #1f4d1f; }
+    .tag.reuse  { background: #1a1030; color: #a78bfa; border: 1px solid #4a3060; }
+
+    .title-group { flex: 1; }
+    .item-title { font-size: 16px; font-weight: 600; color: #e6edf3; line-height: 1.4; }
+    .item-sub   { font-size: 12px; color: #8b949e; margin-top: 4px; font-family: monospace; }
+
+    .code-wrap { margin: 14px 0; border-radius: 8px; overflow: hidden; border: 1px solid #21262d; }
+    .code-label { font-size: 11px; color: #8b949e; background: #1c2128; padding: 6px 14px; border-bottom: 1px solid #21262d; font-family: monospace; }
+    .code-label.bad  { border-left: 3px solid #f97583; }
+    .code-label.good { border-left: 3px solid #56d364; }
+    .code-label.note { border-left: 3px solid #f0a500; }
+    pre { background: #0d1117; padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.6; font-family: "SFMono-Regular", Consolas, monospace; }
+    .del { color: #ffa198; background: #3d0000; display: block; }
+    .ins { color: #56d364; background: #003a00; display: block; }
+    .cmt { color: #8b949e; }
+
+    .callout { border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 13px; color: #c9d1d9; margin: 12px 0; }
+    .callout.info  { background: #0d2233; border-left: 3px solid #58a6ff; }
+    .callout.ok    { background: #0d2a0d; border-left: 3px solid #56d364; }
+    .callout.warn  { background: #2a2000; border-left: 3px solid #f0a500; }
+    .callout.error { background: #3d1a1a; border-left: 3px solid #f97583; }
+
+    .table-wrap { background: #161b22; border: 1px solid #21262d; border-radius: 10px; overflow: hidden; margin-bottom: 28px; }
+    .table-wrap h2 { font-size: 15px; font-weight: 600; color: #e6edf3; padding: 16px 22px; border-bottom: 1px solid #21262d; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 18px; color: #8b949e; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #21262d; background: #1c2128; }
+    td { padding: 11px 18px; border-bottom: 1px solid #161b22; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1c2128; }
+    td code, .card-body code { font-family: monospace; font-size: 12px; background: #21262d; padding: 1px 6px; border-radius: 4px; color: #79c0ff; }
+
+    .praise { background: #0d2233; border: 1px solid #1f4070; border-radius: 10px; padding: 18px 22px; margin-bottom: 28px; }
+    .praise h2 { font-size: 15px; font-weight: 600; color: #58a6ff; margin-bottom: 14px; }
+    .praise ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .praise li { font-size: 14px; color: #c9d1d9; padding-left: 22px; position: relative; }
+    .praise li::before { content: "✓"; position: absolute; left: 0; color: #56d364; font-weight: 700; }
+
+    .open-in-browser { display: inline-block; margin-bottom: 20px; padding: 5px 14px; background: #161b22; border: 1px solid #30363d; border-radius: 6px; color: #8b949e; font-size: 12px; text-decoration: none; }
+    .open-in-browser:hover { border-color: #58a6ff; color: #58a6ff; }
+
+    .flow-diagram { width: 100%; margin: 24px 0 8px; overflow-x: auto; background: #0d1117; border: 1px solid #21262d; border-radius: 10px; padding: 24px 0; }
+    .flow-diagram canvas { display: block; margin: 0 auto; }
+    .flow-title { font-size: 12px; color: #8b949e; text-align: center; margin-bottom: 8px; font-style: italic; }
+
+    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+    .summary-card { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 14px 18px; text-align: center; }
+    .summary-card .num { font-size: 28px; font-weight: 700; line-height: 1; }
+    .summary-card .lbl { font-size: 12px; color: #8b949e; margin-top: 4px; }
+    .num.red    { color: #f97583; }
+    .num.amber  { color: #f0a500; }
+    .num.green  { color: #56d364; }
+    .num.blue   { color: #58a6ff; }
+
+    .todo-note { background: #2a2000; border: 1px solid #5a4000; border-radius: 8px; padding: 14px 18px; margin-bottom: 28px; font-size: 13px; color: #f0a500; }
+    .todo-note strong { display: block; margin-bottom: 6px; }
+    .todo-note ul { padding-left: 18px; color: #c9d1d9; }
+    .todo-note li { margin-top: 4px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <a class="open-in-browser" href="file:///home/wenyu/Documents/Obsidian/SecondBrain/01-项目库/H5项目(330gs)/审查修改建议/review_家园功能审查_20260521.html">在浏览器中打开</a>
+
+  <header>
+    <h1>家园功能 · 代码审查报告</h1>
+    <div class="meta">
+      <span>🗓 2026-05-21</span>
+      <span>👤 审查人：wenyu</span>
+      <span>🧑‍💻 开发者：sunshaoyi</span>
+      <span>📦 模块：game/play/internal · home_land</span>
+      <span>🌿 分支：h5_new_tf_v1042_homeland_ssy</span>
+      <span>📝 Commits：9b3c7c2 → b5e21df（5 commits）</span>
+    </div>
+  </header>
+
+  <!-- 概览统计 -->
+  <div class="summary-grid">
+    <div class="summary-card"><div class="num red">4</div><div class="lbl">P0 · 功能 Bug</div></div>
+    <div class="summary-card"><div class="num amber">2</div><div class="lbl">P1 · 逻辑偏差</div></div>
+    <div class="summary-card"><div class="num green">5</div><div class="lbl">P2 · 规范问题</div></div>
+    <div class="summary-card"><div class="num blue">7</div><div class="lbl">已修复</div></div>
+  </div>
+
+  <!-- 待处理提醒 -->
+  <div class="todo-note">
+    <strong>⚠ 需 sunshaoyi 跟进（未自动修复）</strong>
+    <ul>
+      <li><code>ctl_home_land_sign.go:9</code> — <code>OnHomeLandSignRewardReq</code> 函数体为空，客户端请求后静默无响应</li>
+      <li><code>bi/def/const.go:527</code> — <code>ReasonIDHomeLand = "HomeLandQuest"</code> 值为 PascalCase，与全文件其他 reason 风格不一致，需与数据团队确认后再改</li>
+      <li><code>ctl_home_land_build.go:345-405</code> — <code>OnUpgradeHomelandBuildingReq</code> 等三个函数整块注释掉，应删除或在任务系统记录</li>
+    </ul>
+  </div>
+
+  <!-- 问题汇总表 -->
+  <div class="table-wrap">
+    <h2>问题汇总</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>优先级</th>
+          <th>问题描述</th>
+          <th>文件位置</th>
+          <th>类型</th>
+          <th>状态</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge p0">P0</span></td>
+          <td>新玩家初始化时 <code>genFakeStocks()</code> 被调用，每个新玩家获得所有建筑调试数据</td>
+          <td><code>home_land/mgr.go:36</code></td>
+          <td><span class="tag safety">safety</span></td>
+          <td><span class="badge fixed">✓ 已修复</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p0">P0</span></td>
+          <td><code>HomeLandWeekShop.CheckCanBuy</code> 硬编码 <code>SHOP_WITCH_ALCHEMY</code>，读错商店配置</td>
+          <td><code>home_land_week_shop.go:29</code></td>
+          <td><span class="tag logic">logic</span></td>
+          <td><span class="badge fixed">✓ 已修复</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p0">P0</span></td>
+          <td><code>InitNewShop</code> 缺少家园商店两个 case，家园商店始终无法初始化（永远为空）</td>
+          <td><code>commonshop/shophelper.go</code></td>
+          <td><span class="tag logic">logic</span></td>
+          <td><span class="badge fixed">✓ 已修复</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p0">P0</span></td>
+          <td><code>AddAssetsWithParam</code> 缺少 <code>ItemCategoryHomeLandBuilding</code> 分支，该路径发放家园建筑道具静默丢失</td>
+          <td><code>ctl_asset.go:429</code></td>
+          <td><span class="tag logic">logic</span></td>
+          <td><span class="badge fixed">✓ 已修复</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p1">P1</span></td>
+          <td>BI 常量拼写错误 <code>BILogMarcHomeLand...</code>（缺字母 <code>h</code>），日志写入错误类型键</td>
+          <td><code>bi/def/table.go:320,322</code></td>
+          <td><span class="tag spec">spec</span></td>
+          <td><span class="badge fixed">✓ 已修复</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p1">P1</span></td>
+          <td><code>OnHomeLandSignRewardReq</code> 函数体为空，客户端发请求后静默无响应</td>
+          <td><code>ctl_home_land_sign.go:9</code></td>
+          <td><span class="tag logic">logic</span></td>
+          <td><span class="badge p1">待处理</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p2">P2</span></td>
+          <td><code>tlog.Infof(fmt.Sprintf(...))</code> 嵌套反模式（3 处）</td>
+          <td><code>ctl_home_land_build.go:301,311,325</code></td>
+          <td><span class="tag style">style</span></td>
+          <td><span class="badge fixed">✓ 已修复</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p2">P2</span></td>
+          <td><code>Refresh()</code> 末尾无意义裸 <code>return</code>（两个文件）</td>
+          <td><code>home_land_daily_shop.go:70</code><br><code>home_land_week_shop.go:71</code></td>
+          <td><span class="tag style">style</span></td>
+          <td><span class="badge fixed">✓ 已修复</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p2">P2</span></td>
+          <td><code>home_land_daily_shop.go</code> 与 <code>home_land_week_shop.go</code> 约 280 行逻辑 100% 重复</td>
+          <td><code>commonshop/</code></td>
+          <td><span class="tag reuse">reuse</span></td>
+          <td><span class="badge p2">设计建议</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p2">P2</span></td>
+          <td><code>ReasonIDHomeLand = "HomeLandQuest"</code> 值为 PascalCase，全文件其他均为 snake_case</td>
+          <td><code>bi/def/const.go:527</code></td>
+          <td><span class="tag spec">spec</span></td>
+          <td><span class="badge p2">待确认</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p2">P2</span></td>
+          <td>大段注释死代码（<code>OnUpgradeHomelandBuildingReq</code> 等三个函数）</td>
+          <td><code>ctl_home_land_build.go:345-405</code></td>
+          <td><span class="tag style">style</span></td>
+          <td><span class="badge p2">待处理</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== P0-1: genFakeStocks ===== -->
+  <p class="section-title">P0 问题详情</p>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p0">P0</span>
+      <div class="title-group">
+        <div class="item-title">调试数据流入生产：genFakeStocks() 在新玩家初始化中被直接调用</div>
+        <div class="item-sub">game/play/internal/home_land/mgr.go · InitNewHomeLandMgr → initHomelandMapData → genFakeStocks</div>
+      </div>
+      <span class="tag safety">safety</span>
+      <span class="badge fixed">✓ 已修复</span>
+    </div>
+    <div class="card-body">
+      <p>函数名 <code>genFakeStocks</code> 注释已明确说明"供调试用"，但它在生产路径 <code>InitNewHomeLandMgr</code> 中无任何条件保护地被调用。每个新玩家注册时都会获得所有建筑配置各一份，造成仓库数据污染，且每个实例都调用 <code>idgen.NewID()</code> 消耗全局 ID 资源。</p>
+
+      <p class="flow-title">修改前调用链 vs 修改后</p>
+      <div class="flow-diagram">
+        <canvas id="flow-fake-stocks" width="860" height="200"></canvas>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-label bad">mgr.go — 修改前（有问题）</div>
+        <pre><span class="del">func initHomelandMapData() (*model.HomelandMap, []*model.BuildingStock) {</span>
+<span class="del">    // ...</span>
+<span class="del">    return mapData, genFakeStocks()  // ← 生产路径调用调试函数</span>
+<span class="del">}</span>
+<span class="del"></span>
+<span class="del">// genFakeStocks 遍历所有建筑配置，将每种建筑各一个放入仓库供调试用</span>
+<span class="del">func genFakeStocks() []*model.BuildingStock {</span>
+<span class="del">    allCfg := gdconf.GetAllLandBuildingCfg()</span>
+<span class="del">    stocks := make([]*model.BuildingStock, 0, len(allCfg))</span>
+<span class="del">    for _, raw := range allCfg {</span>
+<span class="del">        stocks = append(stocks, model.NewBuildingStock(idgen.NewID(), raw.Id, 1))</span>
+<span class="del">    }</span>
+<span class="del">    return stocks</span>
+<span class="del">}</span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label good">mgr.go — 修改后</div>
+        <pre><span class="ins">func initHomelandMapData() (*model.HomelandMap, []*model.BuildingStock) {</span>
+<span class="ins">    // ...</span>
+<span class="ins">    return mapData, nil  // 仓库初始为空，由奖励系统发放</span>
+<span class="ins">}</span>
+<span class="cmt">// genFakeStocks 函数已删除；如需调试，通过 GM 命令触发</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P0-2: WeekShop CheckCanBuy ===== -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p0">P0</span>
+      <div class="title-group">
+        <div class="item-title">周商店 CheckCanBuy 硬编码错误 ShopType，读取女巫商店配置</div>
+        <div class="item-sub">game/play/internal/mplayer/commonshop/home_land_week_shop.go:29</div>
+      </div>
+      <span class="tag logic">logic</span>
+      <span class="badge fixed">✓ 已修复</span>
+    </div>
+    <div class="card-body">
+      <p>结构体已有 <code>Tp cspb.ShopType</code> 字段，但 <code>CheckCanBuy</code> 直接写死了 <code>SHOP_WITCH_ALCHEMY</code>。所有周商店的购买限制、价格配置都来自女巫炼金商店，购买校验完全失效。对比同目录 <code>home_land_daily_shop.go:28</code>，daily 正确使用了 <code>int32(v.Tp)</code>——这是一个复制粘贴后忘记修改的经典错误。</p>
+
+      <div class="code-wrap">
+        <div class="code-label bad">home_land_week_shop.go:29 — 修改前</div>
+        <pre><span class="del">err, itemCfg := CommonShopCheck(int32(cspb.SHOP_WITCH_ALCHEMY), shelf, itemId)</span>
+<span class="cmt">                              // ↑ 硬编码女巫商店，与 v.Tp 无关</span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label good">修改后</div>
+        <pre><span class="ins">err, itemCfg := CommonShopCheck(int32(v.Tp), shelf, itemId)</span>
+<span class="cmt">                              // ↑ 使用结构体自身的 ShopType</span></pre>
+      </div>
+      <div class="callout warn">此 bug 导致周商店所有购买请求都使用错误的配置，但不会 panic——因为女巫商店配置存在，只是返回完全错误的限购和价格数据。线上表现为周商店数据异常，难以通过报错日志发现。</div>
+    </div>
+  </div>
+
+  <!-- ===== P0-3: InitNewShop ===== -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p0">P0</span>
+      <div class="title-group">
+        <div class="item-title">InitNewShop 缺少家园商店两个 case，家园商店始终无法初始化</div>
+        <div class="item-sub">game/play/internal/mplayer/commonshop/shophelper.go</div>
+      </div>
+      <span class="tag logic">logic</span>
+      <span class="badge fixed">✓ 已修复</span>
+    </div>
+    <div class="card-body">
+      <p><code>ctl_newshop.go</code> 通过 <code>CheckAndAddShop → InitNewShop(shopType, ...)</code> 初始化家园商店，但 <code>InitNewShop</code> 的 switch 中没有 <code>SHOP_HOMELAND_DAILY</code> 和 <code>SHOP_HOMELAND_WEEK</code> 两个 case，函数返回 <code>nil</code>。日志会打印 <code>can not find shopType</code> 但静默跳过，导致玩家的家园商店数据永远为空，所有家园商品购买请求均不可用。</p>
+      <div class="code-wrap">
+        <div class="code-label good">shophelper.go — 补充的两个 case</div>
+        <pre><span class="ins">case cspb.SHOP_HOMELAND_DAILY:</span>
+<span class="ins">    shop := &HomeLandDailyShop{Tp: shopType, Record: make(map[int32]int32)}</span>
+<span class="ins">    shop.SetPlayData(p, play)</span>
+<span class="ins">    shop.Refresh()</span>
+<span class="ins">    return shop</span>
+<span class="ins">case cspb.SHOP_HOMELAND_WEEK:</span>
+<span class="ins">    shop := &HomeLandWeekShop{Tp: shopType, Record: make(map[int32]int32)}</span>
+<span class="ins">    shop.SetPlayData(p, play)</span>
+<span class="ins">    shop.Refresh()</span>
+<span class="ins">    return shop</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P0-4: AddAssetsWithParam ===== -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p0">P0</span>
+      <div class="title-group">
+        <div class="item-title">AddAssetsWithParam 缺少家园建筑分支，该路径发放建筑道具静默丢失</div>
+        <div class="item-sub">game/play/internal/ctl_asset.go · AddAssetsWithParam switch itemCfg.Category</div>
+      </div>
+      <span class="tag logic">logic</span>
+      <span class="badge fixed">✓ 已修复</span>
+    </div>
+    <div class="card-body">
+      <p><code>AddAssets</code>（第 307 行）已正确处理 <code>ItemCategoryHomeLandBuilding</code>，调用 <code>BatchAddHomeLandBuild</code>。但 <code>AddAssetsWithParam</code> 的 switch 中漏掉了这个 case——任何经由 <code>AddAssetsWithParam</code> 路径发放的家园建筑道具都会落入 <code>default</code> 分支，由通用资产系统处理但无法识别，最终静默丢失。</p>
+      <div class="code-wrap">
+        <div class="code-label bad">ctl_asset.go — 修改前（缺分支）</div>
+        <pre><span class="cmt">// AddAssetsWithParam switch itemCfg.Category</span>
+<span class="del">case gdconf.ItemCategoryMarchEquip:</span>
+<span class="del">    // ... march equip 处理</span>
+<span class="del">case gdconf.ItemTowerCombatunit:  // ← 直接跳到这里，家园建筑掉进 default</span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label good">修改后</div>
+        <pre><span class="ins">case gdconf.ItemCategoryMarchEquip:</span>
+<span class="ins">    // ... march equip 处理</span>
+<span class="ins">case gdconf.ItemCategoryHomeLandBuilding:</span>
+<span class="ins">    play.BatchAddHomeLandBuild(c.GetID(), c.GetVal(), p, biLogFields)</span>
+<span class="ins">case gdconf.ItemTowerCombatunit:</span></pre>
+      </div>
+      <div class="callout error">两个 AddAssets 函数都需要同步维护新道具类型分支，这是高风险的重复代码。建议后续将公共处理逻辑提取为私有方法，避免此类遗漏。</div>
+    </div>
+  </div>
+
+  <!-- ===== P1 ===== -->
+  <p class="section-title">P1 问题详情</p>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p1">P1</span>
+      <div class="title-group">
+        <div class="item-title">BI 常量拼写错误：BILogMarcHomeLand... 缺字母 h</div>
+        <div class="item-sub">game/bi/def/table.go:320,322 · game/play/internal/mplayer/player_bi.go:2288,2298</div>
+      </div>
+      <span class="tag spec">spec</span>
+      <span class="badge fixed">✓ 已修复</span>
+    </div>
+    <div class="card-body">
+      <p><code>BILogMarcHomeLandBuildingAdd</code> / <code>BILogMarcHomeLandBuildingDel</code> 中 <code>Marc</code> 应为 <code>March</code>，与同文件 <code>BILogMarchEquipWarehouseAdd</code> 等命名不一致。引用该常量的 <code>player_bi.go</code> 两处同步修复。</p>
+      <div class="code-wrap">
+        <div class="code-label bad">table.go — 修改前</div>
+        <pre><span class="del">BILogMarcHomeLandBuildingAdd = "home_land_building_add"</span>
+<span class="del">BILogMarcHomeLandBuildingDel = "home_land_building_del"</span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label good">修改后</div>
+        <pre><span class="ins">BILogMarchHomeLandBuildingAdd = "home_land_building_add"</span>
+<span class="ins">BILogMarchHomeLandBuildingDel = "home_land_building_del"</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p1">P1</span>
+      <div class="title-group">
+        <div class="item-title">OnHomeLandSignRewardReq 函数体为空，客户端请求静默无响应</div>
+        <div class="item-sub">game/play/internal/ctl_home_land_sign.go:9-11</div>
+      </div>
+      <span class="tag logic">logic</span>
+      <span class="badge p1">待处理</span>
+    </div>
+    <div class="card-body">
+      <p>函数注册在 handler 中但实现为空，客户端发送签到奖励领取请求后，服务端既不返回 ack 也不打印错误，表现为客户端超时或逻辑挂起。</p>
+      <div class="callout warn">本版本若七日签到功能未完成实现，应至少在 handler 注册前添加条件检查，或返回 <code>ErrCodeNotImpl</code>，不应提交空函数。</div>
+      <div class="code-wrap">
+        <div class="code-label note">建议临时处理方案</div>
+        <pre><span class="ins">func (play *Play) OnHomeLandSignRewardReq(p *mplayer.Player, req0 proto.Message) {</span>
+<span class="ins">    ack := &cspb.HomeLandSignRewardAck{ErrCode: cspb.ErrCodeNotImpl}</span>
+<span class="ins">    play.SendTo(p.PlayerID, ack)</span>
+<span class="ins">}</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P2 ===== -->
+  <p class="section-title">P2 问题详情</p>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p2">P2</span>
+      <div class="title-group">
+        <div class="item-title">两个商店文件 280 行逻辑完全重复，应合并为一个结构体</div>
+        <div class="item-sub">home_land_daily_shop.go · home_land_week_shop.go</div>
+      </div>
+      <span class="tag reuse">reuse</span>
+      <span class="badge p2">设计建议</span>
+    </div>
+    <div class="card-body">
+      <p>两个文件的所有方法（<code>CheckCanBuy</code>/<code>Buy</code>/<code>CopySelf</code>/<code>ShowShopInfo</code> 等）逐行对应，唯一区别是 <code>Refresh()</code> 中的刷新时间计算函数不同。每次改一处逻辑都必须同步改两处，这是典型的维护炸弹。</p>
+      <div class="code-wrap">
+        <div class="code-label note">建议重构方案</div>
+        <pre><span class="ins">type HomeLandShop struct {</span>
+<span class="ins">    Record        map[int32]int32</span>
+<span class="ins">    player        _interface.IPlayer `bson:"-"`</span>
+<span class="ins">    play          _interface.IPlay   `bson:"-"`</span>
+<span class="ins">    RefTime       int64</span>
+<span class="ins">    Tp            cspb.ShopType</span>
+<span class="ins">    nextRefreshFn func(int64) int64  `bson:"-"`</span>
+<span class="ins">}</span>
+<span class="ins"></span>
+<span class="ins">// Refresh 刷新（日/周由 nextRefreshFn 决定）</span>
+<span class="ins">func (v *HomeLandShop) Refresh() {</span>
+<span class="ins">    v.RefTime = v.nextRefreshFn(util.NowTs())</span>
+<span class="ins">    v.Record = make(map[int32]int32)</span>
+<span class="ins">}</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p2">P2</span>
+      <div class="title-group">
+        <div class="item-title">tlog.Infof(fmt.Sprintf(...)) 嵌套反模式（已修复）</div>
+        <div class="item-sub">ctl_home_land_build.go:301,311,325</div>
+      </div>
+      <span class="tag style">style</span>
+      <span class="badge fixed">✓ 已修复</span>
+    </div>
+    <div class="card-body">
+      <p><code>tlog.Infof</code> 本身支持格式化参数，外层再包一层 <code>fmt.Sprintf</code> 是多余的字符串分配。</p>
+      <div class="code-wrap">
+        <div class="code-label bad">修改前</div>
+        <pre><span class="del">tlog.Infof(fmt.Sprintf("OnRecycleShopHomeLandBuildingReq cId:%v,number:%v", req.GetBuildingCid(), req.GetNumber()))</span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label good">修改后</div>
+        <pre><span class="ins">tlog.Infof("OnRecycleShopHomeLandBuildingReq cId:%v,number:%v", req.GetBuildingCid(), req.GetNumber())</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Praise ===== -->
+  <div class="praise">
+    <h2>值得肯定的地方</h2>
+    <ul>
+      <li><strong>OnSaveHomelandLayoutReq 的阶段注释质量高</strong>：明确标注了"顺序固定，不可随意调整"及各步骤的前提约束（如"插件回调时 Layout 仍是旧状态，插件依赖这一前提"），属于高价值 WHY 型注释，帮助后续维护者避免错误调整顺序。</li>
+      <li><strong>validateUpsertedBuildings 职责单一，提取得当</strong>：将复杂的校验逻辑从 OnSaveHomelandLayoutReq 中剥离，参数定义清晰，errCode 返回规范，易于独立测试。</li>
+      <li><strong>handler.go 中 actvPreHandlers 注册表重构干净</strong>：将原来的大 switch-case 改为反射注册表 + 接口 <code>actvCfgIdGetter</code>，消除了每次新增活动消息都要修改 switch 的问题，扩展性明显提升。</li>
+      <li><strong>model 层设计职责清晰</strong>：<code>HomelandSystem</code> / <code>BuildingStock</code> / <code>Building</code> 分层合理，<code>PlaceAt</code> / <code>MoveTo</code> / <code>ToStock</code> 语义明确，生命周期注释（ID 获取时分配、生命周期内不变）对理解数据模型很有帮助。</li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- ===== 流程图脚本 ===== -->
+<script>
+(function() {
+  const canvas = document.getElementById('flow-fake-stocks');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let t = 0;
+
+  const nodes = [
+    { id: 'reg',    x: 80,  y: 100, label: '新玩家注册',      sub: 'NewPlayer()',         color: '#f0a500', bg: '#1a1200' },
+    { id: 'init',   x: 270, y: 100, label: 'InitNewHomeLandMgr', sub: '',                 color: '#8b949e', bg: '#161b22' },
+    { id: 'map',    x: 460, y: 100, label: 'initHomelandMapData', sub: '',                color: '#8b949e', bg: '#161b22' },
+    { id: 'fake',   x: 680, y: 60,  label: 'genFakeStocks()',  sub: '所有建筑 × 每种1个', color: '#f97583', bg: '#200000' },
+    { id: 'nil',    x: 680, y: 140, label: 'return nil',       sub: '仓库初始为空',       color: '#34d399', bg: '#001a0d' },
+  ];
+
+  const edges = [
+    { from: 'reg',  to: 'init', flow: 'sync',    color: '#f0a500', label: '' },
+    { from: 'init', to: 'map',  flow: 'sync',    color: '#8b949e', label: '' },
+    { from: 'map',  to: 'fake', flow: 'error',   color: '#f97583', label: '修复前' },
+    { from: 'map',  to: 'nil',  flow: 'return',  color: '#34d399', label: '修复后' },
+  ];
+
+  const flowCfg = {
+    sync:    { dash: [],           speed: 0,   dir:  1 },
+    return:  { dash: [3, 3],       speed: 0.6, dir: -1 },
+    error:   { dash: [5, 3],       speed: 1.5, dir:  1 },
+  };
+
+  function nodeById(id) { return nodes.find(n => n.id === id); }
+
+  function drawEdge(e) {
+    const s = nodeById(e.from), d = nodeById(e.to);
+    if (!s || !d) return;
+    const cfg = flowCfg[e.flow] || flowCfg.sync;
+    const col = e.color || '#30363d';
+    ctx.save();
+    ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+    const off = cfg.speed > 0 ? (t * cfg.speed * cfg.dir) % 20 : 0;
+    ctx.setLineDash(cfg.dash); ctx.lineDashOffset = -off;
+    ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(d.x, d.y); ctx.stroke();
+    const ang = Math.atan2(d.y - s.y, d.x - s.x);
+    ctx.setLineDash([]); ctx.fillStyle = col;
+    ctx.translate(d.x - Math.cos(ang) * 22, d.y - Math.sin(ang) * 22);
+    ctx.rotate(ang);
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-10, 5); ctx.lineTo(-10, -5); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    if (e.label) {
+      ctx.fillStyle = '#8b949e'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(e.label, (s.x + d.x) / 2, (s.y + d.y) / 2 - 10);
+    }
+  }
+
+  function drawNode(n) {
+    const w = 160, h = 44, r = 6;
+    ctx.save();
+    ctx.shadowColor = n.color; ctx.shadowBlur = 14;
+    ctx.fillStyle = n.bg || '#161b22';
+    ctx.strokeStyle = n.color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.roundRect(n.x - w/2, n.y - h/2, w, h, r); ctx.fill(); ctx.stroke();
+    ctx.restore();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#e6edf3'; ctx.font = '13px -apple-system, sans-serif';
+    ctx.fillText(n.label, n.x, n.sub ? n.y - 8 : n.y);
+    if (n.sub) { ctx.fillStyle = '#8b949e'; ctx.font = '11px monospace'; ctx.fillText(n.sub, n.x, n.y + 10); }
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    edges.forEach(drawEdge);
+    nodes.forEach(drawNode);
+    t += 0.5;
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+
+</body>
+</html>

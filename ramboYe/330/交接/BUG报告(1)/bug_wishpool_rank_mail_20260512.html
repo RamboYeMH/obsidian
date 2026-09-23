@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bug 分析：跨服许愿池总排行榜结算重复发奖</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --red:    #e53935;
+    --orange: #f4511e;
+    --yellow: #f9a825;
+    --green:  #43a047;
+    --blue:   #1e88e5;
+    --purple: #8e24aa;
+    --gray:   #546e7a;
+    --light:  #f5f7fa;
+    --border: #dde1e7;
+    --text:   #1a2332;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: #eef1f6;
+    line-height: 1.7;
+  }
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #fff;
+    min-height: 100vh;
+  }
+
+  /* ── 头部 ── */
+  .hero {
+    background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #1565c0 100%);
+    color: #fff;
+    padding: 44px 48px 36px;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: var(--red);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 3px;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+  .hero h1 { font-size: 26px; font-weight: 700; margin-bottom: 10px; }
+  .hero-meta { font-size: 13px; opacity: .75; display: flex; gap: 24px; flex-wrap: wrap; }
+  .hero-meta span::before { content: '▪ '; }
+
+  /* ── 目录 ── */
+  .toc {
+    background: var(--light);
+    border-left: 4px solid var(--blue);
+    padding: 18px 24px;
+    margin: 32px 48px;
+    border-radius: 0 6px 6px 0;
+  }
+  .toc-title { font-weight: 700; font-size: 13px; color: var(--blue); margin-bottom: 10px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin: 4px 0; }
+  .toc a { color: var(--blue); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* ── 正文容器 ── */
+  .body { padding: 0 48px 60px; }
+
+  /* ── 章节 ── */
+  .section { margin-top: 44px; }
+  .section-hd {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 22px;
+  }
+  .section-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-num.red    { background: var(--red); }
+  .section-num.orange { background: var(--orange); }
+  .section-num.green  { background: var(--green); }
+  .section-num.purple { background: var(--purple); }
+  .section-num.gray   { background: var(--gray); }
+  h2 { font-size: 18px; font-weight: 700; }
+
+  h3 {
+    font-size: 14px; font-weight: 700;
+    margin: 22px 0 10px;
+    color: var(--blue);
+    display: flex; align-items: center; gap: 8px;
+  }
+  h3::before {
+    content: '';
+    display: inline-block;
+    width: 3px; height: 14px;
+    background: var(--blue);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  p { margin: 8px 0; }
+
+  /* ── 问题摘要卡 ── */
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 20px 0;
+  }
+  .card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    background: #fff;
+  }
+  .card-icon { font-size: 22px; margin-bottom: 8px; }
+  .card-title { font-size: 12px; font-weight: 700; color: var(--gray); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+  .card-val { font-size: 18px; font-weight: 700; }
+  .card-val.red { color: var(--red); }
+  .card-val.orange { color: var(--orange); }
+  .card-val.green { color: var(--green); }
+
+  /* ── 告警框 ── */
+  .alert {
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin: 14px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .alert-body { flex: 1; }
+  .alert-body strong { display: block; margin-bottom: 4px; }
+  .alert.danger  { background: #fff5f5; border: 1px solid #ffcdd2; }
+  .alert.warning { background: #fffde7; border: 1px solid #fff176; }
+  .alert.info    { background: #e3f2fd; border: 1px solid #90caf9; }
+  .alert.success { background: #e8f5e9; border: 1px solid #a5d6a7; }
+
+  /* ── 代码块 ── */
+  pre {
+    background: #1e2736;
+    color: #e0e6f0;
+    border-radius: 6px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+    margin: 12px 0;
+  }
+  .hl-red    { color: #ff7875; }
+  .hl-yellow { color: #ffd666; }
+  .hl-green  { color: #73d13d; }
+  .hl-blue   { color: #69c0ff; }
+  .hl-gray   { color: #8c9eb0; }
+  .hl-comment { color: #5c7a99; font-style: italic; }
+
+  /* ── 表格 ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 13px;
+  }
+  th {
+    background: #283593;
+    color: #fff;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: .3px;
+  }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: var(--light); }
+  tr:hover td { background: #e8edf5; }
+
+  /* ── 标签 ── */
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .4px;
+  }
+  .tag.red    { background: #ffebee; color: var(--red); }
+  .tag.orange { background: #fbe9e7; color: var(--orange); }
+  .tag.green  { background: #e8f5e9; color: var(--green); }
+  .tag.blue   { background: #e3f2fd; color: var(--blue); }
+  .tag.gray   { background: #eceff1; color: var(--gray); }
+  .tag.deprecated { background: #4a148c; color: #fff; }
+
+  /* ── Mermaid 图 ── */
+  .diagram-wrap {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 16px 0;
+    background: #fafbfc;
+    overflow-x: auto;
+  }
+  .diagram-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 12px;
+  }
+
+  /* ── 时序步骤 ── */
+  .steps { margin: 14px 0; }
+  .step {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 10px;
+    align-items: flex-start;
+  }
+  .step-dot {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-dot.blue   { background: var(--blue); }
+  .step-dot.red    { background: var(--red); }
+  .step-dot.orange { background: var(--orange); }
+  .step-dot.green  { background: var(--green); }
+  .step-dot.gray   { background: var(--gray); }
+  .step-body { flex: 1; padding-top: 3px; }
+  .step-body strong { display: block; }
+
+  /* ── 修复清单 ── */
+  .fix-list { margin: 14px 0; }
+  .fix-item {
+    display: flex;
+    gap: 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background: #fff;
+  }
+  .fix-item:hover { border-color: var(--blue); background: #f0f7ff; }
+  .fix-pri {
+    font-size: 10px; font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    height: fit-content;
+    margin-top: 2px;
+  }
+  .fix-pri.p0 { background: var(--red);    color: #fff; }
+  .fix-pri.p1 { background: var(--orange); color: #fff; }
+  .fix-pri.p2 { background: var(--yellow); color: #333; }
+  .fix-body strong { font-size: 13px; display: block; margin-bottom: 4px; }
+  .fix-body span { color: var(--gray); font-size: 12px; }
+
+  /* ── 分割线 ── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+  /* ── 页脚 ── */
+  .footer {
+    background: var(--light);
+    border-top: 1px solid var(--border);
+    padding: 18px 48px;
+    font-size: 12px;
+    color: var(--gray);
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ══════════ HERO ══════════ -->
+<div class="hero">
+  <div class="hero-badge">Bug 分析报告</div>
+  <h1>跨服许愿池总排行榜结算重复发奖</h1>
+  <div class="hero-meta">
+    <span>工程：gs / actv</span>
+    <span>分支：h5_new_tf_v1042_new_wish</span>
+    <span>日期：2026-05-12</span>
+    <span>作者：wenyu</span>
+  </div>
+</div>
+
+<!-- ══════════ TOC ══════════ -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <ol>
+    <li><a href="#s1">问题现象</a></li>
+    <li><a href="#s2">架构总览：两套并行发奖系统</a></li>
+    <li><a href="#s3">Redis 脏数据污染（核心根因）</a></li>
+    <li><a href="#s4">完整发奖流程图</a></li>
+    <li><a href="#s5">代码缺陷详析</a></li>
+    <li><a href="#s6">修复方案</a></li>
+  </ol>
+</div>
+
+<!-- ══════════ BODY ══════════ -->
+<div class="body">
+
+<!-- ─── §1 问题现象 ─── -->
+<div class="section" id="s1">
+  <div class="section-hd">
+    <div class="section-num">1</div>
+    <h2>问题现象</h2>
+  </div>
+
+  <div class="summary-cards">
+    <div class="card">
+      <div class="card-icon">🧑‍💼</div>
+      <div class="card-title">玩家 A（第2名）</div>
+      <div class="card-val green">收到 2 封邮件</div>
+      <p style="font-size:12px;color:#666;margin-top:6px">① 自己第2名奖励（正确）<br>② 189名奖励（<b style="color:var(--red)">本属于B</b>）</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🧑‍💼</div>
+      <div class="card-title">玩家 B（第189名）</div>
+      <div class="card-val green">收到 1 封邮件</div>
+      <p style="font-size:12px;color:#666;margin-top:6px">① 自己第189名奖励（正确）<br>B 的邮件<b>未丢失</b>，被额外复制给了 A</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🖥️</div>
+      <div class="card-title">测试环境</div>
+      <div class="card-val orange">双服合并导入</div>
+      <p style="font-size:12px;color:#666;margin-top:6px">导入了线上 S1、S2 两个游戏服数据，共用一个活动服，Redis 未清理</p>
+    </div>
+  </div>
+
+  <div class="alert danger">
+    <div class="alert-icon">☣️</div>
+    <div class="alert-body">
+      <strong>核心结论</strong>
+      根因是 <b>Redis 中存在 key="" 的脏数据</b>，激活了本应废弃的 <code>settleRankReward()</code> 路径，导致同一活动发奖被执行了两次——一次走正确的本地 RankPlay（系统一），一次走废弃的 Redis 排行服（系统二）。两套系统之间无交叉去重，系统二的投递路径又缺少 OriginServerID 校验，最终将 B 的邮件错误投递到 A 所在的游戏服。
+    </div>
+  </div>
+</div>
+
+<!-- ─── §2 架构总览 ─── -->
+<div class="section" id="s2">
+  <div class="section-hd">
+    <div class="section-num blue">2</div>
+    <h2>架构总览：两套并行发奖系统</h2>
+  </div>
+
+  <p><code>OnEnd()</code> 连续调用了两套完全独立的排行榜发奖系统。系统一是当前生效的新路径；系统二是已废弃的旧 Redis 路径，本应在重构后一并删除，但被遗留至今：</p>
+
+  <pre><span class="hl-comment">// actv/cactv/internal/activity/template/wish_pool_v2/api.go:150-155</span>
+<span class="hl-blue">func</span> (ths *ActvTmplWishPool) <span class="hl-yellow">OnEnd</span>() {
+    ths.<span class="hl-green">sendRankRewards</span>()    <span class="hl-comment">// ← 系统一【当前】：本地 RankPlay（in-memory + MongoDB）</span>
+    ths.<span class="hl-red">settleRankReward</span>()   <span class="hl-comment">// ← 系统二【废弃】：旧 Redis 排行服，应已删除</span>
+    ths.<span class="hl-blue">SendEndMail</span>()
+}</pre>
+
+  <div class="diagram-wrap">
+    <div class="diagram-title">图 2-1 · 两套发奖系统对比</div>
+    <div class="mermaid">
+graph LR
+    OE["OnEnd()"]
+
+    subgraph SYS1["系统一：sendRankRewards() 【当前】"]
+        direction TB
+        R1["RankPlay.comp.RankMap<br/>本地 in-memory + MongoDB"]
+        R2["GroupByServerId(MetaMap)"]
+        R3["ActvPendPlayerMail(sid, mails)"]
+        R4["OnA2PPendPlayerMails<br/>✅ 校验 OriginServerID"]
+        R1 --> R2 --> R3 --> R4
+    end
+
+    subgraph SYS2["系统二：settleRankReward() 【已废弃 · 应删除】"]
+        direction TB
+        S1["Service.GetRank()<br/>查询 Redis (key=GetRankKey()='')"]
+        S2["settle(rankItems, sid, group)"]
+        S3["ClusterCastToGameServer(account.Sid, msg)"]
+        S4["onS2SA2GActvMailSendReq<br/>❌ 无 OriginServerID 校验"]
+        S1 --> S2 --> S3 --> S4
+    end
+
+    OE --> SYS1
+    OE --> SYS2
+
+    style SYS1 fill:#e8f5e9,stroke:#43a047
+    style SYS2 fill:#ffebee,stroke:#e53935
+    style R4 fill:#c8e6c9,stroke:#43a047
+    style S4 fill:#ffccbc,stroke:#f4511e
+    </div>
+  </div>
+
+  <table>
+    <tr>
+      <th>维度</th>
+      <th>系统一 sendRankRewards()</th>
+      <th>系统二 settleRankReward()</th>
+    </tr>
+    <tr>
+      <td>状态</td>
+      <td><span class="tag green">当前生效</span></td>
+      <td><span class="tag deprecated">已废弃 · 遗留未删</span></td>
+    </tr>
+    <tr>
+      <td>数据来源</td>
+      <td>本地 <code>RankPlay</code> 排行（MongoDB）</td>
+      <td>Redis 排行服，key = <code>GetRankKey()</code> = <span class="tag red">""</span></td>
+    </tr>
+    <tr>
+      <td>wish_pool_v2 是否写入</td>
+      <td><span class="tag green">✅ RankPlay.Update() 写入</span></td>
+      <td><span class="tag red">❌ 从不调用 Service.UpdateRankScore()</span></td>
+    </tr>
+    <tr>
+      <td>触发条件</td>
+      <td>始终触发</td>
+      <td>Redis key="" 有脏数据时触发（正常应为空）</td>
+    </tr>
+    <tr>
+      <td>投递路径</td>
+      <td><code>ActvPendPlayerMail</code> → 批量投递</td>
+      <td><code>ClusterCastToGameServer</code> → 逐条投递</td>
+    </tr>
+    <tr>
+      <td>OriginServerID 校验</td>
+      <td><span class="tag green">✅ 有校验</span></td>
+      <td><span class="tag red">❌ 无校验</span></td>
+    </tr>
+    <tr>
+      <td>防重复机制</td>
+      <td><code>RewardSent</code> + <code>ServerRewardSent[sid]</code></td>
+      <td><code>RankSettle</code>（<span class="tag orange">存在 defer 竞态</span>）</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ─── §3 Redis 脏数据污染 ─── -->
+<div class="section" id="s3">
+  <div class="section-hd">
+    <div class="section-num red">3</div>
+    <h2>Redis 脏数据污染（核心根因）</h2>
+  </div>
+
+  <div class="alert danger">
+    <div class="alert-icon">☣️</div>
+    <div class="alert-body">
+      <strong>核心结论：wish_pool_v2 当前代码从不写 Redis，GetRankKey()="" 本意是让 settleRankReward() 查询空 key 从而得到空结果、实现"软禁用"。但测试环境 Redis 残留 key="" 的脏数据，导致废弃路径被意外激活，触发重复发奖。</strong>
+    </div>
+  </div>
+
+  <h3>3.1 wish_pool_v2 从不向 Redis 写入排行数据</h3>
+
+  <p>wish_pool_v2 在更新排行分时走的是本地 <code>RankPlay.Update()</code>，<b>完全不经过 <code>Service.UpdateRankScore()</code></b>，因此 Redis 排行服中不会产生任何来自本活动的当次数据：</p>
+
+  <pre><span class="hl-comment">// wish_pool_v2/ctl.go — updateRankScore（玩家每次许愿后调用）</span>
+<span class="hl-blue">func</span> (a *ActvTmplWishPool) <span class="hl-yellow">updateRankScore</span>(sid int32, playerID int64, val int64, meta string) {
+    <span class="hl-green">// 本地写入：RankPlay（in-memory + MongoDB）</span>
+    a.RankPlay.<span class="hl-green">Update</span>(a.<span class="hl-yellow">createRankKey</span>(rankStageServer, sid), playerID, val, meta)
+    a.RankPlay.<span class="hl-green">Update</span>(a.<span class="hl-yellow">createRankKey</span>(rankStageGroup,  sid), playerID, val, meta)
+
+    <span class="hl-comment">// ↓ 以下代码从未被调用 → Redis 中无 wish_pool_v2 的当次排行数据</span>
+    <span class="hl-gray">// a.Service.UpdateRankScore(a, pc, typ, score, add, meta)</span>
+    <span class="hl-comment">// → 若调用则会 Cast(RANK, &UpdateRankNodeReq{RankId: GetRankKey()="", ...})</span>
+}</pre>
+
+  <div class="diagram-wrap">
+    <div class="diagram-title">图 3-1 · wish_pool_v2 排行数据写入路径（只写本地，不写 Redis）</div>
+    <div class="mermaid">
+flowchart LR
+    Draw["玩家许愿\nupdateRankScore()"]
+
+    subgraph LOCAL["本地存储（正常路径）"]
+        RP["RankPlay.Update()\ncreatRankKey(server,sid)\ncreateRankKey(group,sid)"]
+        MDB["MongoDB\nRankProgress.RankMap"]
+        RP --> MDB
+    end
+
+    subgraph REDIS["Redis 排行服（废弃路径，未调用）"]
+        direction TB
+        SRS["Service.UpdateRankScore()\nCast(RANK, UpdateRankNodeReq{RankId:''})"]
+        RDB["Redis\nkey=''"]
+        SRS --> RDB
+        style SRS fill:#ffebee,stroke:#e53935
+        style RDB fill:#ffebee,stroke:#e53935
+    end
+
+    Draw --> LOCAL
+    Draw -. "❌ 不调用" .-> REDIS
+
+    style LOCAL fill:#e8f5e9,stroke:#43a047
+    style REDIS fill:#ffebee,stroke:#e53935
+    </div>
+  </div>
+
+  <h3>3.2 GetRankKey() 返回 "" 作为"软禁用"开关</h3>
+
+  <p><code>GetRankKey()</code> 是 <code>settleRankReward()</code> 查询 Redis 所用 key 的来源。wish_pool_v2 没有实现此方法，直接返回空字符串 <code>""</code>。设计意图是：key="" 对应 Redis 中的空排行，<code>GetRank</code> 返回空数组，<code>settle()</code> 不执行任何操作——相当于软禁用废弃路径：</p>
+
+  <pre><span class="hl-comment">// wish_pool_v2/api.go:163 — 未实现，返回 "" 作为"禁用"开关</span>
+<span class="hl-blue">func</span> (a *ActvTmplWishPool) <span class="hl-yellow">GetRankKey</span>(typ cspb.RankType, pc *mcache.ActvPlayerCache) string {
+    tlog.<span class="hl-yellow">Warnf</span>(<span class="hl-green">"actv:%v GetRankKey need override typ:%v"</span>, a.ActvBrief.CfgID, typ)
+    <span class="hl-blue">return</span> <span class="hl-red">""</span>  <span class="hl-comment">// ← 预期效果：Redis key="" 应为空，settle() 不执行</span>
+}
+
+<span class="hl-comment">// actv/cactv/internal/service.go:214 — GetRank 流程</span>
+<span class="hl-blue">func</span> (a *ActvServiceImpl) <span class="hl-yellow">GetRank</span>(actvExt any, cache *mcache.ActvPlayerCache, ...) {
+    rankKey := actv.<span class="hl-yellow">GetRankKey</span>(typ, cache)  <span class="hl-comment">// ← rankKey = ""</span>
+    common.<span class="hl-yellow">SendRankReqByPage</span>(a, &cspb.GetRankListReq{
+        RankId: <span class="hl-red">rankKey</span>,  <span class="hl-comment">// ← 查询 Redis key=""</span>
+        ...
+    }, callback)
+}
+
+<span class="hl-comment">// actv/main.go:140 — rankmgr 是进程内 Redis 排行服</span>
+rankmgr.<span class="hl-yellow">NewRankMgr</span>(conf.RedisHost, conf.RedisPasswd)
+<span class="hl-comment">// AsynCallByRank("rank", ...) 路由到此本地 Redis 模块</span></pre>
+
+  <div class="alert warning">
+    <div class="alert-icon">⚠️</div>
+    <div class="alert-body">
+      <strong>软禁用的致命前提：Redis key="" 必须始终为空</strong>
+      这一机制依赖于 Redis 中 key="" 不存在任何数据。只要测试环境 Redis 未被清理，或曾经以旧版本代码（调用过 UpdateRankScore）运行过，key="" 就会有残留数据，软禁用立即失效。
+    </div>
+  </div>
+
+  <h3>3.3 测试环境 Redis 脏数据的三条来源</h3>
+
+  <div class="diagram-wrap">
+    <div class="diagram-title">图 3-2 · Redis key="" 脏数据的成因</div>
+    <div class="mermaid">
+flowchart TD
+    P1["来源①：旧版本代码遗留<br/>功能开发初期曾同时调用<br/>Service.UpdateRankScore()<br/>→ 玩家分数写入 Redis key=''"]
+    P2["来源②：测试环境 Redis 未重置<br/>多次测试复用同一 Redis<br/>→ 前次测试数据未清理"]
+    P3["来源③：其他活动数据污染<br/>同一 Redis 实例中 key='' 被<br/>另一个未实现 GetRankKey 的活动写入"]
+
+    R["Redis key='' 存在脏数据<br/>包含真实玩家ID及排名分数"]
+
+    P1 --> R
+    P2 --> R
+    P3 --> R
+
+    style R fill:#ffebee,stroke:#e53935,color:#b71c1c
+    </div>
+  </div>
+
+  <h3>3.4 脏数据激活链路：废弃路径触发重复发奖</h3>
+
+  <p>一旦 Redis key="" 存在数据，<code>settleRankReward()</code> 的"软禁用"即告失效，完整的错误链路如下：</p>
+
+  <div class="diagram-wrap">
+    <div class="diagram-title">图 3-3 · Redis 脏数据激活废弃发奖路径</div>
+    <div class="mermaid">
+flowchart TD
+    RD["Redis key='' 存在脏排行数据<br/>[B.ID:rank189, C.ID:rank50, ...]"]
+
+    GR["settleRankReward() 调用 Service.GetRank()<br/>rankKey='' → 从 Redis 取回脏数据"]
+
+    S1["settle(rankItems=[B:189,...], sid=0, group=G1)"]
+    S2["PlayerComp.GetProgress(B.ID)<br/>取 account.Sid（B 的存档 Sid）"]
+    S3["ClusterCastToGameServer(account.Sid, msg)\nmsg.PlayerID=B, rank=189"]
+    GS["游戏服 S1\nonS2SA2GActvMailSendReq"]
+    NC["❌ 无 OriginServerID 校验"]
+    MAIL["SendSysTextMail(B.ID, rank=189)\n→ 在 S1 上给 B.ID 发邮件"]
+
+    RD --> GR --> S1 --> S2 --> S3 --> GS --> NC --> MAIL
+
+    NOTA["若 S1 上 B.ID 不存在或与 A.ID 碰撞\n→ A 收到「第189名」邮件"]
+    MAIL --> NOTA
+
+    style RD fill:#ffebee,stroke:#e53935,color:#b71c1c
+    style NC fill:#ffebee,stroke:#e53935
+    style NOTA fill:#fff3e0,stroke:#f4511e
+    </div>
+  </div>
+
+  <pre><span class="hl-comment">// wish_pool_v2/logic.go:88-116 — settleRankReward() 完整流程</span>
+<span class="hl-blue">func</span> (ths *ActvTmplWishPool) <span class="hl-yellow">settleRankReward</span>() {
+    actvProgress := ths.CoreComp.<span class="hl-yellow">GetProgress</span>()
+    <span class="hl-blue">if</span> actvProgress.RankSettle {
+        <span class="hl-blue">return</span>
+    }
+    <span class="hl-blue">defer func</span>() {
+        actvProgress.RankSettle = <span class="hl-red">true</span>  <span class="hl-comment">// ← defer：函数 return 后立即设置，早于异步回调</span>
+        actvProgress.<span class="hl-yellow">MakeDirty</span>()
+    }()
+
+    <span class="hl-comment">// 服排循环：按每个 sid 查询 Redis key="" → 取回脏数据</span>
+    <span class="hl-blue">for</span> sid := <span class="hl-blue">range</span> actvProgress.Servers {
+        sid0 := sid
+        ths.Service.<span class="hl-yellow">GetRank</span>(ths, &mcache.ActvPlayerCache{GameServerID: sid},
+            cspb.RankTypeCrossActvWishPool, 0, findMaxRank(rankSecCfgs),
+            <span class="hl-blue">func</span>(rankPbs []*cspb.RankItem, self *cspb.RankItem) {
+                ths.<span class="hl-red">settle</span>(..., rankPbs, sid0, 0)  <span class="hl-comment">// ← 脏数据触发发奖</span>
+            })
+    }
+
+    <span class="hl-comment">// 组排循环：同上，对每个 group 查 Redis key=""</span>
+    <span class="hl-blue">for</span> group, sids := <span class="hl-blue">range</span> actvProgress.Groups {
+        group0 := group
+        ths.Service.<span class="hl-yellow">GetRank</span>(ths, &mcache.ActvPlayerCache{GameServerID: sids[0]},
+            cspb.RankTypeCrossActvWishPoolGroup, 0, findMaxRank(groupRankSecCfgs),
+            <span class="hl-blue">func</span>(rankPbs []*cspb.RankItem, self *cspb.RankItem) {
+                ths.<span class="hl-red">settle</span>(..., rankPbs, 0, group0)  <span class="hl-comment">// ← 脏数据触发发奖</span>
+            })
+    }
+}
+
+<span class="hl-comment">// wish_pool_v2/logic.go:117-160 — settle() 路由逻辑</span>
+<span class="hl-blue">func</span> (ths *ActvTmplWishPool) <span class="hl-yellow">settle</span>(..., sid int32, group int32) {
+    <span class="hl-blue">for</span> _, item := <span class="hl-blue">range</span> rankItems {
+        ...
+        playerSid := sid
+        <span class="hl-blue">if</span> playerSid == 0 {
+            <span class="hl-comment">// 组排行路径：从 PlayerComp 读 Sid 决定路由目标游戏服</span>
+            <span class="hl-blue">if</span> account := ths.PlayerComp.<span class="hl-yellow">GetProgress</span>(item.ID); account != nil {
+                playerSid = account.<span class="hl-red">Sid</span>  <span class="hl-comment">// ← 无合法性校验</span>
+            }
+        }
+        <span class="hl-blue">if</span> playerSid != 0 {
+            msg_cast.<span class="hl-red">ClusterCastToGameServer</span>(playerSid, gameconf.PLAYMOD, msg)
+            <span class="hl-comment">// ↑ 游戏服 onS2SA2GActvMailSendReq 无 OriginServerID 校验，直接发邮件</span>
+        }
+    }
+}</pre>
+
+  <h3>3.5 无校验投递通道：游戏服侧漏洞</h3>
+
+  <pre><span class="hl-comment">// game/play/internal/ctl_cross.go — onS2SA2GActvMailSendReq（系统二使用）</span>
+<span class="hl-blue">func</span> (play *Play) <span class="hl-yellow">onS2SA2GActvMailSendReq</span>(ci *chanrpc.CallInfo) {
+    req := ci.Req.(*cspb.S2SA2GActvMailSendReq)
+    <span class="hl-comment">// ❌ 完全没有 OriginServerID 校验</span>
+    <span class="hl-blue">if</span> req.PlayerID > 0 {
+        play.<span class="hl-yellow">SendSysTextMail</span>(cspb.MailAddrPlayer, req.PlayerID, ...)
+        <span class="hl-comment">// ↑ 不管玩家是否属于本服，直接发送</span>
+    }
+}
+
+<span class="hl-comment">// 对比：game/play/internal/ctl_actv.go — OnA2PPendPlayerMails（系统一使用）</span>
+<span class="hl-blue">func</span> (play *Play) <span class="hl-yellow">OnA2PPendPlayerMails</span>(...) {
+    <span class="hl-blue">for</span> _, mail := <span class="hl-blue">range</span> pendMails {
+        pc := cache.<span class="hl-yellow">GetPlayerCache</span>(mail.PlayerID)
+        <span class="hl-green">if pc.GetOriginServerID() != conf.ServerID {</span>
+            <span class="hl-green">continue</span>  <span class="hl-comment">// ✅ 正确：跳过非本服玩家</span>
+        <span class="hl-green">}</span>
+        play.<span class="hl-yellow">SendSysTextMail</span>(...)
+    }
+}</pre>
+</div>
+
+<!-- ─── §4 完整发奖流程图 ─── -->
+<div class="section" id="s4">
+  <div class="section-hd">
+    <div class="section-num orange">4</div>
+    <h2>完整发奖流程图</h2>
+  </div>
+
+  <h3>4.1 正常生产环境（Redis 未污染）</h3>
+
+  <div class="diagram-wrap">
+    <div class="diagram-title">图 4-1 · 正常路径：系统一正常发奖，系统二取到空排行不执行</div>
+    <div class="mermaid">
+sequenceDiagram
+    participant OE as OnEnd()
+    participant RP as 系统一 sendRankRewards()<br/>(本地 RankPlay)
+    participant SR as 系统二 settleRankReward()<br/>(废弃 Redis 路径)
+    participant Redis as Redis key=""
+    participant GS1 as 游戏服 S1
+    participant GS2 as 游戏服 S2
+
+    OE->>RP: sendRankRewards()
+    RP->>RP: GroupByServerId(MetaMap)<br/>A→S1, B→S2
+    RP->>GS1: ActvPendPlayerMail(S1, [A:rank2])
+    GS1->>GS1: ✅ OriginServerID 校验通过 → A 收第2名邮件
+    RP->>GS2: ActvPendPlayerMail(S2, [B:rank189])
+    GS2->>GS2: ✅ OriginServerID 校验通过 → B 收第189名邮件
+
+    OE->>SR: settleRankReward()
+    SR->>Redis: GetRank(key="")
+    Redis-->>SR: [] 空列表（无脏数据）
+    Note over SR: settle() 收到空列表，不执行任何发奖
+    </div>
+  </div>
+
+  <h3>4.2 测试环境（Redis key="" 有脏数据）</h3>
+
+  <div class="diagram-wrap">
+    <div class="diagram-title">图 4-2 · 异常路径：脏数据激活废弃路径，B 的邮件被额外投递到 S1</div>
+    <div class="mermaid">
+sequenceDiagram
+    participant OE as OnEnd()
+    participant RP as 系统一 sendRankRewards()
+    participant SR as 系统二 settleRankReward()<br/>【废弃】
+    participant Redis as Redis key=""<br/>【含脏数据】
+    participant GS1 as 游戏服 S1
+    participant GS2 as 游戏服 S2
+
+    Note over Redis: 脏数据：[A:rank2, B:rank189, ...]
+
+    OE->>RP: sendRankRewards()
+    RP->>RP: GroupByServerId 读 MetaMap
+    RP->>GS1: ActvPendPlayerMail(S1, [A:rank2])
+    GS1->>GS1: ✅ A.OriginServerID=S1 通过 → A 收第2名邮件
+    RP->>GS2: ActvPendPlayerMail(S2, [B:rank189])
+    GS2->>GS2: ✅ B.OriginServerID=S2 通过 → B 收第189名邮件
+
+    OE->>SR: settleRankReward()
+    SR->>Redis: GetRank(key="")
+    Redis-->>SR: [A:rank2, B:rank189, ...] 脏数据！
+
+    SR->>SR: settle([B:rank189], sid=0, group=G1)
+    SR->>SR: PlayerComp.GetProgress(B.ID).Sid = S1
+    SR->>GS1: ClusterCastToGameServer(S1, PlayerID=B, rank=189)
+    GS1->>GS1: onS2SA2GActvMailSendReq
+    GS1->>GS1: ❌ 无 OriginServerID 校验
+    GS1->>GS1: SendSysTextMail(B.ID, rank=189)
+    Note over GS1: S1 上 B.ID 的邮件发出<br/>若 B.ID 在 S1 上对应 A 的角色<br/>→ A 额外收到「第189名」邮件
+    </div>
+  </div>
+
+  <h3>4.3 事件时序还原</h3>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-dot gray">0</div>
+      <div class="step-body">
+        <strong>前置：测试环境 Redis 存在脏数据</strong>
+        Redis key="" 保有来自上次测试或旧版本代码的排行数据，包含玩家 A、B 的真实 PlayerID 与排名。<code>wish_pool_v2</code> 本次运行从未向 Redis 写入数据，脏数据完全来自历史残留。
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-dot blue">1</div>
+      <div class="step-body">
+        <strong>OnEnd() 触发，系统一正常发奖</strong>
+        <code>sendRankRewards()</code> 读取本地 RankPlay 数据，经 <code>GroupByServerId</code> 分服路由：A(ServerID=S1) → GS1，B(ServerID=S2) → GS2。游戏服两端均经过 <code>OriginServerID</code> 校验，<b>A 正确收到第2名邮件，B 正确收到第189名邮件</b>。
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-dot red">2</div>
+      <div class="step-body">
+        <strong>系统二（废弃路径）从 Redis 取回脏数据</strong>
+        <code>settleRankReward()</code> 调用 <code>Service.GetRank(key="")</code>，Redis 返回了包含 B.ID(rank=189) 的脏排行列表。<code>defer RankSettle=true</code> 在函数返回时执行，此时异步回调尚未触发。
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-dot red">3</div>
+      <div class="step-body">
+        <strong>settle() 用 account.Sid 路由，指向 S1</strong>
+        组排行路径：<code>settle(rankItems=[B:189,...], sid=0)</code> → <code>PlayerComp.GetProgress(B.ID).Sid</code>，取到 B 的账号记录中的 <code>Sid</code>（可能是 S1 或 S2，具体取决于账号初始化时的值）。若 Sid=S1，则 <code>ClusterCastToGameServer(S1, msg.PlayerID=B)</code>。
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-dot red">4</div>
+      <div class="step-body">
+        <strong>游戏服 S1 无校验直接发邮件</strong>
+        <code>onS2SA2GActvMailSendReq</code> 收到 <code>PlayerID=B, rank=189</code> 的消息，没有 OriginServerID 校验，直接调用 <code>SendSysTextMail(B.ID, ...)</code>。若 S1 上 B.ID 对应 A 的角色（PlayerID 碰撞）或测试人员以 A 账号登录时 B 的邮件出现在同服邮箱，<b>A 额外收到「第189名」邮件</b>。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── §5 代码缺陷详析 ─── -->
+<div class="section" id="s5">
+  <div class="section-hd">
+    <div class="section-num purple">5</div>
+    <h2>代码缺陷详析</h2>
+  </div>
+
+  <table>
+    <tr>
+      <th>#</th>
+      <th>缺陷描述</th>
+      <th>位置</th>
+      <th>风险等级</th>
+    </tr>
+    <tr>
+      <td>①</td>
+      <td><b>废弃路径未删除</b>：<code>settleRankReward()</code> 在 wish_pool_v2 切换为本地 RankPlay 后未同步删除，仍在 <code>OnEnd()</code> 中被调用</td>
+      <td><code>wish_pool_v2/api.go:150</code></td>
+      <td><span class="tag red">P0 严重</span></td>
+    </tr>
+    <tr>
+      <td>②</td>
+      <td><b>软禁用机制脆弱</b>：<code>GetRankKey()=""</code> 依赖 Redis key="" 始终为空，在测试环境或 Redis 未重置时立即失效</td>
+      <td><code>wish_pool_v2/api.go:163</code></td>
+      <td><span class="tag red">P0 严重</span></td>
+    </tr>
+    <tr>
+      <td>③</td>
+      <td><b>无校验投递通道</b>：<code>onS2SA2GActvMailSendReq</code> 对 PlayerID 无 OriginServerID 校验，路由错误的邮件被无条件执行</td>
+      <td><code>game/play/internal/ctl_cross.go:310</code></td>
+      <td><span class="tag red">P0 严重</span></td>
+    </tr>
+    <tr>
+      <td>④</td>
+      <td><b>defer 竞态</b>：<code>defer RankSettle=true</code> 在函数 return 时执行，早于所有 <code>GetRank</code> 异步回调，去重标记与实际发奖存在窗口期</td>
+      <td><code>wish_pool_v2/logic.go:93</code></td>
+      <td><span class="tag orange">P1 高危</span></td>
+    </tr>
+    <tr>
+      <td>⑤</td>
+      <td><b>account.Sid 无合法性校验</b>：<code>settle()</code> 取到 <code>account.Sid</code> 后未验证其是否在活动合法服务器列表中，异常值直接路由</td>
+      <td><code>wish_pool_v2/logic.go:144</code></td>
+      <td><span class="tag orange">P1 高危</span></td>
+    </tr>
+    <tr>
+      <td>⑥</td>
+      <td><b>服排/组排双重发奖无去重</b>：同一玩家可能同时命中服排和组排奖励区间，<code>settleRankReward()</code> 两个循环共享 <code>RankSettle</code> 但 settle 内无跨循环去重</td>
+      <td><code>wish_pool_v2/logic.go:97-115</code></td>
+      <td><span class="tag orange">P1 高危</span></td>
+    </tr>
+  </table>
+
+  <h3>缺陷 ①②：废弃路径 + 软禁用失效</h3>
+
+  <div class="diagram-wrap">
+    <div class="diagram-title">图 5-1 · 废弃路径激活条件矩阵</div>
+    <div class="mermaid">
+flowchart LR
+    C1{"settleRankReward()\n在 OnEnd() 中？"}
+    C2{"Redis key=''\n有数据？"}
+    R_SAFE["系统二不触发\n（安全）"]
+    R_BUG["系统二触发\n重复发奖 ❌"]
+
+    C1 -- "否（已删除）" --> R_SAFE
+    C1 -- "是（遗留）" --> C2
+    C2 -- "否（Redis 干净）" --> R_SAFE
+    C2 -- "是（脏数据）" --> R_BUG
+
+    style R_BUG fill:#ffebee,stroke:#e53935
+    style R_SAFE fill:#e8f5e9,stroke:#43a047
+    </div>
+  </div>
+
+  <h3>缺陷 ④：defer 竞态时序</h3>
+
+  <div class="diagram-wrap">
+    <div class="diagram-title">图 5-2 · defer 设置 RankSettle=true 早于异步回调执行</div>
+    <div class="mermaid">
+sequenceDiagram
+    participant F as settleRankReward()
+    participant Q as GetRank 异步队列
+    participant DB as MongoDB
+
+    F->>Q: GetRank(S1, callback_1) 入队
+    F->>Q: GetRank(G1, callback_2) 入队
+    Note over F: 函数 return
+    F->>DB: defer: RankSettle=true 持久化 ← 标记已设
+    Note over Q: callback_1 触发 → settle(S1) → 发邮件
+    Note over Q: callback_2 触发 → settle(G1) → 发邮件
+    Note over DB: 若进程在 defer 后、callback 前崩溃<br/>RankSettle=true 已持久化<br/>邮件永久丢失，不会重发
+    </div>
+  </div>
+</div>
+
+<!-- ─── §6 修复方案 ─── -->
+<div class="section" id="s6">
+  <div class="section-hd">
+    <div class="section-num gray">6</div>
+    <h2>修复方案</h2>
+  </div>
+
+  <div class="fix-list">
+
+    <div class="fix-item">
+      <span class="fix-pri p0">P0</span>
+      <div class="fix-body">
+        <strong>从 OnEnd() 中删除 settleRankReward() 调用</strong>
+        <span>wish_pool_v2 已通过本地 RankPlay 完整管理排行数据，<code>settleRankReward()</code> 是历史遗留的废弃路径，只要测试或生产 Redis 中 key="" 有任何数据就会误触发。最简修复：直接删除 <code>OnEnd()</code> 中对 <code>settleRankReward()</code> 的调用，同时可将 <code>settleRankReward()</code> 整体删除或以 //Deprecated 标注。</span>
+      </div>
+    </div>
+
+    <div class="fix-item">
+      <span class="fix-pri p0">P0</span>
+      <div class="fix-body">
+        <strong>onS2SA2GActvMailSendReq 增加 OriginServerID 校验</strong>
+        <span>参照 <code>OnA2PPendPlayerMails</code> 的逻辑，在 <code>onS2SA2GActvMailSendReq</code> 中对每个 PlayerID 校验 <code>pc.GetOriginServerID() == conf.ServerID</code>，不通过则跳过并打 Warn 日志，从根本上堵住跨服错投通道。</span>
+      </div>
+    </div>
+
+    <div class="fix-item">
+      <span class="fix-pri p1">P1</span>
+      <div class="fix-body">
+        <strong>settle() 中增加 account.Sid 合法性校验</strong>
+        <span>取到 <code>account.Sid</code> 后，验证其是否存在于 <code>actvProgress.Servers</code> 合法服务器列表中，不在则跳过并打 Warn 日志，防止异常 Sid 路由到随机游戏服。</span>
+      </div>
+    </div>
+
+    <div class="fix-item">
+      <span class="fix-pri p1">P1</span>
+      <div class="fix-body">
+        <strong>修复 defer 竞态：RankSettle 标记移到所有回调完成后</strong>
+        <span>使用计数器或 sync.WaitGroup 追踪所有 <code>GetRank</code> 回调的完成情况，全部完成后再将 <code>RankSettle=true</code> 持久化，避免进程崩溃时邮件永久丢失的问题（此项仅在保留系统二的情况下需要处理）。</span>
+      </div>
+    </div>
+
+    <div class="fix-item">
+      <span class="fix-pri p2">P2</span>
+      <div class="fix-body">
+        <strong>测试环境 Redis 清理规范</strong>
+        <span>多服数据合并导入前，须清理 Redis 中所有排行相关 key（尤其是 key=""），或在测试脚本中增加 Redis 数据重置步骤，防止脏数据激活任何废弃路径。</span>
+      </div>
+    </div>
+
+  </div>
+
+  <h3>关键修复代码示意</h3>
+
+  <pre><span class="hl-comment">// 修复①：OnEnd() 删除废弃路径调用</span>
+<span class="hl-blue">func</span> (ths *ActvTmplWishPool) <span class="hl-yellow">OnEnd</span>() {
+    ths.<span class="hl-green">sendRankRewards</span>()    <span class="hl-comment">// 系统一：保留</span>
+    <span class="hl-gray">// ths.settleRankReward()  // 删除：废弃的旧 Redis 路径</span>
+    ths.<span class="hl-blue">SendEndMail</span>()
+}</pre>
+
+  <pre><span class="hl-comment">// 修复②：onS2SA2GActvMailSendReq 增加 OriginServerID 校验</span>
+<span class="hl-blue">func</span> (play *Play) <span class="hl-yellow">onS2SA2GActvMailSendReq</span>(ci *chanrpc.CallInfo) {
+    req := ci.Req.(*cspb.S2SA2GActvMailSendReq)
+    ack := &cspb.S2SA2GActvMailSendAck{}
+    <span class="hl-blue">defer func</span>() { ci.<span class="hl-yellow">Ret</span>(ack) }()
+
+    <span class="hl-blue">if</span> req.PlayerID > 0 {
+        <span class="hl-green">// 新增：校验玩家原服，防止跨服错投</span>
+        <span class="hl-green">if pc := cache.GetPlayerCache(req.PlayerID); pc == nil ||</span>
+            <span class="hl-green">pc.GetOriginServerID() != conf.ServerID {</span>
+            <span class="hl-green">tlog.Warnf("onS2SA2GActvMailSendReq skip player:%v originSid:%v",</span>
+                <span class="hl-green">req.PlayerID, pc.GetOriginServerID())</span>
+            <span class="hl-green">return</span>
+        <span class="hl-green">}</span>
+        play.<span class="hl-yellow">SendSysTextMail</span>(cspb.MailAddrPlayer, req.PlayerID, ...)
+    }
+}</pre>
+
+  <pre><span class="hl-comment">// 修复③：settle() 增加 account.Sid 合法性校验</span>
+<span class="hl-blue">func</span> (ths *ActvTmplWishPool) <span class="hl-yellow">settle</span>(...) {
+    actvProgress := ths.CoreComp.<span class="hl-yellow">GetProgress</span>()
+    <span class="hl-blue">for</span> _, item := <span class="hl-blue">range</span> rankItems {
+        ...
+        playerSid := sid
+        <span class="hl-blue">if</span> playerSid == 0 {
+            <span class="hl-blue">if</span> account := ths.PlayerComp.<span class="hl-yellow">GetProgress</span>(item.ID); account != nil {
+                playerSid = account.Sid
+                <span class="hl-green">// 新增：校验 Sid 在活动合法服务器列表中</span>
+                <span class="hl-green">if _, ok := actvProgress.Servers[playerSid]; !ok {</span>
+                    <span class="hl-green">tlog.Warnf("settle invalid Sid:%v for player:%v", playerSid, item.ID)</span>
+                    <span class="hl-green">continue</span>
+                <span class="hl-green">}</span>
+            }
+        }
+        ...
+    }
+}</pre>
+
+</div>
+
+</div><!-- /body -->
+
+<!-- ══════════ FOOTER ══════════ -->
+<div class="footer">
+  <span>gs · actv · wish_pool_v2 · Bug 分析报告</span>
+  <span>生成时间：2026-05-12 · wenyu</span>
+</div>
+
+</div><!-- /page -->
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#1e88e5',
+      primaryTextColor: '#fff',
+      primaryBorderColor: '#1565c0',
+      lineColor: '#546e7a',
+      secondaryColor: '#e3f2fd',
+      tertiaryColor: '#f5f7fa',
+      fontSize: '13px'
+    },
+    flowchart: { curve: 'basis', padding: 20 },
+    sequence: { width: 180, actorMargin: 50 }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>chenqiang 1043 代码审查 · 2026-05-21</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; background: #0d1117; color: #c9d1d9; line-height: 1.7; padding: 40px 24px 80px; }
+    .container { max-width: 900px; margin: 0 auto; }
+
+    header { border-bottom: 1px solid #21262d; padding-bottom: 24px; margin-bottom: 40px; }
+    header h1 { font-size: 24px; font-weight: 700; color: #e6edf3; margin-bottom: 8px; }
+    .meta { font-size: 13px; color: #8b949e; display: flex; gap: 24px; flex-wrap: wrap; }
+
+    .section-title { font-size: 13px; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+
+    .card { background: #161b22; border: 1px solid #21262d; border-radius: 10px; margin-bottom: 28px; overflow: hidden; }
+    .card-header { display: flex; align-items: flex-start; gap: 14px; padding: 18px 22px; border-bottom: 1px solid #21262d; }
+    .card-body { padding: 18px 22px; }
+    .card-body p { margin-bottom: 12px; font-size: 14px; }
+    .card-body p:last-child { margin-bottom: 0; }
+
+    .badge { flex-shrink: 0; font-size: 11px; font-weight: 700; letter-spacing: .5px; padding: 3px 9px; border-radius: 20px; margin-top: 2px; }
+    .badge.p0, .badge.bug { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .badge.p1, .badge.cfg { background: #2a2000; color: #f0a500; border: 1px solid #5a4000; }
+    .badge.p2 { background: #1a2a1a; color: #56d364; border: 1px solid #1f4d1f; }
+    .badge.ok { background: #0d2233; color: #58a6ff; border: 1px solid #0f4070; }
+
+    .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 4px; margin-right: 4px; }
+    .tag.logic  { background: #2d1f3d; color: #d2a8ff; border: 1px solid #4a3060; }
+    .tag.style  { background: #162032; color: #79c0ff; border: 1px solid #1f4060; }
+    .tag.safety { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .tag.spec   { background: #1a2a1a; color: #56d364; border: 1px solid #1f4d1f; }
+
+    .title-group { flex: 1; }
+    .item-title { font-size: 16px; font-weight: 600; color: #e6edf3; line-height: 1.4; }
+    .item-sub   { font-size: 12px; color: #8b949e; margin-top: 4px; font-family: monospace; }
+
+    .code-wrap { margin: 14px 0; border-radius: 8px; overflow: hidden; border: 1px solid #21262d; }
+    .code-label { font-size: 11px; color: #8b949e; background: #1c2128; padding: 6px 14px; border-bottom: 1px solid #21262d; font-family: monospace; }
+    .code-label.bad  { border-left: 3px solid #f97583; }
+    .code-label.good { border-left: 3px solid #56d364; }
+    .code-label.note { border-left: 3px solid #f0a500; }
+    pre { background: #0d1117; padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.6; font-family: "SFMono-Regular", Consolas, monospace; }
+    .del { color: #ffa198; background: #3d0000; display: block; }
+    .ins { color: #56d364; background: #003a00; display: block; }
+    .cmt { color: #8b949e; }
+
+    .callout { border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 13px; color: #c9d1d9; margin: 12px 0; }
+    .callout.info  { background: #0d2233; border-left: 3px solid #58a6ff; }
+    .callout.ok    { background: #0d2a0d; border-left: 3px solid #56d364; }
+    .callout.warn  { background: #2a2000; border-left: 3px solid #f0a500; }
+    .callout.error { background: #3d1a1a; border-left: 3px solid #f97583; }
+
+    .table-wrap { background: #161b22; border: 1px solid #21262d; border-radius: 10px; overflow: hidden; margin-bottom: 28px; }
+    .table-wrap h2 { font-size: 15px; font-weight: 600; color: #e6edf3; padding: 16px 22px; border-bottom: 1px solid #21262d; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 18px; color: #8b949e; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #21262d; background: #1c2128; }
+    td { padding: 11px 18px; border-bottom: 1px solid #161b22; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1c2128; }
+    td code, .card-body code { font-family: monospace; font-size: 12px; background: #21262d; padding: 1px 6px; border-radius: 4px; color: #79c0ff; }
+
+    .praise { background: #0d2233; border: 1px solid #1f4070; border-radius: 10px; padding: 18px 22px; margin-bottom: 28px; }
+    .praise h2 { font-size: 15px; font-weight: 600; color: #58a6ff; margin-bottom: 14px; }
+    .praise ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .praise li { font-size: 14px; color: #c9d1d9; padding-left: 22px; position: relative; }
+    .praise li::before { content: "✓"; position: absolute; left: 0; color: #56d364; font-weight: 700; }
+
+    .open-in-browser { display: inline-block; margin-bottom: 20px; padding: 5px 14px; background: #161b22; border: 1px solid #30363d; border-radius: 6px; color: #8b949e; font-size: 12px; text-decoration: none; }
+    .open-in-browser:hover { border-color: #58a6ff; color: #58a6ff; }
+
+    .flow-diagram { width: 100%; margin: 24px 0 8px; overflow-x: auto; background: #0d1117; border: 1px solid #21262d; border-radius: 10px; padding: 24px 0; }
+    .flow-diagram canvas { display: block; margin: 0 auto; }
+
+    .flow-label { font-size: 12px; color: #8b949e; text-align: center; margin-bottom: 8px; letter-spacing: .5px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <a class="open-in-browser" href="file:///home/wenyu/Documents/Obsidian/SecondBrain/01-项目库/H5项目(330gs)/审查修改建议/review_chenqiang_1043_20260521.html">在浏览器中打开</a>
+
+  <header>
+    <h1>chenqiang · 1043 代码审查</h1>
+    <div class="meta">
+      <span>🗓 2026-05-21</span>
+      <span>👤 审查人：wenyu &nbsp;|&nbsp; 被审查人：chenqiang</span>
+      <span>🌿 h5_new_tf_v1043</span>
+      <span>📦 远征冰地图 / 水晶塔</span>
+      <span>📋 P0 × 0 &nbsp;|&nbsp; P1 × 2 &nbsp;|&nbsp; P2 × 1</span>
+    </div>
+  </header>
+
+  <!-- ====== 提交范围 ====== -->
+  <div class="table-wrap" style="margin-bottom:28px">
+    <h2>审查范围</h2>
+    <table>
+      <thead><tr><th>Commit</th><th>描述</th></tr></thead>
+      <tbody>
+        <tr><td><code>a65c93f1ef</code></td><td>H5-8796 水晶塔防守技能</td></tr>
+        <tr><td><code>c7ae0d9a42</code></td><td>H5-8796 水晶塔防守技能 conf</td></tr>
+        <tr><td><code>14810184c2</code></td><td>H5-9007 出怪等级边界修复</td></tr>
+        <tr><td><code>07e6763551</code></td><td>H5-9179 雪怪生成出来就出发战斗</td></tr>
+        <tr><td><code>b4e9b9ef3b</code></td><td>H5-8796 水晶塔驻防奖励（主提交）</td></tr>
+        <tr><td><code>f4f93d8be8</code></td><td>H5-9185 R5踢人功能</td></tr>
+        <tr><td><code>a214a1ee46</code></td><td>1043 驻防数据清空时机修复</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ====== 问题汇总表 ====== -->
+  <div class="table-wrap">
+    <h2>问题汇总</h2>
+    <table>
+      <thead>
+        <tr><th>优先级</th><th>问题描述</th><th>文件位置</th><th>类型</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge p1">P1</span></td>
+          <td><code>removeCrystalTowerDefender</code> 两个分支均调用 <code>RemoveDefender</code>，逻辑冗余</td>
+          <td><code>ctl_crystal_tower.go:408</code></td>
+          <td><span class="tag logic">逻辑</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p1">P1</span></td>
+          <td><code>defendMinutes</code> 在内层循环重复计算，应提到外层</td>
+          <td><code>ctl_crystal_tower.go:325</code></td>
+          <td><span class="tag logic">逻辑</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p2">P2</span></td>
+          <td><code>settleCrystalTowerDefendReward</code> 与 <code>ExpAutoDemonFortressReward</code> 奖励结算循环结构重复</td>
+          <td><code>ctl_crystal_tower.go:313</code> vs <code>ctl_island.go:2016</code></td>
+          <td><span class="tag style">复用</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ====== 问题详情 ====== -->
+  <p class="section-title">问题详情</p>
+
+  <!-- P1-1 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p1">P1</span>
+      <div class="title-group">
+        <div class="item-title">removeCrystalTowerDefender：if/else 两分支重复调用 RemoveDefender</div>
+        <div class="item-sub">game/wmap/internal/ctl_crystal_tower.go · 408</div>
+      </div>
+      <span class="tag logic">逻辑</span>
+    </div>
+    <div class="card-body">
+      <p>无论 <code>pt</code> 是否为 nil，<code>tower.RemoveDefender(unit.GetID())</code> 都需要执行，却写在了 if/else 两个分支里各一次。这不是 bug，但增加了维护成本——若将来修改 <code>RemoveDefender</code> 调用时机，极易漏改一处。</p>
+
+      <p class="flow-label">修改前 / 修改后 调用流程</p>
+      <div class="flow-diagram">
+        <canvas id="flow-remove" width="860" height="240"></canvas>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-label bad">修改前（冗余）</div>
+        <pre><span class="cmt">// removeCrystalTowerDefender</span>
+<span class="del">pt, _ := melem.UnitToPlayerTroop(unit)</span>
+<span class="del">if pt != nil {</span>
+<span class="del">    pid := pt.OwnerInfo().ID</span>
+<span class="del">    tower.RemoveDefender(unit.GetID())  // ← 分支1</span>
+<span class="del">    if !wmap.playerHasTroopsInBuild(tower, pid) {</span>
+<span class="del">        ...</span>
+<span class="del">        wmap.settlePlayerDefendBuild(tower, pid, expedition.CrystalTowerScore)</span>
+<span class="del">    }</span>
+<span class="del">} else {</span>
+<span class="del">    tower.RemoveDefender(unit.GetID())  // ← 分支2，重复</span>
+<span class="del">}</span></pre>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-label good">修改后（提前统一调用）</div>
+        <pre><span class="cmt">// removeCrystalTowerDefender</span>
+<span class="ins">tower.RemoveDefender(unit.GetID())  // 无论 pt 是否 nil 均需执行，提前统一</span>
+<span class="ins">pt, _ := melem.UnitToPlayerTroop(unit)</span>
+<span class="ins">if pt == nil {</span>
+<span class="ins">    return</span>
+<span class="ins">}</span>
+<span class="ins">pid := pt.OwnerInfo().ID</span>
+<span class="ins">if !wmap.playerHasTroopsInBuild(tower, pid) {</span>
+<span class="ins">    ...</span>
+<span class="ins">    wmap.settlePlayerDefendBuild(tower, pid, expedition.CrystalTowerScore)</span>
+<span class="ins">}</span></pre>
+      </div>
+
+      <div class="callout info">提前调用 <code>RemoveDefender</code> 不影响 <code>playerHasTroopsInBuild</code> 的语义——该函数检查的是"此玩家是否还有其他部队在塔中"，移除当前部队后再检查结果不变。</div>
+    </div>
+  </div>
+
+  <!-- P1-2 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p1">P1</span>
+      <div class="title-group">
+        <div class="item-title">settleCrystalTowerDefendReward：defendMinutes 在内层循环重复计算</div>
+        <div class="item-sub">game/wmap/internal/ctl_crystal_tower.go · 325</div>
+      </div>
+      <span class="tag logic">逻辑</span>
+    </div>
+    <div class="card-body">
+      <p><code>defendMinutes</code> 仅依赖 <code>recode.DefendSeconds</code>，在外层 <code>for pid, recode</code> 迭代时固定，却写在内层 <code>for _, cfg</code> 循环中，每次 cfg 迭代都重新计算一次。此函数虽非热点路径（仅在争夺战结束时调用一次），但逻辑放置有误，应提到内层循环之外。</p>
+
+      <div class="code-wrap">
+        <div class="code-label bad">修改前</div>
+        <pre>for pid, recode := range mgr.PlayerRecodes {
+    var allReward []*reward.Reward
+    for _, cfg := range allCfg {
+        if cfg.Type != 2 { continue }
+<span class="del">        defendMinutes := int32(recode.DefendSeconds / 60)  // 每次 cfg 循环重算</span>
+        if cfg.Value &lt;= defendMinutes &amp;&amp; ... {
+        }
+    }
+}</pre>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-label good">修改后</div>
+        <pre>for pid, recode := range mgr.PlayerRecodes {
+    var allReward []*reward.Reward
+<span class="ins">    defendMinutes := int32(recode.DefendSeconds / 60)  // 提到内层循环外</span>
+    for _, cfg := range allCfg {
+        if cfg.Type != 2 { continue }
+        if cfg.Value &lt;= defendMinutes &amp;&amp; ... {
+        }
+    }
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- P2-1 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p2">P2</span>
+      <div class="title-group">
+        <div class="item-title">settleCrystalTowerDefendReward 与 ExpAutoDemonFortressReward 奖励循环结构重复</div>
+        <div class="item-sub">ctl_crystal_tower.go:313 &nbsp;vs&nbsp; ctl_island.go:2016</div>
+      </div>
+      <span class="tag style">复用</span>
+    </div>
+    <div class="card-body">
+      <p>两个函数的内层奖励循环逻辑完全一致：遍历 <code>GetAllExpFortRewardCfg()</code> → 按 <code>cfg.Type</code> 过滤 → 阈值比较 → <code>ContainsInSlice</code> 去重 → <code>MakeReward</code> 累积 → <code>RewardsToAssets</code> + 邮件 + BiLog。差异仅在 Type 值（1 vs 2）和阈值字段（Score vs DefendSeconds/60）。</p>
+
+      <div class="code-wrap">
+        <div class="code-label note">两处重复的核心结构</div>
+        <pre><span class="cmt">// ctl_crystal_tower.go — Type==2，阈值=recode.DefendSeconds/60</span>
+for _, cfg := range allCfg {
+    if cfg.Type != 2 { continue }
+    if cfg.Value &lt;= defendMinutes &amp;&amp; !ContainsInSlice(recode.Reward, cfg.Id) {
+        ...
+    }
+}
+
+<span class="cmt">// ctl_island.go — Type==1，阈值=recode.Score</span>
+for _, Cfg := range allCfg {
+    if Cfg.Type != 1 { continue }
+    if Cfg.Value &lt;= int32(recode.Score) &amp;&amp; !ContainsInSlice(recode.Reward, Cfg.Id) {
+        ...
+    }
+}</pre>
+      </div>
+
+      <div class="callout warn">当前只有两处，可接受。若后续新增第三种驻防类型奖励，建议提取为共享 helper：<br>
+        <code>collectFortRewardByThreshold(allCfg, cfgType, threshold int32, rewardedIDs *[]int32) []*reward.Reward</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 已确认正确的改动 ====== -->
+  <p class="section-title" style="margin-top:16px">已确认正确的改动</p>
+
+  <div class="table-wrap" style="margin-bottom:28px">
+    <table>
+      <thead><tr><th>Commit</th><th>确认内容</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>07e6763551</code></td>
+          <td><strong>CountdownTs 单位修复正确</strong>：<code>NowTs()</code> 返回毫秒，原来 <code>now + int64(cfg.CountdownSec)</code> 是 ms + s 混单位；修复后 <code>now + countdown</code>（<code>countdown = Sec2Ms(...)</code>）两侧单位一致。消费侧 <code>now >= state.GetCountdownTs()</code> 同样使用 <code>NowTs()</code>，一致。</td>
+        </tr>
+        <tr>
+          <td><code>14810184c2</code></td>
+          <td><strong>边界条件 <code>&lt;</code> → <code>&lt;=</code> 正确</strong>：配置区间为闭区间 [min, max]，原来 <code>&lt; GarrisonCountMax</code> 会漏掉驻守人数恰好等于上限的情况。</td>
+        </tr>
+        <tr>
+          <td><code>a214a1ee46</code></td>
+          <td><strong>删除 <code>OnCrystalTowerFightEnd</code> 中的 Reset() 正确</strong>：Reset 已移至 <code>ResetAllRoundData</code>（准备阶段），在战斗结束时再 Reset 会导致未发放的奖励记录被提前清空，时机修复准确。</td>
+        </tr>
+        <tr>
+          <td><code>f4f93d8be8</code></td>
+          <td><strong>领奖接口缺失错误码符合现有约定</strong>：早返回不设 ErrCode 看似 bug，但对比 <code>OnExpFortScoreRewardReq</code>（<code>ctl_island.go:2066</code>）的现有模式，此项目约定是失败时静默返回，客户端靠 <code>ack.CfgId</code> 是否有值判断结果，与规范一致。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ====== Praise ====== -->
+  <div class="praise">
+    <h2>✦ 写得好的地方</h2>
+    <ul>
+      <li><code>CrystalTowerAction</code> 头部注释包含触发时机、完整三步流程说明，新人可直接理解意图，无需反复跳读代码。</li>
+      <li><code>removeCrystalTowerDefender</code> 顶部注释明确指出"必须在 <code>settlePlayerDefendBuild</code> 之前调用 <code>GetPlayerDefendDuration</code>"，将函数间的时序约束显式记录，防止后续改动引入 Pop 顺序问题。</li>
+      <li>新增 <code>GetPlayerDefendDuration</code>（非破坏性读取）与已有 <code>PopPlayerDefendDuration</code>（读取并删除）形成清晰对称，职责分离干净，扩展了 <code>ExpCrystalTower</code> 的时间管理接口而不破坏原有逻辑。</li>
+      <li><code>CrystalTowerDefendMgr</code> 的 <code>GetOrCreateRecode</code> 内部处理了 map nil 初始化，调用方无需关心懒初始化细节，封装良好。</li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- ====== 流程图：removeCrystalTowerDefender ====== -->
+<script>
+(function() {
+  const canvas = document.getElementById('flow-remove');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let t = 0;
+
+  // ---- 修改前节点（上半）----
+  const nodesBefore = [
+    { id: 'entry_b', x: 80,  y: 60,  label: 'removeCrystalTower', sub: 'Defender()', color: '#f0a500', bg: '#1a1200' },
+    { id: 'branch',  x: 290, y: 60,  label: 'pt != nil?',          sub: '',           color: '#8b949e', bg: '#161b22' },
+    { id: 'rm1',     x: 510, y: 30,  label: 'RemoveDefender',       sub: '(if分支)',   color: '#f97583', bg: '#200000' },
+    { id: 'rm2',     x: 510, y: 100, label: 'RemoveDefender',       sub: '(else重复)', color: '#f97583', bg: '#200000' },
+    { id: 'settle',  x: 730, y: 30,  label: 'settlePlayerDefend',   sub: 'Build()',    color: '#a78bfa', bg: '#1a1030' },
+  ];
+  const edgesBefore = [
+    { from: 'entry_b', to: 'branch', flow: 'sync',  color: '#f0a500', label: '' },
+    { from: 'branch',  to: 'rm1',    flow: 'sync',  color: '#8b949e', label: 'true' },
+    { from: 'branch',  to: 'rm2',    flow: 'error', color: '#f97583', label: 'false' },
+    { from: 'rm1',     to: 'settle', flow: 'sync',  color: '#a78bfa', label: '' },
+  ];
+
+  // ---- 修改后节点（下半）----
+  const nodesAfter = [
+    { id: 'entry_a', x: 80,  y: 175, label: 'removeCrystalTower', sub: 'Defender()',  color: '#f0a500', bg: '#1a1200' },
+    { id: 'rm_once', x: 290, y: 175, label: 'RemoveDefender',      sub: '(统一调用)', color: '#34d399', bg: '#001a0d' },
+    { id: 'nil_chk', x: 500, y: 175, label: 'pt == nil?',          sub: '',            color: '#8b949e', bg: '#161b22' },
+    { id: 'ret',     x: 710, y: 210, label: 'return',               sub: '',            color: '#8b949e', bg: '#161b22' },
+    { id: 'settle2', x: 710, y: 145, label: 'settlePlayerDefend',   sub: 'Build()',     color: '#a78bfa', bg: '#1a1030' },
+  ];
+  const edgesAfter = [
+    { from: 'entry_a', to: 'rm_once', flow: 'sync',    color: '#f0a500', label: '' },
+    { from: 'rm_once', to: 'nil_chk', flow: 'sync',    color: '#34d399', label: '' },
+    { from: 'nil_chk', to: 'ret',     flow: 'control', color: '#8b949e', label: 'true' },
+    { from: 'nil_chk', to: 'settle2', flow: 'sync',    color: '#a78bfa', label: 'false' },
+  ];
+
+  const flowCfg = {
+    sync:    { dash: [],          speed: 0,   dir:  1 },
+    async:   { dash: [8, 4],      speed: 1.2, dir:  1 },
+    return:  { dash: [3, 3],      speed: 0.6, dir: -1 },
+    control: { dash: [6, 4],      speed: 0.8, dir:  1 },
+    error:   { dash: [5, 3],      speed: 1.5, dir:  1 },
+  };
+
+  function nodeById(id, nodes) { return nodes.find(n => n.id === id); }
+
+  function drawEdge(e, nodes) {
+    const s = nodeById(e.from, nodes), d = nodeById(e.to, nodes);
+    if (!s || !d) return;
+    const cfg = flowCfg[e.flow] || flowCfg.sync;
+    const col = e.color || '#30363d';
+    ctx.save();
+    ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+    const off = cfg.speed > 0 ? (t * cfg.speed * cfg.dir) % 20 : 0;
+    ctx.setLineDash(cfg.dash); ctx.lineDashOffset = -off;
+    ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(d.x, d.y); ctx.stroke();
+    const ang = Math.atan2(d.y - s.y, d.x - s.x);
+    ctx.setLineDash([]); ctx.fillStyle = col;
+    ctx.translate(d.x - Math.cos(ang) * 22, d.y - Math.sin(ang) * 22);
+    ctx.rotate(ang);
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-10, 5); ctx.lineTo(-10, -5); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    if (e.label) {
+      ctx.fillStyle = '#8b949e'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(e.label, (s.x + d.x) / 2, (s.y + d.y) / 2 - 8);
+    }
+  }
+
+  function drawNode(n) {
+    const w = 160, h = 44, r = 6;
+    ctx.save();
+    ctx.shadowColor = n.color; ctx.shadowBlur = 14;
+    ctx.fillStyle = n.bg || '#161b22';
+    ctx.strokeStyle = n.color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.roundRect(n.x - w/2, n.y - h/2, w, h, r); ctx.fill(); ctx.stroke();
+    ctx.restore();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#e6edf3'; ctx.font = '13px -apple-system, sans-serif';
+    ctx.fillText(n.label, n.x, n.sub ? n.y - 8 : n.y);
+    if (n.sub) { ctx.fillStyle = '#8b949e'; ctx.font = '11px monospace'; ctx.fillText(n.sub, n.x, n.y + 8); }
+  }
+
+  function drawLabel(text, x, y, color) {
+    ctx.save();
+    ctx.fillStyle = color || '#8b949e';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  function drawDivider() {
+    ctx.save();
+    ctx.strokeStyle = '#21262d'; ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(20, 130); ctx.lineTo(840, 130); ctx.stroke();
+    ctx.restore();
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawLabel('修改前', 20, 20, '#f97583');
+    edgesBefore.forEach(e => drawEdge(e, nodesBefore));
+    nodesBefore.forEach(drawNode);
+    drawDivider();
+    drawLabel('修改后', 20, 148, '#34d399');
+    edgesAfter.forEach(e => drawEdge(e, nodesAfter));
+    nodesAfter.forEach(drawNode);
+    t += 0.5;
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+</body>
+</html>

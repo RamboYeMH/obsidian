@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>代码审查报告 — chenqiang · 2026-05-12</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      line-height: 1.7;
+      padding: 40px 24px 80px;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 900px; margin: 0 auto; }
+
+    /* ── Header ── */
+    header {
+      border-bottom: 1px solid #21262d;
+      padding-bottom: 24px;
+      margin-bottom: 40px;
+    }
+    header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #e6edf3;
+      margin-bottom: 8px;
+    }
+    header .meta {
+      font-size: 13px;
+      color: #8b949e;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    header .meta span { display: flex; align-items: center; gap: 6px; }
+
+    /* ── Issue card ── */
+    .issue {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 10px;
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+
+    .issue-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 18px 22px;
+      border-bottom: 1px solid #21262d;
+    }
+
+    .badge {
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      margin-top: 2px;
+    }
+    .badge.p0 { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .badge.p1 { background: #2a2000; color: #f0a500; border: 1px solid #5a4000; }
+    .badge.p2 { background: #1a2a1a; color: #56d364; border: 1px solid #1f4d1f; }
+    .badge.ok { background: #0d2233; color: #58a6ff; border: 1px solid #0f4070; }
+
+    .issue-title-group { flex: 1; }
+    .issue-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #e6edf3;
+      line-height: 1.4;
+    }
+    .issue-commit {
+      font-size: 12px;
+      color: #8b949e;
+      margin-top: 4px;
+      font-family: "SFMono-Regular", Consolas, monospace;
+    }
+    .issue-commit .hash {
+      background: #21262d;
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: #79c0ff;
+    }
+
+    .issue-body { padding: 18px 22px; }
+    .issue-body p { margin-bottom: 12px; color: #c9d1d9; font-size: 14px; }
+    .issue-body p:last-child { margin-bottom: 0; }
+
+    /* ── Tag ── */
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 1px 7px;
+      border-radius: 4px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+    .tag.logic  { background: #2d1f3d; color: #d2a8ff; border: 1px solid #4a3060; }
+    .tag.style  { background: #162032; color: #79c0ff; border: 1px solid #1f4060; }
+    .tag.safety { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .tag.spec   { background: #1a2a1a; color: #56d364; border: 1px solid #1f4d1f; }
+
+    /* ── Code block ── */
+    .code-wrap { margin: 14px 0; border-radius: 8px; overflow: hidden; border: 1px solid #21262d; }
+    .code-label {
+      font-size: 11px;
+      color: #8b949e;
+      background: #1c2128;
+      padding: 6px 14px;
+      border-bottom: 1px solid #21262d;
+      font-family: "SFMono-Regular", Consolas, monospace;
+    }
+    .code-label.bad  { border-left: 3px solid #f97583; }
+    .code-label.good { border-left: 3px solid #56d364; }
+    .code-label.note { border-left: 3px solid #f0a500; }
+    pre {
+      background: #0d1117;
+      padding: 14px 16px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.6;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+    .del { color: #ffa198; background: #3d0000; display: block; }
+    .ins { color: #56d364; background: #003a00; display: block; }
+    .cmt { color: #8b949e; }
+    .kw  { color: #ff7b72; }
+    .fn  { color: #d2a8ff; }
+    .str { color: #a5d6ff; }
+    .num { color: #79c0ff; }
+    .tp  { color: #ffa657; }
+
+    /* ── Summary table ── */
+    .summary {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+    .summary h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #e6edf3;
+      padding: 16px 22px;
+      border-bottom: 1px solid #21262d;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left;
+      padding: 10px 18px;
+      color: #8b949e;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      border-bottom: 1px solid #21262d;
+      background: #1c2128;
+    }
+    td {
+      padding: 11px 18px;
+      border-bottom: 1px solid #161b22;
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1c2128; }
+    td code {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      background: #21262d;
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: #79c0ff;
+    }
+
+    /* ── Praise section ── */
+    .praise {
+      background: #0d2233;
+      border: 1px solid #1f4070;
+      border-radius: 10px;
+      padding: 18px 22px;
+      margin-bottom: 28px;
+    }
+    .praise h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #58a6ff;
+      margin-bottom: 14px;
+    }
+    .praise ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .praise li {
+      font-size: 14px;
+      color: #c9d1d9;
+      padding-left: 22px;
+      position: relative;
+    }
+    .praise li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #56d364;
+      font-weight: 700;
+    }
+    .praise li code {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      background: #21262d;
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: #79c0ff;
+    }
+
+    section h2.section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    .callout {
+      background: #2a2000;
+      border-left: 3px solid #f0a500;
+      border-radius: 0 6px 6px 0;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #c9d1d9;
+      margin: 12px 0;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <h1>代码审查报告</h1>
+    <div class="meta">
+      <span>👤 作者：chenqiang</span>
+      <span>📅 日期：2026-05-12</span>
+      <span>🌿 分支：h5_new_tf_v1042_new</span>
+      <span>📦 模块：联盟对决（H5-1042）</span>
+    </div>
+  </header>
+
+  <!-- Summary table -->
+  <section>
+    <h2 class="section-title">问题汇总</h2>
+    <div class="summary">
+      <h2>优先级一览</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>优先级</th>
+            <th>问题</th>
+            <th>文件位置</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge p0">P0</span></td>
+            <td>GM强制匹配 <code>continue</code> 导致联盟无分组</td>
+            <td><code>global/internal/ctl_union_duel.go</code></td>
+          </tr>
+          <tr>
+            <td><span class="badge p0">P0</span></td>
+            <td>int64 改造后 <code>UpdateScore</code> 仍用 int32，差值截断溢出</td>
+            <td><code>comp_union.go</code> / <code>ctl.go:625</code></td>
+          </tr>
+          <tr>
+            <td><span class="badge p1">P1</span></td>
+            <td><code>processRoadWinner</code> 死者弹出条件包含错误的 <code>len(losers)&gt;1</code></td>
+            <td><code>logic_battle.go:274</code></td>
+          </tr>
+          <tr>
+            <td><span class="badge p2">P2</span></td>
+            <td><code>math.Floor(math.Ceil(x))</code> 冗余，Floor 无效</td>
+            <td><code>game/play/internal/ctl_tech.go</code></td>
+          </tr>
+          <tr>
+            <td><span class="badge p2">P2</span></td>
+            <td>两个新函数缺少注释</td>
+            <td><code>ctl_rank.go</code> / <code>ctl_union_duel.go</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Issues -->
+  <section>
+    <h2 class="section-title">问题详情</h2>
+
+    <!-- Issue 1 -->
+    <div class="issue">
+      <div class="issue-header">
+        <span class="badge p0">P0</span>
+        <div class="issue-title-group">
+          <div class="issue-title">GM 强制匹配：<code>continue</code> 会使当前联盟没有任何分组</div>
+          <div class="issue-commit">
+            <span class="hash">09a535101a</span>
+            H5-8936【联盟对决】GM强制匹配优化2
+          </div>
+        </div>
+      </div>
+      <div class="issue-body">
+        <p>
+          <span class="tag logic">L6 逻辑遗漏</span>
+          当强制对手已被匹配时，<code>continue</code> 跳过了整个后续流程——当前联盟既不写入 <code>matchedUnions</code>，也不生成任何分组（包括轮空 bye），相当于<strong>该联盟被静默丢弃</strong>，联盟对决数据中将不存在该联盟。
+        </p>
+        <div class="code-wrap">
+          <div class="code-label bad">✗ 当前代码 — global/internal/ctl_union_duel.go</div>
+          <pre><span class="kw">if</span> <span class="fn">len</span>(forceUnions) &gt; <span class="num">0</span> {
+    opponent = forceUnions[<span class="num">0</span>]
+    <span class="kw">if</span> matchedUnions[opponent.<span class="fn">GetId</span>()] {
+        <span class="kw">continue</span>  <span class="cmt">// ← 当前 unionID 没有分组，被丢弃</span>
+    }
+}</pre>
+        </div>
+        <div class="callout">
+          在正常成对强制匹配（A→B、B→A）下不触发此问题。但若强制名单配置异常（非对称、或对手不在参赛列表中）则必现。
+        </div>
+        <div class="code-wrap">
+          <div class="code-label good">✓ 建议修复</div>
+          <pre><span class="cmt">// 强制对手已匹配或不存在时，回退到正常匹配</span>
+<span class="kw">if</span> <span class="fn">len</span>(forceUnions) &gt; <span class="num">0</span> &amp;&amp; !matchedUnions[forceUnions[<span class="num">0</span>].<span class="fn">GetId</span>()] {
+    opponent = forceUnions[<span class="num">0</span>]
+} <span class="kw">else</span> {
+    opponent = m.<span class="fn">findSuitableOpponent</span>(matchKey, unions, i+<span class="num">1</span>, serverID, matchedUnions, unionID)
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Issue 2 -->
+    <div class="issue">
+      <div class="issue-header">
+        <span class="badge p0">P0</span>
+        <div class="issue-title-group">
+          <div class="issue-title">int64 积分改造不完整：<code>UpdateScore</code> 仍用 int32，差值截断溢出</div>
+          <div class="issue-commit">
+            <span class="hash">88b0331703</span>
+            【联盟对决】个人积分存储使用 int64
+          </div>
+        </div>
+      </div>
+      <div class="issue-body">
+        <p>
+          <span class="tag safety">类型安全</span>
+          <code>UnionMembers.Scores</code> 和 <code>StageScore</code> 已改为 <code>int64</code>，但 <code>UpdateScore</code> / <code>updatePlayerScore</code> 的 <code>score</code> 参数仍声明为 <code>int32</code>，且调用方显式将 int64 差值强转为 int32：
+        </p>
+        <div class="code-wrap">
+          <div class="code-label bad">✗ 当前代码 — ctl.go:623-626</div>
+          <pre>oldScore := members.<span class="fn">GetStageScore</span>()[ntf.Stage]  <span class="cmt">// int64</span>
+<span class="kw">if</span> player.Val-oldScore &gt; <span class="num">0</span> {
+    changeScore := <span class="tp">int32</span>(player.Val - oldScore)  <span class="del"><span class="cmt">// ← int64→int32 截断，超 21 亿时溢出</span></span>
+    <span class="kw">if</span> e, member := unionProgress.<span class="fn">UpdateScore</span>(player.PlayerId, changeScore, ntf.Stage); ...</pre>
+        </div>
+        <p>
+          本次改造的目的是支持大积分，但更新路径 <code>UpdateScore</code> 签名仍是 <code>int32</code>，使 int64 存储形同虚设。
+        </p>
+        <div class="code-wrap">
+          <div class="code-label good">✓ 建议修复：UpdateScore 签名改为 int64</div>
+          <pre><span class="cmt">// comp_union.go</span>
+<span class="kw">func</span> (c *<span class="tp">UnionProgress</span>) <span class="fn">UpdateScore</span>(
+    playerId <span class="tp">int64</span>,
+    score <span class="tp">int64</span>,   <span class="ins"><span class="cmt">// int32 → int64</span></span>
+    stage <span class="tp">int32</span>,
+) (<span class="tp">cspb.ErrCode</span>, *<span class="tp">UnionMembers</span>)
+
+<span class="cmt">// ctl.go:625</span>
+<span class="ins">changeScore := player.Val - oldScore  <span class="cmt">// 保持 int64，无需强转</span></span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Issue 3 -->
+    <div class="issue">
+      <div class="issue-header">
+        <span class="badge p1">P1</span>
+        <div class="issue-title-group">
+          <div class="issue-title"><code>processRoadWinner</code>：死者弹出条件包含错误的 <code>len(losers) &gt; 1</code></div>
+          <div class="issue-commit">
+            <span class="hash">ae3db12b48</span>
+            H5-8787【联盟对决】突袭战斗判定逻辑有问题
+          </div>
+        </div>
+      </div>
+      <div class="issue-body">
+        <p>
+          <span class="tag logic">L6 逻辑遗漏</span>
+          修复后的条件将 <code>len(losers) &gt; 1</code> 纳入判断，但胜者是否已死亡、是否应退出队列，与败方还剩几人<strong>无关</strong>。该条件是从第 270 行的"连胜换人"逻辑中照搬过来的，那里有"败方没人了也不换人"的明确设计意图，此处并不适用。
+        </p>
+        <div class="code-wrap">
+          <div class="code-label bad">✗ 当前代码 — logic_battle.go:274</div>
+          <pre><span class="del"><span class="kw">if</span> !chgPlayer &amp;&amp; winnerResult.<span class="fn">IsDead</span>() &amp;&amp; <span class="fn">len</span>(winners) &gt; <span class="num">1</span> &amp;&amp; <span class="fn">len</span>(losers) &gt; <span class="num">1</span> {</span>
+    winners = winners[<span class="num">1</span>:]
+}</pre>
+        </div>
+        <p>
+          副作用：双方各 1 人且胜者也死亡时，<code>len(losers) == 1</code> 使条件为 false，死亡的胜者会<strong>残留在 winners 队列中</strong>继续参与后续对战，逻辑不一致。
+        </p>
+        <div class="code-wrap">
+          <div class="code-label good">✓ 建议修复：只关注 winners 队列是否有后继者</div>
+          <pre><span class="ins"><span class="kw">if</span> !chgPlayer &amp;&amp; winnerResult.<span class="fn">IsDead</span>() &amp;&amp; <span class="fn">len</span>(winners) &gt; <span class="num">1</span> {</span>
+    winners = winners[<span class="num">1</span>:]
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Issue 4 -->
+    <div class="issue">
+      <div class="issue-header">
+        <span class="badge p2">P2</span>
+        <div class="issue-title-group">
+          <div class="issue-title"><code>math.Floor(math.Ceil(x))</code> 冗余，Floor 无效</div>
+          <div class="issue-commit">
+            <span class="hash">283baa9bb9</span>
+            H5-8928【科技】用钻石加速科技，实际消耗钻石比显示少了一半
+          </div>
+        </div>
+      </div>
+      <div class="issue-body">
+        <p>
+          <span class="tag style">编码风格</span>
+          <code>math.Ceil</code> 的返回值已经是整数级的 float64，对其再调用 <code>math.Floor</code> 结果不变，属于无效嵌套。
+        </p>
+        <div class="code-wrap">
+          <div class="code-label bad">✗ 当前代码</div>
+          <pre>Val: <span class="tp">int64</span>(math.<span class="fn">Max</span>(math.<span class="fn">Floor</span>(math.<span class="fn">Ceil</span>(  <span class="cmt">// Floor 对 Ceil 结果无效</span>
+    <span class="tp">float64</span>(speedSec) / <span class="tp">float64</span>(utility.SecondPerMinute) /
+    <span class="tp">float64</span>(quickBuyfCfg.Asset.Val) * <span class="tp">float64</span>(quickBuyfCfg.Cost),
+)), <span class="num">1</span>)),</pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label good">✓ 建议修复</div>
+          <pre>Val: <span class="tp">int64</span>(math.<span class="fn">Max</span>(math.<span class="fn">Ceil</span>(
+    <span class="tp">float64</span>(speedSec) / <span class="tp">float64</span>(utility.SecondPerMinute) /
+    <span class="tp">float64</span>(quickBuyfCfg.Asset.Val) * <span class="tp">float64</span>(quickBuyfCfg.Cost),
+), <span class="num">1</span>)),</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Issue 5 -->
+    <div class="issue">
+      <div class="issue-header">
+        <span class="badge p2">P2</span>
+        <div class="issue-title-group">
+          <div class="issue-title">两个新增函数缺少注释</div>
+          <div class="issue-commit">
+            <span class="hash">aeb24082ec</span>
+            H5-8788 / H5-8790 当前联盟 ID 赋值
+          </div>
+        </div>
+      </div>
+      <div class="issue-body">
+        <p>
+          <span class="tag spec">规范</span>
+          <code>OnCrossActvRankListReq</code> 和 <code>OnCrossActvUnionDuelMatchPlayerReq</code> 均未添加注释。根据规范，每个函数必须有注释说明其功能。此处注释尤为重要——函数的核心行为是<strong>用服务端的 UnionID 覆盖客户端请求中的 UnionID</strong>，这是 bug fix 的关键逻辑，没有注释容易被误删或误改。
+        </p>
+        <div class="code-wrap">
+          <div class="code-label bad">✗ 当前代码</div>
+          <pre><span class="kw">func</span> (play *<span class="tp">Play</span>) <span class="fn">OnCrossActvRankListReq</span>(player *<span class="tp">mplayer.Player</span>, message <span class="tp">proto.Message</span>) {
+    req := message.(*<span class="tp">cspb.CrossActvRankListReq</span>)
+    req.UnionId = player.<span class="fn">GetUnionID</span>()
+    natsrpc.<span class="fn">Cast</span>(natsdef.Actv, gdconf.<span class="fn">GetGroupID</span>(), conf.ACTVMOD, req)
+}</pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label good">✓ 建议修复</div>
+          <pre><span class="cmt">// OnCrossActvRankListReq 转发排行榜请求，用服务端实时 UnionID 覆盖客户端字段，</span>
+<span class="cmt">// 防止客户端携带过期联盟 ID 导致展示数据错误（H5-8788/H5-8790）。</span>
+<span class="kw">func</span> (play *<span class="tp">Play</span>) <span class="fn">OnCrossActvRankListReq</span>(player *<span class="tp">mplayer.Player</span>, message <span class="tp">proto.Message</span>) {
+    req := message.(*<span class="tp">cspb.CrossActvRankListReq</span>)
+    req.UnionId = player.<span class="fn">GetUnionID</span>()
+    natsrpc.<span class="fn">Cast</span>(natsdef.Actv, gdconf.<span class="fn">GetGroupID</span>(), conf.ACTVMOD, req)
+}</pre>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Praise -->
+  <section>
+    <h2 class="section-title">写得好的地方</h2>
+    <div class="praise">
+      <h2>正确改动</h2>
+      <ul>
+        <li>
+          <code>c24b47f95c</code>
+          将 <code>SyncPlayerCache()</code> 移至 <code>Event.Fire</code> 之后，正确保证了科技专家加成等事件副作用被纳入缓存，修复根因准确。
+        </li>
+        <li>
+          <code>7182f6ecec</code>
+          用 <code>SafeCall</code> 包裹 <code>SendActvExtNtfToPlayer</code>，同时用 <code>actvTmp := actv</code> 正确捕获闭包变量，两处细节均处理到位。
+        </li>
+        <li>
+          <code>aeb24082ec</code>
+          将 <code>CrossActvRankListReq</code> 和 <code>CrossActvUnionDuelMatchPlayerReq</code> 从 <code>regActvCrossMsg</code> 改为 <code>regPlayerNetMsg</code> 并注入服务端 UnionID，修复思路正确，解决了客户端携带过期 ID 的根本问题。
+        </li>
+        <li>
+          <code>283baa9bb9</code>
+          钻石加速费用补乘 <code>quickBuyfCfg.Cost</code>，修复了实际扣费比显示少一半的线上 bug，计算逻辑正确。
+        </li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

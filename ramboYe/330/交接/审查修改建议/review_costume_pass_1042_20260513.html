@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>代码审查：1042 通行证 reopen 修复 · 2026-05-13</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background: #0d1117; color: #c9d1d9; line-height: 1.7;
+      padding: 40px 24px 80px;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+
+    header { border-bottom: 1px solid #21262d; padding-bottom: 24px; margin-bottom: 40px; }
+    header h1 { font-size: 24px; font-weight: 700; color: #e6edf3; margin-bottom: 8px; }
+    .meta { font-size: 13px; color: #8b949e; display: flex; gap: 24px; flex-wrap: wrap; }
+
+    .section-title {
+      font-size: 13px; font-weight: 600; color: #8b949e;
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
+      margin-top: 40px;
+    }
+
+    .card { background: #161b22; border: 1px solid #21262d; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+    .card-header { display: flex; align-items: flex-start; gap: 14px; padding: 16px 20px; border-bottom: 1px solid #21262d; }
+    .card-body { padding: 16px 20px; }
+    .card-body p { margin-bottom: 10px; font-size: 14px; color: #c9d1d9; }
+    .card-body p:last-child { margin-bottom: 0; }
+
+    .badge { flex-shrink: 0; font-size: 11px; font-weight: 700; letter-spacing: .5px; padding: 3px 9px; border-radius: 20px; margin-top: 2px; }
+    .badge.ok    { background: #0d2a0d; color: #56d364; border: 1px solid #145a14; }
+    .badge.warn  { background: #2a2000; color: #f0a500; border: 1px solid #5a4000; }
+    .badge.bug   { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .badge.fix   { background: #0d2233; color: #58a6ff; border: 1px solid #0f4070; }
+    .badge.rule  { background: #1e1433; color: #d2a8ff; border: 1px solid #3d2060; }
+    .badge.info  { background: #1c2128; color: #8b949e; border: 1px solid #30363d; }
+
+    .title-group { flex: 1; }
+    .item-title  { font-size: 15px; font-weight: 600; color: #e6edf3; line-height: 1.4; }
+    .item-sub    { font-size: 12px; color: #8b949e; margin-top: 3px; font-family: monospace; }
+
+    .code-wrap  { margin: 12px 0; border-radius: 8px; overflow: hidden; border: 1px solid #21262d; }
+    .code-label { font-size: 11px; color: #8b949e; background: #1c2128; padding: 6px 14px; border-bottom: 1px solid #21262d; font-family: monospace; }
+    .code-label.bad  { border-left: 3px solid #f97583; }
+    .code-label.good { border-left: 3px solid #56d364; }
+    .code-label.warn { border-left: 3px solid #f0a500; }
+    .code-label.info { border-left: 3px solid #58a6ff; }
+    pre { background: #0d1117; padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.6; font-family: "SFMono-Regular", Consolas, monospace; color: #c9d1d9; }
+    .del { color: #ffa198; background: #3d0000; display: block; }
+    .ins { color: #56d364; background: #003a00; display: block; }
+    .hi  { color: #f97583; background: #3d1a00; display: block; }
+    .cmt { color: #8b949e; }
+    .kw  { color: #ff7b72; }
+    .fn  { color: #d2a8ff; }
+    .st  { color: #a5d6ff; }
+    .nu  { color: #79c0ff; }
+
+    .callout { border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 13px; color: #c9d1d9; margin: 12px 0; }
+    .callout.info  { background: #0d2233; border-left: 3px solid #58a6ff; }
+    .callout.ok    { background: #0d2a0d; border-left: 3px solid #56d364; }
+    .callout.warn  { background: #2a2000; border-left: 3px solid #f0a500; }
+    .callout.error { background: #3d1a1a; border-left: 3px solid #f97583; }
+
+    .table-wrap { background: #161b22; border: 1px solid #21262d; border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+    .table-wrap h2 { font-size: 15px; font-weight: 600; color: #e6edf3; padding: 14px 20px; border-bottom: 1px solid #21262d; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 18px; color: #8b949e; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #21262d; background: #1c2128; }
+    td { padding: 10px 18px; border-bottom: 1px solid #161b22; vertical-align: top; color: #c9d1d9; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1c2128; }
+    td code, .card-body code { font-family: monospace; font-size: 12px; background: #21262d; padding: 1px 6px; border-radius: 4px; color: #79c0ff; }
+    .ok-td   { color: #56d364; font-weight: 600; }
+    .bad-td  { color: #f97583; font-weight: 600; }
+    .warn-td { color: #f0a500; font-weight: 600; }
+    .na-td   { color: #484f58; }
+
+    .math-box {
+      background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+      padding: 20px 24px; margin-bottom: 20px;
+    }
+    .math-box h3 { font-size: 14px; font-weight: 600; color: #d2a8ff; margin-bottom: 12px; }
+    .math-box p  { font-size: 13px; color: #c9d1d9; line-height: 1.8; margin-bottom: 8px; }
+    .math-box p:last-child { margin-bottom: 0; }
+
+    .priority-p1 { color: #f97583; font-weight: 700; }
+    .priority-p2 { color: #f0a500; font-weight: 700; }
+    .priority-p3 { color: #58a6ff; font-weight: 700; }
+
+    .commit-hash {
+      font-family: monospace; font-size: 11px; color: #8b949e;
+      background: #21262d; padding: 2px 7px; border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>代码审查：1042 通行证 reopen 奖励修复</h1>
+    <div class="meta">
+      <span>🗓 2026-05-13</span>
+      <span>🌿 h5_new_tf_v1042_new</span>
+      <span>📦 game/actv · costume_pass · new_score_pass</span>
+      <span>👤 作者 zengbo · 审查 wenyu</span>
+    </div>
+  </header>
+
+  <!-- ── 提交概览 ── -->
+  <section>
+    <h2 class="section-title">提交概览</h2>
+    <div class="table-wrap">
+      <h2>本次审查的两个提交</h2>
+      <table>
+        <thead><tr><th>提交</th><th>说明</th><th>涉及文件</th><th>作用</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="commit-hash">6c9ed18</span></td>
+            <td>1042-通行证领取未初始化报错</td>
+            <td><code>comp_quest_prog.go</code> × 2<br><code>ctl.go</code> × 2<br><code>logic.go</code> × 2</td>
+            <td>新增 getter/setter，消除写 nil map 的直接 panic</td>
+          </tr>
+          <tr>
+            <td><span class="commit-hash">5120880</span></td>
+            <td>1042-通行证老数据兼容</td>
+            <td><code>ctl.go</code> × 2</td>
+            <td>新增 backfillReopenScoreMap，服务重启后自动还原老玩家已领次数</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── Commit 1 审查 ── -->
+  <section>
+    <h2 class="section-title">Commit 1 审查 — getter / setter 封装</h2>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge ok">✓ 正确</span>
+        <div class="title-group">
+          <div class="item-title">getReopenScoreMap() 私有方法统一兜底 nil</div>
+          <div class="item-sub">costume_pass/comp_quest_prog.go · new_score_pass/comp_quest_prog.go</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="code-wrap">
+          <div class="code-label good">新增封装（两个模板相同）</div>
+          <pre><span class="ins">func (qp *PlayerQuestProgress) getReopenScoreMap() map[int32]int32 {</span>
+<span class="ins">    if qp.ReopenScoreMap == nil {</span>
+<span class="ins">        qp.ReopenScoreMap = map[int32]int32{}</span>
+<span class="ins">    }</span>
+<span class="ins">    return qp.ReopenScoreMap</span>
+<span class="ins">}</span>
+<span class="ins">func (qp *PlayerQuestProgress) GetReopenScore(k int32) int32 {</span>
+<span class="ins">    return qp.getReopenScoreMap()[k]</span>
+<span class="ins">}</span>
+<span class="ins">func (qp *PlayerQuestProgress) SetReopenScore(k, v int32) {</span>
+<span class="ins">    qp.getReopenScoreMap()[k] = v</span>
+<span class="ins">}</span></pre>
+        </div>
+        <p><code>ctl.go</code> 的两处调用点均已改用方法；<code>packProto</code> 的迭代也已改用 <code>getReopenScoreMap()</code>。主路径 panic 消除正确。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge warn">⚠ 隐患</span>
+        <div class="title-group">
+          <div class="item-title">GetAllRewards 中的写路径未同步修改</div>
+          <div class="item-sub">costume_pass/logic.go:333 · new_score_pass/logic.go:219</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="code-wrap">
+          <div class="code-label warn">logic.go — GetAllRewards 内仍直接写（两个模板均未改）</div>
+          <pre><span class="cmt">// 读已改</span>
+<span class="ins">keyCnt := totalCnt - progress.GetReopenScore(k)</span>
+<span class="cmt">// 写未改 ← 遗漏</span>
+<span class="hi">progress.ReopenScoreMap[k] = totalCnt  // 仍是直接写</span></pre>
+        </div>
+        <div class="callout warn">
+          <strong>当前不会 panic 的原因：</strong>同一循环体内 <code>GetReopenScore(k)</code> 先被调用，已将 nil map 初始化为 <code>{}</code>，后续直接写可以成功。
+          但这是<strong>隐式依赖执行顺序</strong>：若未来有人在 getter 前插入另一个写操作，nil map panic 将重现。
+        </div>
+        <div class="callout info">
+          <strong>修复方法：</strong>将 <code>logic.go</code> 的直接写统一改为 <code>progress.SetReopenScore(k, totalCnt)</code>，与 <code>ctl.go</code> 保持一致。
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge info">差异</span>
+        <div class="title-group">
+          <div class="item-title">getReopenScoreMap() 初始化 nil 时未调用 MakeDirty()</div>
+          <div class="item-sub">与 BUG 报告建议方案存在偏差</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>BUG 报告建议在 getter/setter 内部调用 <code>MakeDirty()</code>，实际实现未加。对只读路径（如 <code>packProto</code>），getter 将 nil 初始化为 <code>{}</code> 后不会立即持久化，需等到下次真正的写操作（<code>SetReopenScore</code> + 后续 <code>MakeDirty()</code>）才落库。</p>
+        <p>不影响 panic 修复，也不影响正确性——<code>backfillReopenScoreMap</code> 显式调用 <code>MakeDirty()</code> 兜底了这个路径。可接受，但与文档建议不一致，可在后续版本补上。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Commit 2 审查 ── -->
+  <section>
+    <h2 class="section-title">Commit 2 审查 — 老数据 backfill</h2>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge ok">✓ 正确</span>
+        <div class="title-group">
+          <div class="item-title">backfill 注入时机与触发架构正确</div>
+          <div class="item-sub">onAfterLoadedEvent → RangeProgress → backfillReopenScoreMap</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>actv 模块在启动时通过 <code>loadProgress</code> 批量加载所有活跃玩家数据（分页 500 条/次），加载完成后统一派发 <code>IEventAfterLoaded</code>，触发 <code>RangeProgress</code> 遍历所有已加载进度，保证 backfill 在任何玩家领取请求到达之前就已完成。</p>
+        <p>早退检查 <code>len(getReopenScoreMap()) > 0</code> 正确：已有数据不会重复 backfill。</p>
+        <div class="callout info">数据架构是批量加载（非懒加载），因此不存在"玩家登录时数据未经 backfill"的时序空窗。</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge ok">✓ 正确</span>
+        <div class="title-group">
+          <div class="item-title">两模板内部三处公式一致</div>
+          <div class="item-sub">backfill / ctl.go 领奖 / logic.go 结算 三路径的 levelUpCost 和 level 阈值对齐</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap" style="border:none;border-radius:0;margin:0;">
+          <table>
+            <thead><tr><th>模板</th><th>Level 阈值</th><th>levelUpCost 范围</th><th>三处是否一致</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>costume_pass</td>
+                <td><code>Level >= maxLevel</code></td>
+                <td><code>lv: 1 → maxLevel</code>（含 maxLevel）</td>
+                <td class="ok-td">一致 ✓</td>
+              </tr>
+              <tr>
+                <td>new_score_pass</td>
+                <td><code>Level >= maxLevel-1</code></td>
+                <td><code>lv: 1 → maxLevel-1</code>（不含 maxLevel）</td>
+                <td class="ok-td">一致 ✓</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout info" style="margin-top:12px;">两模板在 Level 阈值和 levelUpCost 上有设计差异，但<strong>各自内部 backfill / 领奖 / 结算三条路径完全对齐</strong>，不存在因公式不匹配引起的多发或少发。</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge bug">⚠ 风险</span>
+        <div class="title-group">
+          <div class="item-title">subjectCfg 缺少 nil 检查</div>
+          <div class="item-sub">costume_pass/ctl.go:112 · new_score_pass/ctl.go:70</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="code-wrap">
+          <div class="code-label bad">backfillReopenScoreMap — 未判 nil 直接访问字段</div>
+          <pre>subjectCfg := gdconf.GetActivityDressUPPassSubjectCfg(a.GetContentID())
+<span class="hi">if progress.Level &lt; maxLevel || !subjectCfg.Reopen {  // subjectCfg 可能为 nil</span></pre>
+        </div>
+        <p>若配置缺失（如测试环境或配置错误），<code>GetActivityDressUPPassSubjectCfg</code> 返回 nil，访问 <code>.Reopen</code> 将 panic。backfill 在启动时批量遍历所有玩家数据，一次 panic 会中断整个 <code>RangeProgress</code>，影响该批次后续所有玩家的初始化。</p>
+        <p>同函数内 <code>cfg</code> 已有 nil 检查（<code>if cfg == nil || cfg.Point == 0</code>），风格不一致。</p>
+        <div class="code-wrap">
+          <div class="code-label good">建议修复</div>
+          <pre><span class="ins">if subjectCfg == nil || progress.Level &lt; maxLevel || !subjectCfg.Reopen {</span>
+<span class="ins">    return</span>
+<span class="ins">}</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge info">小缺口</span>
+        <div class="title-group">
+          <div class="item-title">new_score_pass backfill 无日志</div>
+          <div class="item-sub">new_score_pass/ctl.go — backfillReopenScoreMap</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p><code>costume_pass</code> 的 backfill 有 <code>tlog.Infof("backfillReopenScoreMap: playerID:%d, totalCnt:%d", ...)</code>，<code>new_score_pass</code> 没有，发生 backfill 时无法通过日志追踪。建议补上。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 奖励可达性分析 ── -->
+  <section>
+    <h2 class="section-title">奖励可达性 &amp; 重复领取分析</h2>
+
+    <div class="math-box">
+      <h3>核心数学不变量</h3>
+      <p><code>TtlScr</code> = 终身累计积分（只增不减）；<code>Score</code> = 当前可用积分；<code>limit</code> = 每次循环所需积分；<code>ReopenScoreMap[k]</code> = key k 已领到的 totalCnt 值。</p>
+      <p>每次成功领奖后：<code>Score -= cnt * limit</code>（<code>cnt = Score / limit</code>），<br>领奖后 <code>Score = Score % limit &lt; limit</code>，因此 <code>cnt = 0</code>。</p>
+      <p>当下次新积分到来（+delta）：<br>
+        <code>keyCnt = ((R + delta) / limit)</code>，<code>cnt = ((R + delta) / limit)</code>，
+        <strong>keyCnt ≡ cnt 始终成立</strong>，<code>Score -= cnt * limit</code> 永远精确对应实际发放量。</p>
+    </div>
+
+    <div class="table-wrap">
+      <h2>各场景正确性矩阵</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>场景</th>
+            <th>操作时间点</th>
+            <th>重复领取</th>
+            <th>奖励不可达</th>
+            <th>结论</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>老玩家在 1042 前已领取过</td>
+            <td>旧代码领 → 重启 1042 → backfill → 新代码领</td>
+            <td class="ok-td">无</td>
+            <td class="ok-td">无</td>
+            <td>backfill 精确还原 claimedCnt，keyCnt = 仅新增部分</td>
+          </tr>
+          <tr>
+            <td>老玩家从未领取</td>
+            <td>旧代码未触发 → 1042 后首次领</td>
+            <td class="ok-td">无</td>
+            <td class="ok-td">无</td>
+            <td>claimedCnt = 0，backfill 早退，玩家一次性领取全部积累奖励</td>
+          </tr>
+          <tr>
+            <td>领取后继续积分再领</td>
+            <td>任意时序</td>
+            <td class="ok-td">无</td>
+            <td class="ok-td">无</td>
+            <td>keyCnt ≡ cnt 恒成立，Score 扣减与发放量完全吻合</td>
+          </tr>
+          <tr>
+            <td>手动领奖 RPC ↔ 活动结算 sendRewardsAll</td>
+            <td>任意先后</td>
+            <td class="ok-td">无</td>
+            <td class="ok-td">无</td>
+            <td>两路径共享同一 ReopenScoreMap；先执行者将 map 写入 totalCnt，后执行者 keyCnt = 0 跳过</td>
+          </tr>
+          <tr>
+            <td>新购买档位（DataMap 新增 key）后领取</td>
+            <td>旧 key 已领 N 次后新购 key，随后领奖</td>
+            <td class="warn-td">需确认</td>
+            <td class="na-td">—</td>
+            <td>新 key 的 ReopenScoreMap=0，keyCnt=totalCnt，获得全历史追领；Score 扣减仅按当前 cnt 计，<strong>实质上零 Score 成本补领</strong>，详见下方说明</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge warn">⚠ 设计待确认</span>
+        <div class="title-group">
+          <div class="item-title">新购档位可零 Score 成本追领历史循环奖励</div>
+          <div class="item-sub">costume_pass · new_score_pass 均存在</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>典型场景：玩家持 key=0（免费档）已领 N 次循环奖励，Score 已被扣减至余数 R（&lt; limit）。
+        此时购买 key=1（付费档），DataMap 新增 k=1。</p>
+        <div class="code-wrap">
+          <div class="code-label info">下次领奖时的计算</div>
+          <pre><span class="cmt">// key=0：ReopenScoreMap[0] = N，keyCnt = totalCnt - N（仅新增）</span>
+<span class="cmt">// key=1：ReopenScoreMap[1] = 0，keyCnt = totalCnt（全历史追领）</span>
+cnt = Score / limit = R / limit = 0   <span class="cmt">// 余数 R &lt; limit</span>
+Score -= 0                             <span class="cmt">// Score 无减少</span></pre>
+        </div>
+        <div class="callout warn">
+          key=1 获得了 totalCnt 次奖励，但 Score 没有减少。这是现有架构的固有行为，<strong>不是 1042 修复引入的问题</strong>，但可能属于未预期的"追领免费"现象。
+          建议与策划确认：购买付费档是否应补发历史循环奖励，以及是否应消耗对应 Score。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── backfill 公式正确性证明 ── -->
+  <section>
+    <h2 class="section-title">backfill 公式正确性证明</h2>
+    <div class="math-box">
+      <h3>证明：claimedCnt = totalCnt − cnt 精确还原已领次数</h3>
+      <p>设最近一次领奖时 <code>TtlScr₀</code>，<code>levelUpCost</code> 不变，<code>claimed</code> 为真实已领次数。</p>
+      <p>领奖后：<code>Score_after = (TtlScr₀ - levelUpCost) % limit</code>（不变量）</p>
+      <p>领奖后到服务重启期间积累 Δ 分：<code>TtlScr = TtlScr₀ + Δ</code>，<code>Score = Score_after + Δ</code></p>
+      <p>
+        backfill 时：<br>
+        <code>totalCnt = (TtlScr₀ + Δ − levelUpCost) / limit</code><br>
+        <code>= (claimed·limit + Score_after + Δ) / limit</code><br>
+        <code>= claimed + (Score_after + Δ) / limit</code>
+      </p>
+      <p>
+        <code>cnt = Score / limit = (Score_after + Δ) / limit</code>
+      </p>
+      <p>
+        ∴ <code>claimedCnt = totalCnt − cnt = claimed</code>　<strong>Q.E.D.</strong>
+      </p>
+      <p>该等式对任意 Δ（领奖后的额外积分）成立，即 backfill 公式与领奖后到服务重启之间积累了多少积分无关，始终精确。</p>
+    </div>
+  </section>
+
+  <!-- ── 各场景正确性详细推演 ── -->
+  <section>
+    <h2 class="section-title">各场景正确性详细推演</h2>
+
+    <!-- 场景 A -->
+    <div class="card">
+      <div class="card-header">
+        <span class="badge ok">场景 A</span>
+        <div class="title-group">
+          <div class="item-title">老玩家：1042 前已在旧代码中领取过循环奖励</div>
+          <div class="item-sub">Score 已被扣减，ReopenScoreMap 字段不存在（nil）</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="code-wrap">
+          <div class="code-label info">具体数值示例（costume_pass：levelUpCost=2800, limit=300）</div>
+          <pre><span class="cmt">// 旧代码下已领 1 次：TtlScr=3353, Score=53（扣减后余数）</span>
+<span class="cmt">// 领奖后又积累 260 分：TtlScr=3613, Score=313</span>
+<span class="cmt">// ─── 服务重启，1042 代码生效，批量加载 + backfill 执行 ───</span>
+
+totalCnt   = (3613 − 2800) / 300 = 813 / 300 = <span class="nu">2</span>
+cnt        = 313 / 300            =             <span class="nu">1</span>
+claimedCnt = totalCnt − cnt       = 2 − 1     = <span class="nu">1</span>  ✓（与真实已领次数吻合）
+
+<span class="cmt">// SetReopenScore(k, 1) 写入 ReopenScoreMap</span>
+<span class="cmt">// ─── 玩家发起领奖请求 ───</span>
+
+totalCnt = (3613 − 2800) / 300 = <span class="nu">2</span>
+keyCnt   = 2 − ReopenScoreMap[k] = 2 − 1 = <span class="nu">1</span>  ← 仅领剩余 1 次，无重复
+Score   -= (313/300) * 300 = 300  →  Score = 13</pre>
+        </div>
+        <div class="callout ok">backfill 精确还原已领次数，新代码下只能领剩余的增量，不会重复发放。</div>
+      </div>
+    </div>
+
+    <!-- 场景 B -->
+    <div class="card">
+      <div class="card-header">
+        <span class="badge ok">场景 B</span>
+        <div class="title-group">
+          <div class="item-title">老玩家：1042 前从未领取循环奖励（Score 完整未减）</div>
+          <div class="item-sub">ReopenScoreMap 为 nil，积分全额保留</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="code-wrap">
+          <div class="code-label info">具体数值示例</div>
+          <pre><span class="cmt">// 从未领奖：TtlScr=3353, Score=553（全部积累未消耗）</span>
+<span class="cmt">// ─── backfill ───</span>
+
+totalCnt   = (3353 − 2800) / 300 = <span class="nu">1</span>
+cnt        = 553 / 300            = <span class="nu">1</span>
+claimedCnt = 1 − 1               = <span class="nu">0</span>  → claimedCnt ≤ 0，早退，不填 ReopenScoreMap
+
+<span class="cmt">// ─── 玩家发起领奖请求 ───</span>
+
+ReopenScoreMap[k] = 0（空 map 默认值）
+keyCnt = 1 − 0 = <span class="nu">1</span>   ← 正常领取全部积累奖励
+Score -= 1 * 300  →  Score = 253</pre>
+        </div>
+        <div class="callout ok">积分完整，可一次领完所有积累奖励，无遗漏。</div>
+      </div>
+    </div>
+
+    <!-- 场景 C -->
+    <div class="card">
+      <div class="card-header">
+        <span class="badge ok">场景 C</span>
+        <div class="title-group">
+          <div class="item-title">cnt ≡ keyCnt 恒等式——Score 扣减始终精确</div>
+          <div class="item-sub">证明任意领奖时刻 Score -= cnt * limit 与实际发放量严格对应</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>设上次领奖时已领次数为 <code>P</code>（<code>ReopenScoreMap[k] = P</code>），领奖后 Score 为余数 <code>R = Score % limit &lt; limit</code>。</p>
+        <p>之后玩家积累 Δ 分（TtlScr += Δ，Score = R + Δ）：</p>
+        <div class="code-wrap">
+          <div class="code-label info">推导</div>
+          <pre>totalCnt = (TtlScr − levelUpCost) / limit
+         = (P·limit + R + Δ) / limit
+         = P + (R + Δ) / limit
+
+keyCnt   = totalCnt − P  =  (R + Δ) / limit
+
+cnt      = Score / limit  =  (R + Δ) / limit
+
+∴  keyCnt ≡ cnt  （对任意 R、Δ 均成立）</pre>
+        </div>
+        <div class="callout ok">
+          无论上次领奖距现在积累了多少分，<code>Score -= cnt * limit</code> 扣减的都是
+          本次实际发放的循环数对应的积分，不多扣也不少扣。
+        </div>
+      </div>
+    </div>
+
+    <!-- 场景 D -->
+    <div class="card">
+      <div class="card-header">
+        <span class="badge ok">场景 D</span>
+        <div class="title-group">
+          <div class="item-title">手动领奖 RPC 与活动结算 sendRewardsAll 的幂等性</div>
+          <div class="item-sub">两条路径共享同一 ReopenScoreMap，任意先后顺序均不重复发放</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="code-wrap">
+          <div class="code-label info">情况 1：手动领奖先于结算</div>
+          <pre>① ctl.go  → SetReopenScore(k, totalCnt)  → ReopenScoreMap[k] = T
+② logic.go → keyCnt = T − T = 0  → 跳过，不再发放</pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label info">情况 2：结算先于手动领奖</div>
+          <pre>① logic.go → ReopenScoreMap[k] = totalCnt（直接写，功能等价）
+② ctl.go   → GetReopenScore(k) = T，keyCnt = T − T = 0  → 跳过</pre>
+        </div>
+        <div class="callout ok">
+          Activity 模块基于 chanrpc 单线程执行，两条路径天然互斥，不存在并发竞争。
+          无论哪条路径先完成，后续路径看到的 <code>keyCnt = 0</code>，奖励不重复发放。
+        </div>
+        <div class="callout warn">
+          注意：logic.go 的直接写 <code>ReopenScoreMap[k] = totalCnt</code> 属于遗漏项（见 P1 待修复），
+          当前不会 panic 是因为同循环体内 <code>GetReopenScore(k)</code> 已先初始化 nil map，
+          功能逻辑正确但存在执行顺序依赖的隐患。
+        </div>
+      </div>
+    </div>
+
+    <!-- 场景 E -->
+    <div class="card">
+      <div class="card-header">
+        <span class="badge ok">场景 E</span>
+        <div class="title-group">
+          <div class="item-title">批量加载架构保证时序安全</div>
+          <div class="item-sub">actv 模块启动时全量加载，backfill 在任何领奖请求前完成</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>actv 模块通过 <code>loadProgress</code> 在启动时分页（500条/次）批量加载所有活动进度数据到内存。
+        全部加载完成后统一派发 <code>IEventAfterLoaded</code>，触发 <code>RangeProgress</code> 遍历所有玩家执行 backfill。</p>
+        <p>chanrpc 模块收发消息是单线程的，玩家的领奖请求必须等待 actv 模块启动完成后才能被处理，
+        因此 <strong>backfill 在任何领奖请求到达之前已全部完成</strong>，不存在"数据已加载但 backfill 未运行"的时间窗口。</p>
+        <div class="code-wrap">
+          <div class="code-label info">启动顺序</div>
+          <pre>loadProgress（批量加载所有玩家进度）
+  ↓
+IEventAfterLoaded 派发
+  ↓
+onAfterLoadedEvent → RangeProgress → backfillReopenScoreMap（所有玩家）
+  ↓
+actv 模块进入正常服务状态
+  ↓
+玩家领奖请求开始被处理</pre>
+        </div>
+        <div class="callout ok">不存在老玩家"绕过 backfill 直接领奖"导致重复发放的路径。</div>
+      </div>
+    </div>
+
+    <!-- 场景 F -->
+    <div class="card">
+      <div class="card-header">
+        <span class="badge warn">场景 F</span>
+        <div class="title-group">
+          <div class="item-title">新购档位（DataMap 新增 key）后领奖——零 Score 成本追领</div>
+          <div class="item-sub">设计层面的正确性存疑，与 1042 修复无关</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>玩家使用 key=0 领了 N 次（Score 已被扣减至余数 <code>R &lt; limit</code>），随后购买 key=1，触发领奖：</p>
+        <div class="code-wrap">
+          <div class="code-label warn">具体计算</div>
+          <pre><span class="cmt">// 购买后 Score = R，TtlScr 未变</span>
+totalCnt        = (TtlScr − levelUpCost) / limit = N（假设无新积分）
+ReopenScoreMap[0] = N   → keyCnt[0] = 0（已全部领完）
+ReopenScoreMap[1] = 0   → keyCnt[1] = N（全历史追领）
+
+cnt   = R / limit = 0   （R &lt; limit）
+Score -= 0 * limit = 0  → <span class="hi">Score 无减少，但 key=1 获得了 N 次奖励</span></pre>
+        </div>
+        <p>这是原有架构的固有行为（新档位购买即补领历史），不是 1042 修复引入的变化。
+        但零 Score 成本获得 N 次奖励可能不符合策划预期，属于<strong>设计层面待确认项</strong>（见 P2 待修复清单）。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 待修复清单 ── -->
+  <section>
+    <h2 class="section-title">待修复清单</h2>
+    <div class="table-wrap">
+      <h2>Action Items</h2>
+      <table>
+        <thead><tr><th>优先级</th><th>问题</th><th>修复方式</th><th>文件</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="priority-p1">P1</span></td>
+            <td>GetAllRewards 直接写 ReopenScoreMap 未改为 SetReopenScore</td>
+            <td><code>ReopenScoreMap[k] = totalCnt</code> → <code>SetReopenScore(k, totalCnt)</code></td>
+            <td><code>costume_pass/logic.go:333</code><br><code>new_score_pass/logic.go:219</code></td>
+          </tr>
+          <tr>
+            <td><span class="priority-p1">P1</span></td>
+            <td>backfillReopenScoreMap 中 subjectCfg 未判 nil</td>
+            <td>在 <code>!subjectCfg.Reopen</code> 前加 <code>subjectCfg == nil ||</code></td>
+            <td><code>costume_pass/ctl.go:112</code><br><code>new_score_pass/ctl.go:70</code></td>
+          </tr>
+          <tr>
+            <td><span class="priority-p2">P2</span></td>
+            <td>new_score_pass backfill 无日志</td>
+            <td>参照 costume_pass 补 <code>tlog.Infof</code></td>
+            <td><code>new_score_pass/ctl.go</code></td>
+          </tr>
+          <tr>
+            <td><span class="priority-p2">P2</span></td>
+            <td>新购档位零 Score 成本追领历史奖励</td>
+            <td>与策划确认是否符合设计意图；若不符，需在新 key 加入时按历史 totalCnt 初始化 ReopenScoreMap[k]</td>
+            <td>两模板均有，属设计层面</td>
+          </tr>
+          <tr>
+            <td><span class="priority-p3">P3</span></td>
+            <td>getReopenScoreMap() 初始化 nil 时未调用 MakeDirty()</td>
+            <td>可选：在 nil 初始化后加 <code>qp.MakeDirty()</code>，实现"读即修复"</td>
+            <td><code>costume_pass/comp_quest_prog.go</code><br><code>new_score_pass/comp_quest_prog.go</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>事故报告：装扮通行证满级领取 nil map panic · 2026-05-13</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background: #0d1117; color: #c9d1d9; line-height: 1.7;
+      padding: 40px 24px 80px;
+    }
+    .container { max-width: 960px; margin: 0 auto; }
+
+    header { border-bottom: 1px solid #21262d; padding-bottom: 24px; margin-bottom: 40px; }
+    header h1 { font-size: 24px; font-weight: 700; color: #e6edf3; margin-bottom: 8px; }
+    .meta { font-size: 13px; color: #8b949e; display: flex; gap: 24px; flex-wrap: wrap; }
+
+    .section-title {
+      font-size: 13px; font-weight: 600; color: #8b949e;
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
+    }
+
+    .card { background: #161b22; border: 1px solid #21262d; border-radius: 10px; margin-bottom: 28px; overflow: hidden; }
+    .card-header { display: flex; align-items: flex-start; gap: 14px; padding: 18px 22px; border-bottom: 1px solid #21262d; }
+    .card-body { padding: 18px 22px; }
+    .card-body p { margin-bottom: 12px; font-size: 14px; color: #c9d1d9; }
+    .card-body p:last-child { margin-bottom: 0; }
+
+    .badge { flex-shrink: 0; font-size: 11px; font-weight: 700; letter-spacing: .5px; padding: 3px 9px; border-radius: 20px; margin-top: 2px; }
+    .badge.bug  { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .badge.fix  { background: #0d2a0d; color: #56d364; border: 1px solid #145a14; }
+    .badge.cfg  { background: #2a2000; color: #f0a500; border: 1px solid #5a4000; }
+    .badge.ok   { background: #0d2233; color: #58a6ff; border: 1px solid #0f4070; }
+    .badge.rule { background: #1e1433; color: #d2a8ff; border: 1px solid #3d2060; }
+
+    .title-group { flex: 1; }
+    .item-title { font-size: 16px; font-weight: 600; color: #e6edf3; line-height: 1.4; }
+    .item-sub   { font-size: 12px; color: #8b949e; margin-top: 4px; font-family: monospace; }
+
+    .code-wrap { margin: 14px 0; border-radius: 8px; overflow: hidden; border: 1px solid #21262d; }
+    .code-label { font-size: 11px; color: #8b949e; background: #1c2128; padding: 6px 14px; border-bottom: 1px solid #21262d; font-family: monospace; }
+    .code-label.bad  { border-left: 3px solid #f97583; }
+    .code-label.good { border-left: 3px solid #56d364; }
+    .code-label.note { border-left: 3px solid #f0a500; }
+    pre { background: #0d1117; padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.6; font-family: "SFMono-Regular", Consolas, monospace; color: #c9d1d9; }
+    .del { color: #ffa198; background: #3d0000; display: block; }
+    .ins { color: #56d364; background: #003a00; display: block; }
+    .hi  { color: #f97583; background: #3d1a00; display: block; }
+    .cmt { color: #8b949e; }
+    .kw  { color: #ff7b72; }
+    .fn  { color: #d2a8ff; }
+    .st  { color: #a5d6ff; }
+    .nu  { color: #79c0ff; }
+
+    .callout { border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 13px; color: #c9d1d9; margin: 12px 0; }
+    .callout.info  { background: #0d2233; border-left: 3px solid #58a6ff; }
+    .callout.ok    { background: #0d2a0d; border-left: 3px solid #56d364; }
+    .callout.warn  { background: #2a2000; border-left: 3px solid #f0a500; }
+    .callout.error { background: #3d1a1a; border-left: 3px solid #f97583; }
+
+    .table-wrap { background: #161b22; border: 1px solid #21262d; border-radius: 10px; overflow: hidden; margin-bottom: 28px; }
+    .table-wrap h2 { font-size: 15px; font-weight: 600; color: #e6edf3; padding: 16px 22px; border-bottom: 1px solid #21262d; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 18px; color: #8b949e; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #21262d; background: #1c2128; }
+    td { padding: 11px 18px; border-bottom: 1px solid #161b22; vertical-align: top; color: #c9d1d9; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1c2128; }
+    td code, .card-body code { font-family: monospace; font-size: 12px; background: #21262d; padding: 1px 6px; border-radius: 4px; color: #79c0ff; }
+    .ok-td  { color: #56d364; font-weight: 600; }
+    .bad-td { color: #f97583; font-weight: 600; }
+    .na-td  { color: #484f58; }
+
+    .root-cause { background: #3d1a1a; border: 1px solid #6e2020; border-radius: 10px; padding: 20px 22px; margin-bottom: 28px; }
+    .root-cause h2 { font-size: 15px; font-weight: 600; color: #f97583; margin-bottom: 10px; }
+    .root-cause p  { font-size: 14px; color: #c9d1d9; line-height: 1.8; }
+
+    .rule-box { background: #1e1433; border: 1px solid #3d2060; border-radius: 10px; padding: 20px 22px; margin-bottom: 28px; }
+    .rule-box h2 { font-size: 15px; font-weight: 600; color: #d2a8ff; margin-bottom: 10px; }
+    .rule-box p  { font-size: 14px; color: #c9d1d9; line-height: 1.8; }
+
+    /* ── Flow Diagram ── */
+    .flow-diagram { width: 100%; margin: 24px 0 8px; overflow-x: auto; background: #0d1117; border: 1px solid #21262d; border-radius: 10px; padding: 24px 0; }
+    .flow-diagram svg { display: block; margin: 0 auto; }
+
+    .node-normal  { fill: #1c2128; stroke: #30363d; stroke-width: 1.5; }
+    .node-trigger { fill: #2a2000; stroke: #f0a500; stroke-width: 1.5; }
+    .node-error   { fill: #3d1a1a; stroke: #f97583; stroke-width: 2; }
+    .node-fix     { fill: #0d2a0d; stroke: #56d364; stroke-width: 1.5; }
+    .node-info    { fill: #0d2233; stroke: #58a6ff; stroke-width: 1.5; }
+    .node-rule    { fill: #1e1433; stroke: #d2a8ff; stroke-width: 1.5; }
+
+    .node-text  { fill: #e6edf3; font-family: -apple-system, sans-serif; font-size: 12px; dominant-baseline: middle; text-anchor: middle; }
+    .node-sub   { fill: #8b949e; font-family: monospace; font-size: 10px; dominant-baseline: middle; text-anchor: middle; }
+    .node-label { fill: #8b949e; font-family: -apple-system, sans-serif; font-size: 10px; dominant-baseline: middle; text-anchor: middle; }
+    .node-ok    { fill: #56d364; font-family: -apple-system, sans-serif; font-size: 12px; dominant-baseline: middle; text-anchor: middle; font-weight: 600; }
+    .node-err   { fill: #f97583; font-family: -apple-system, sans-serif; font-size: 12px; dominant-baseline: middle; text-anchor: middle; font-weight: 600; }
+
+    .flow-line       { fill: none; stroke: #30363d; stroke-width: 1.5; }
+    .flow-line.warn  { stroke: #f0a500; }
+    .flow-line.error { stroke: #f97583; }
+    .flow-line.ok    { stroke: #56d364; }
+    .flow-line.info  { stroke: #58a6ff; }
+    .flow-line.dash  { stroke-dasharray: 5 3; }
+
+    /* 入场动画 */
+    .fn { opacity: 0; animation: fadeNode 0.35s ease forwards; }
+    .fn:nth-child(1)  { animation-delay: 0.05s; }
+    .fn:nth-child(2)  { animation-delay: 0.15s; }
+    .fn:nth-child(3)  { animation-delay: 0.25s; }
+    .fn:nth-child(4)  { animation-delay: 0.35s; }
+    .fn:nth-child(5)  { animation-delay: 0.45s; }
+    .fn:nth-child(6)  { animation-delay: 0.55s; }
+    .fn:nth-child(7)  { animation-delay: 0.65s; }
+    .fn:nth-child(8)  { animation-delay: 0.75s; }
+    .fn:nth-child(9)  { animation-delay: 0.85s; }
+    .fn:nth-child(10) { animation-delay: 0.95s; }
+    .fn:nth-child(11) { animation-delay: 1.05s; }
+    .fn:nth-child(12) { animation-delay: 1.15s; }
+
+    .fl { stroke-dasharray: 600; stroke-dashoffset: 600; animation: drawLine 0.4s ease forwards; }
+    .fl:nth-of-type(1)  { animation-delay: 0.10s; }
+    .fl:nth-of-type(2)  { animation-delay: 0.20s; }
+    .fl:nth-of-type(3)  { animation-delay: 0.30s; }
+    .fl:nth-of-type(4)  { animation-delay: 0.40s; }
+    .fl:nth-of-type(5)  { animation-delay: 0.50s; }
+    .fl:nth-of-type(6)  { animation-delay: 0.60s; }
+    .fl:nth-of-type(7)  { animation-delay: 0.70s; }
+    .fl:nth-of-type(8)  { animation-delay: 0.80s; }
+    .fl:nth-of-type(9)  { animation-delay: 0.90s; }
+    .fl:nth-of-type(10) { animation-delay: 1.00s; }
+
+    @keyframes fadeNode {
+      from { opacity: 0; transform: translateY(5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes drawLine { to { stroke-dashoffset: 0; } }
+
+    @keyframes pulse {
+      0%, 100% { filter: drop-shadow(0 0 0px transparent); }
+      50%       { filter: drop-shadow(0 0 8px #f97583aa); }
+    }
+    .node-pulse { animation: fadeNode 0.35s ease 0.75s forwards, pulse 2s ease 1.3s infinite; opacity: 0; }
+
+    @keyframes pulseOk {
+      0%, 100% { filter: drop-shadow(0 0 0px transparent); }
+      50%       { filter: drop-shadow(0 0 8px #56d364aa); }
+    }
+    .node-pulse-ok { animation: fadeNode 0.35s ease 1.10s forwards, pulseOk 2s ease 1.6s infinite; opacity: 0; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>事故报告：装扮通行证 满级循环领取失败（nil map panic）</h1>
+    <div class="meta">
+      <span>🗓 2026-05-13</span>
+      <span>🌿 h5_new_tf_v1042_new</span>
+      <span>📦 game/actv · costume_pass</span>
+      <span>🎮 ActvTypeCostumePass = 37 · 万圣节装扮通行证</span>
+      <span>👤 wenyu</span>
+    </div>
+  </header>
+
+  <!-- ── 根因结论 ── -->
+  <section>
+    <h2 class="section-title">根因结论</h2>
+    <div class="root-cause">
+      <h2>新增字段 ReopenScoreMap 未做存量数据兼容，nil map 写入引发 panic</h2>
+      <p>
+        1042 版本在 <code>PlayerQuestProgress</code> 中新增 <code>ReopenScoreMap map[int32]int32</code> 字段，
+        用于记录满级循环奖励的已领次数。MongoDB 加载存量数据时，该字段缺失，Go bson 驱动将其置为
+        <code>nil</code>（而非空 map）。读取 nil map 安全，但写入触发
+        <strong>runtime panic: assignment to entry in nil map</strong>（ctl.go:274）。
+        框架 chanrpc recover 截获 panic，defer 发出空奖励的 ack，玩家界面显示成功但无奖励、积分不变，
+        且每次点击重复触发 panic，形成幂等失败循环。
+      </p>
+    </div>
+
+    <!-- 触发链路流程图 -->
+    <div class="flow-diagram">
+      <svg width="900" height="320" viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr"       markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#30363d"/></marker>
+          <marker id="arr-warn"  markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#f0a500"/></marker>
+          <marker id="arr-error" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#f97583"/></marker>
+          <marker id="arr-ok"    markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#56d364"/></marker>
+          <marker id="arr-info"  markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#58a6ff"/></marker>
+        </defs>
+
+        <!-- Row 1: 请求链 -->
+        <line class="flow-line fl"      x1="148" y1="44" x2="218" y2="44" marker-end="url(#arr)"/>
+        <line class="flow-line fl"      x1="388" y1="44" x2="458" y2="44" marker-end="url(#arr)"/>
+        <line class="flow-line fl"      x1="628" y1="44" x2="698" y2="44" marker-end="url(#arr)"/>
+
+        <g class="fn"><rect class="node-trigger" x="8"   y="22" width="140" height="44" rx="6"/>
+          <text class="node-text" x="78"  y="40">客户端点击领取</text>
+          <text class="node-sub"  x="78"  y="56">ActvCostumePassReceiveReq</text></g>
+        <g class="fn"><rect class="node-normal" x="218" y="22" width="170" height="44" rx="6"/>
+          <text class="node-text" x="303" y="40">onActvCostumePassReceiveReq</text>
+          <text class="node-sub"  x="303" y="56">ctl.go:189</text></g>
+        <g class="fn"><rect class="node-normal" x="458" y="22" width="170" height="44" rx="6"/>
+          <text class="node-text" x="543" y="40">计算 totalCnt</text>
+          <text class="node-sub"  x="543" y="56">(TtlScr-2800)/300 = 1</text></g>
+        <g class="fn"><rect class="node-normal" x="698" y="22" width="170" height="44" rx="6"/>
+          <text class="node-text" x="783" y="40">读 ReopenScoreMap[k]</text>
+          <text class="node-sub"  x="783" y="56">nil map 读 → 0，安全</text></g>
+
+        <!-- Row 2: 写 nil map -->
+        <line class="flow-line fl warn"  x1="783" y1="66" x2="783" y2="106" marker-end="url(#arr-warn)"/>
+        <g class="fn"><rect class="node-trigger" x="638" y="106" width="290" height="44" rx="6"/>
+          <text class="node-text" x="783" y="124">keyCnt = 1 &gt; 0，追加奖励到本地 slice</text>
+          <text class="node-sub"  x="783" y="140">rewards = [reward_item, ...]</text></g>
+
+        <line class="flow-line fl error" x1="783" y1="150" x2="783" y2="188" marker-end="url(#arr-error)"/>
+        <g class="node-pulse"><rect class="node-error" x="598" y="188" width="370" height="44" rx="6"/>
+          <text class="node-err"  x="783" y="206">PANIC: assignment to entry in nil map</text>
+          <text class="node-sub"  x="783" y="222">ReopenScoreMap[k] = totalCnt  ←  ctl.go:274</text></g>
+
+        <!-- Row 3: panic 后果 -->
+        <line class="flow-line fl error" x1="598" y1="210" x2="468" y2="210" marker-end="url(#arr-error)"/>
+        <g class="fn"><rect class="node-error" x="248" y="188" width="220" height="44" rx="6"/>
+          <text class="node-text" x="358" y="206">chanrpc.exec.func1 recover</text>
+          <text class="node-sub"  x="358" y="222">框架截获 panic，协程存活</text></g>
+
+        <line class="flow-line fl error" x1="248" y1="210" x2="158" y2="210" marker-end="url(#arr-error)"/>
+        <g class="fn"><rect class="node-error" x="8"   y="188" width="150" height="44" rx="6"/>
+          <text class="node-text" x="83"  y="206">defer ack 发出</text>
+          <text class="node-sub"  x="83"  y="222">Rewards=nil, Score=0</text></g>
+
+        <!-- 结果 -->
+        <line class="flow-line fl error" x1="83" y1="232" x2="83" y2="270" marker-end="url(#arr-error)"/>
+        <g class="fn"><rect class="node-error" x="8" y="270" width="870" height="40" rx="6"/>
+          <text class="node-err"  x="450" y="286">领取失败：道具未发放 · 积分未扣减 · 状态未持久化 · 下次点击重复 panic（幂等失败）</text></g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ── 新老玩家对比 ── -->
+  <section>
+    <h2 class="section-title">新老玩家影响对比</h2>
+
+    <div class="flow-diagram">
+      <svg width="900" height="360" viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="b-arr"    markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#30363d"/></marker>
+          <marker id="b-ok"     markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#56d364"/></marker>
+          <marker id="b-error"  markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#f97583"/></marker>
+          <marker id="b-warn"   markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#f0a500"/></marker>
+        </defs>
+
+        <!-- 分隔线 -->
+        <line x1="450" y1="10" x2="450" y2="350" stroke="#21262d" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text x="225" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#f97583">❌ 老玩家（1042前已有数据）</text>
+        <text x="675" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#56d364">✅ 新玩家（1042后首次进入）</text>
+
+        <!-- 左：老玩家 -->
+        <line class="flow-line fl"      x1="225" y1="48" x2="225" y2="78"  marker-end="url(#b-arr)"/>
+        <line class="flow-line fl warn" x1="225" y1="118" x2="225" y2="148" marker-end="url(#b-warn)"/>
+        <line class="flow-line fl warn" x1="225" y1="188" x2="225" y2="218" marker-end="url(#b-warn)"/>
+        <line class="flow-line fl error" x1="225" y1="258" x2="225" y2="288" marker-end="url(#b-error)"/>
+
+        <g class="fn"><rect class="node-normal"  x="75"  y="30"  width="300" height="38" rx="6"/>
+          <text class="node-text" x="225" y="49">1042 服务器重启，批量加载进度数据</text></g>
+        <g class="fn"><rect class="node-trigger" x="75"  y="80"  width="300" height="38" rx="6"/>
+          <text class="node-text" x="225" y="95">bson 反序列化</text>
+          <text class="node-sub"  x="225" y="110">ReopenScoreMap 字段缺失 → nil</text></g>
+        <g class="fn"><rect class="node-trigger" x="75"  y="150" width="300" height="38" rx="6"/>
+          <text class="node-text" x="225" y="165">onAfterLoadedEvent → AfterLoad</text>
+          <text class="node-sub"  x="225" y="181">【修复前】未检查 nil，map 仍为 nil</text></g>
+        <g class="fn"><rect class="node-normal"  x="75"  y="220" width="300" height="38" rx="6"/>
+          <text class="node-text" x="225" y="235">玩家满级，Score ≥ 300</text>
+          <text class="node-sub"  x="225" y="251">客户端界面显示"可领取"</text></g>
+        <g class="node-pulse"><rect class="node-error" x="75" y="290" width="300" height="50" rx="6"/>
+          <text class="node-err"  x="225" y="310">点击领取 → PANIC</text>
+          <text class="node-sub"  x="225" y="328">ReopenScoreMap[k] = totalCnt  nil map!</text></g>
+
+        <!-- 右：新玩家 -->
+        <line class="flow-line fl ok" x1="675" y1="48"  x2="675" y2="78"  marker-end="url(#b-ok)"/>
+        <line class="flow-line fl ok" x1="675" y1="118" x2="675" y2="148" marker-end="url(#b-ok)"/>
+        <line class="flow-line fl ok" x1="675" y1="188" x2="675" y2="218" marker-end="url(#b-ok)"/>
+        <line class="flow-line fl ok" x1="675" y1="258" x2="675" y2="288" marker-end="url(#b-ok)"/>
+
+        <g class="fn"><rect class="node-normal" x="515" y="30"  width="320" height="38" rx="6"/>
+          <text class="node-text" x="675" y="49">玩家首次上线 onPlayerInitCheck</text></g>
+        <g class="fn"><rect class="node-fix"    x="515" y="80"  width="320" height="38" rx="6"/>
+          <text class="node-text" x="675" y="95">getOrMakePlayerProgress</text>
+          <text class="node-sub"  x="675" y="111">CreatePlayerProgress → NewPlayerQuestProgress</text></g>
+        <g class="fn"><rect class="node-fix"    x="515" y="150" width="320" height="38" rx="6"/>
+          <text class="node-text" x="675" y="165">构造函数正确初始化</text>
+          <text class="node-sub"  x="675" y="181">ReopenScoreMap = map[int32]int32{}</text></g>
+        <g class="fn"><rect class="node-normal" x="515" y="220" width="320" height="38" rx="6"/>
+          <text class="node-text" x="675" y="235">玩家满级，Score ≥ 300</text>
+          <text class="node-sub"  x="675" y="251">客户端界面显示"可领取"</text></g>
+        <g class="node-pulse-ok"><rect class="node-fix" x="515" y="290" width="320" height="50" rx="6"/>
+          <text class="node-ok"   x="675" y="310">点击领取 → 成功</text>
+          <text class="node-sub"  x="675" y="328">奖励发放，Score 正确扣减</text></g>
+      </svg>
+    </div>
+
+    <div class="table-wrap">
+      <h2>影响矩阵</h2>
+      <table>
+        <thead><tr><th>玩家类型</th><th>ReopenScoreMap</th><th>普通等级领取</th><th>满级循环领取</th><th>数据损坏</th><th>修复后自动恢复</th></tr></thead>
+        <tbody>
+          <tr><td>新玩家（1042后）</td><td class="ok-td">已初始化</td><td class="ok-td">正常</td><td class="ok-td">正常</td><td class="na-td">—</td><td class="na-td">—</td></tr>
+          <tr><td>老玩家 · 未满级</td><td class="bad-td">nil</td><td class="ok-td">正常</td><td class="na-td">不触发</td><td class="ok-td">无</td><td class="ok-td">重启后修复</td></tr>
+          <tr><td>老玩家 · 满级 Score &lt; 300</td><td class="bad-td">nil</td><td class="ok-td">正常</td><td class="na-td">不触发（totalCnt=0）</td><td class="ok-td">无</td><td class="ok-td">重启后修复</td></tr>
+          <tr><td>老玩家 · 满级 Score ≥ 300</td><td class="bad-td">nil</td><td class="ok-td">正常</td><td class="bad-td">PANIC · 幂等失败</td><td class="ok-td">无（幂等）</td><td class="ok-td">重启后修复</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <strong>触发条件精确边界：</strong>contentID=601，levelUpCost=2800，limit=300。
+      等价条件：<code>(TtlScr − 2800) / 300 ≥ 1</code>，即 Score ≥ 300。
+      Score 低于 300 的老玩家虽然 <code>ReopenScoreMap=nil</code>，但不进入该分支，不触发 panic。
+    </div>
+  </section>
+
+  <!-- ── 线上日志 ── -->
+  <section>
+    <h2 class="section-title">线上 panic 堆栈</h2>
+    <div class="card">
+      <div class="card-header">
+        <span class="badge bug">PANIC</span>
+        <div class="title-group">
+          <div class="item-title">goroutine 3772 · chanrpc recover 截获</div>
+          <div class="item-sub">costume_pass/ctl.go:274</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="code-wrap">
+          <div class="code-label bad">线上日志</div>
+          <pre>assignment to entry in nil map: goroutine 3772 [running]:
+git.tap4fun.com/fw/tse/core/chanrpc.(*Server).exec.func1()
+    chanrpc/chanrpc.go:218 +0x96
+panic({0x3959ac0?, 0x717c230?})
+    runtime/panic.go:792 +0x132
+<span class="hi">costume_pass.(*ActvTmplCostumePass).onActvCostumePassReceiveReq(...)
+    costume_pass/ctl.go:274 +0xb6e   ← ReopenScoreMap[k] = totalCnt</span>
+actv/def.(*ReqDispatcher).OnReq(...)
+    def/handler.go:74 +0xa4
+actv/mgr.(*ActvMgr).OnActvActionReq(...)
+    mgr/api.go:122 +0x3a4
+chanrpc.(*Server).exec(...)   chanrpc.go:235 +0xa8</pre>
+        </div>
+        <div class="callout error">
+          <code>ctl.go:274</code> 即 <code>progress.ReopenScoreMap[k] = totalCnt</code>。
+          chanrpc recover 阻止进程崩溃，但 defer ack（Rewards=nil, Score=0）已发出，后续代码（AddAssets、MakeDirty）均未执行。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 编码规范 ── -->
+  <section>
+    <h2 class="section-title">工程规范要求</h2>
+    <div class="rule-box">
+      <h2>规范：持久化结构体的 map 字段必须通过封装方法访问，禁止直接读写</h2>
+      <p>
+        Go bson 反序列化对文档中缺失的 map 字段赋 <code>nil</code>，读安全但写 panic。
+        为从根本上杜绝此类问题，凡 <strong>持久化结构体</strong>（存入 MongoDB 的 struct）中的 <code>map</code> 字段，
+        必须提供封装的 <strong>getter / setter 方法</strong>，在方法内部统一处理 nil 初始化。
+        业务代码禁止直接通过 <code>progress.SomeMap[k]</code> 方式读写，必须调用对应方法。
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge rule">规范</span>
+        <div class="title-group">
+          <div class="item-title">封装 getter / setter 方法（comp_quest_prog.go）</div>
+          <div class="item-sub">game/actv/internal/activity/template/costume_pass/comp_quest_prog.go</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="code-wrap">
+          <div class="code-label bad">✗ 修复前：直接访问 map，nil map 写入 panic</div>
+          <pre><span class="del">keyCnt := totalCnt - progress.ReopenScoreMap[k]   // 读 nil map → 0，看似安全</span>
+<span class="del">progress.ReopenScoreMap[k] = totalCnt              // 写 nil map → PANIC</span></pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label good">✓ 修复后：通过封装方法访问，内部处理 nil</div>
+          <pre><span class="kw">// GetReopenScoreCnt</span> 获取 key 对应的满级循环已领取次数；内部保证 map 已初始化，避免 nil map panic
+<span class="kw">func</span> (<span class="st">qp</span> *<span class="fn">PlayerQuestProgress</span>) <span class="fn">GetReopenScoreCnt</span>(key <span class="nu">int32</span>) <span class="nu">int32</span> {
+    <span class="kw">if</span> qp.ReopenScoreMap == <span class="kw">nil</span> {
+        qp.ReopenScoreMap = <span class="kw">map</span>[<span class="nu">int32</span>]<span class="nu">int32</span>{}
+        qp.MakeDirty()
+    }
+    <span class="kw">return</span> qp.ReopenScoreMap[key]
+}
+
+<span class="kw">// SetReopenScoreCnt</span> 设置 key 对应的满级循环已领取次数；内部保证 map 已初始化，避免 nil map panic
+<span class="kw">func</span> (<span class="st">qp</span> *<span class="fn">PlayerQuestProgress</span>) <span class="fn">SetReopenScoreCnt</span>(key, val <span class="nu">int32</span>) {
+    <span class="kw">if</span> qp.ReopenScoreMap == <span class="kw">nil</span> {
+        qp.ReopenScoreMap = <span class="kw">map</span>[<span class="nu">int32</span>]<span class="nu">int32</span>{}
+        qp.MakeDirty()
+    }
+    qp.ReopenScoreMap[key] = val
+}
+
+<span class="cmt">// 业务代码改用方法调用</span>
+<span class="ins">keyCnt := totalCnt - progress.GetReopenScoreCnt(k)</span>
+<span class="ins">progress.SetReopenScoreCnt(k, totalCnt)</span></pre>
+        </div>
+        <div class="callout info">
+          getter / setter 内部的 nil 检查是<strong>兜底保障</strong>：即使 AfterLoad 未覆盖某些路径（如
+          框架懒加载、测试环境），写入也不会 panic，并会自动触发 <code>MakeDirty</code> 完成一次性修复写回。
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge rule">规范</span>
+        <div class="title-group">
+          <div class="item-title">规范适用范围：持久化结构体中的所有 map 字段</div>
+          <div class="item-sub">反例 → 正例</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="code-wrap">
+          <div class="code-label bad">✗ 禁止：直接读写持久化结构体的 map 字段</div>
+          <pre><span class="del">val := progress.DataMap[key]         // 虽然安全，但无统一保障</span>
+<span class="del">progress.DataMap[key] = newVal       // nil map → panic</span>
+<span class="del">progress.ReopenScoreMap[k] = cnt     // ← 本次事故根因</span></pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label good">✓ 要求：所有 map 字段提供 getter/setter，内部处理 nil</div>
+          <pre><span class="ins">val := progress.GetSomeMap(key)      // getter 内部 nil 检查</span>
+<span class="ins">progress.SetSomeMap(key, newVal)     // setter 内部 nil 检查 + 写入</span>
+<span class="ins">progress.SetReopenScoreCnt(k, cnt)   // ← 修复后写法</span></pre>
+        </div>
+        <p>此规范已记录到团队 Go 编码规范文档，适用于所有 <code>+deepcopy-gen=true</code> 标记的持久化结构体。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 修复方案与流程图 ── -->
+  <section>
+    <h2 class="section-title">修复方案</h2>
+
+    <div class="flow-diagram">
+      <svg width="900" height="220" viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="c-ok" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#56d364"/></marker>
+        </defs>
+
+        <line class="flow-line fl ok" x1="148" y1="64"  x2="218" y2="64"  marker-end="url(#c-ok)"/>
+        <line class="flow-line fl ok" x1="408" y1="64"  x2="478" y2="64"  marker-end="url(#c-ok)"/>
+        <line class="flow-line fl ok" x1="668" y1="64"  x2="738" y2="64"  marker-end="url(#c-ok)"/>
+
+        <g class="fn"><rect class="node-fix"    x="8"   y="42" width="140" height="44" rx="6"/>
+          <text class="node-text" x="78"  y="60">新增 getter/setter</text>
+          <text class="node-sub"  x="78"  y="76">comp_quest_prog.go</text></g>
+        <g class="fn"><rect class="node-fix"    x="218" y="42" width="260" height="44" rx="6"/>
+          <text class="node-text" x="348" y="60">ctl.go / logic.go 改用方法调用</text>
+          <text class="node-sub"  x="348" y="76">GetReopenScoreCnt / SetReopenScoreCnt</text></g>
+        <g class="fn"><rect class="node-fix"    x="478" y="42" width="190" height="44" rx="6"/>
+          <text class="node-text" x="573" y="60">部署 + 服务器重启</text>
+          <text class="node-sub"  x="573" y="76">getter 自动修复存量 nil</text></g>
+        <g class="node-pulse-ok"><rect class="node-fix" x="738" y="42" width="154" height="44" rx="6"/>
+          <text class="node-ok"   x="815" y="60">✓ 完全修复</text>
+          <text class="node-sub"  x="815" y="76">新老玩家均正常</text></g>
+
+        <text class="node-label" x="450" y="155" text-anchor="middle" fill="#8b949e" font-size="11">
+          getter/setter 内部 nil 检查 = 双重保障：修复存量数据 + 防止未来同类问题
+        </text>
+        <text class="node-label" x="450" y="175" text-anchor="middle" fill="#56d364" font-size="11">
+          MakeDirty() 触发写回 MongoDB，修复持久化 → 后续重启无需再次修正
+        </text>
+      </svg>
+    </div>
+
+    <!-- diff -->
+    <div class="card">
+      <div class="card-header">
+        <span class="badge fix">DIFF</span>
+        <div class="title-group">
+          <div class="item-title">完整代码变更</div>
+          <div class="item-sub">comp_quest_prog.go · ctl.go · logic.go</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="code-wrap">
+          <div class="code-label good">comp_quest_prog.go — 新增 getter / setter</div>
+          <pre><span class="ins">// GetReopenScoreCnt 获取 key 对应的满级循环已领取次数</span>
+<span class="ins">// 内部保证 map 已初始化，避免 nil map panic</span>
+<span class="ins">func (qp *PlayerQuestProgress) GetReopenScoreCnt(key int32) int32 {</span>
+<span class="ins">    if qp.ReopenScoreMap == nil {</span>
+<span class="ins">        qp.ReopenScoreMap = map[int32]int32{}</span>
+<span class="ins">        qp.MakeDirty()</span>
+<span class="ins">    }</span>
+<span class="ins">    return qp.ReopenScoreMap[key]</span>
+<span class="ins">}</span>
+<span class="ins"></span>
+<span class="ins">// SetReopenScoreCnt 设置 key 对应的满级循环已领取次数</span>
+<span class="ins">// 内部保证 map 已初始化，避免 nil map panic</span>
+<span class="ins">func (qp *PlayerQuestProgress) SetReopenScoreCnt(key, val int32) {</span>
+<span class="ins">    if qp.ReopenScoreMap == nil {</span>
+<span class="ins">        qp.ReopenScoreMap = map[int32]int32{}</span>
+<span class="ins">        qp.MakeDirty()</span>
+<span class="ins">    }</span>
+<span class="ins">    qp.ReopenScoreMap[key] = val</span>
+<span class="ins">}</span></pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label good">ctl.go:254,274 — 改用封装方法（onActvCostumePassReceiveReq）</div>
+          <pre><span class="del">keyCnt := totalCnt - progress.ReopenScoreMap[k]</span>
+<span class="ins">keyCnt := totalCnt - progress.GetReopenScoreCnt(k)</span>
+
+<span class="del">progress.ReopenScoreMap[k] = totalCnt // 更新已领次数</span>
+<span class="ins">progress.SetReopenScoreCnt(k, totalCnt) // 更新已领次数</span></pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label good">logic.go:313,333 — 改用封装方法（GetAllRewards）</div>
+          <pre><span class="del">keyCnt := totalCnt - progress.ReopenScoreMap[k]</span>
+<span class="ins">keyCnt := totalCnt - progress.GetReopenScoreCnt(k)</span>
+
+<span class="del">progress.ReopenScoreMap[k] = totalCnt // 更新已领次数</span>
+<span class="ins">progress.SetReopenScoreCnt(k, totalCnt) // 更新已领次数</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 验证 ── -->
+  <section>
+    <h2 class="section-title">验证方法</h2>
+    <div class="callout ok">
+      1. 在测试环境构造无 <code>ReopenScoreMap</code> 字段的 MongoDB 文档（模拟存量数据），确认重启后首次领取正常，无 panic 日志。<br>
+      2. 验证新玩家满级后领取流程无回归。<br>
+      3. 多次点击领取，确认 Score 正确扣减（353 → 53），<code>ReopenScoreMap</code> 值递增，不重复发奖。<br>
+      4. 搜索全量 panic 日志，确认 <code>assignment to entry in nil map</code> 关键字不再出现。
+    </div>
+  </section>
+
+  <!-- ── 改进建议 ── -->
+  <section>
+    <h2 class="section-title">改进建议</h2>
+    <div class="table-wrap">
+      <h2>后续行动项</h2>
+      <table>
+        <thead><tr><th>优先级</th><th>行动</th><th>负责人</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span style="color:#f97583;font-weight:700">P1</span></td>
+            <td>将 getter/setter 封装规范写入团队 Go 编码规范文档：持久化结构体 map 字段禁止直接读写，必须提供内部含 nil 初始化的封装方法</td>
+            <td>wenyu</td>
+          </tr>
+          <tr>
+            <td><span style="color:#f0a500;font-weight:700">P2</span></td>
+            <td>Code Review 检查项：审查其他持久化结构体（<code>+deepcopy-gen=true</code>）中是否存在直接读写 map 的代码，逐一补充 getter/setter</td>
+            <td>全员</td>
+          </tr>
+          <tr>
+            <td><span style="color:#58a6ff;font-weight:700">P3</span></td>
+            <td>在 actv 模块增加 panic 计数指标上报，当同一 goroutine 类型连续 panic 超过阈值时触发告警，避免被日志淹没</td>
+            <td>运维/基础架构</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

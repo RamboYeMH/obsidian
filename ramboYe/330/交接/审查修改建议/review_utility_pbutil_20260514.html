@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>审查修改建议 · utility/pbutil 泛型重构 · 2026-05-14</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; background: #0d1117; color: #c9d1d9; line-height: 1.7; padding: 40px 24px 80px; }
+    .container { max-width: 900px; margin: 0 auto; }
+
+    header { border-bottom: 1px solid #21262d; padding-bottom: 24px; margin-bottom: 40px; }
+    header h1 { font-size: 24px; font-weight: 700; color: #e6edf3; margin-bottom: 8px; }
+    .meta { font-size: 13px; color: #8b949e; display: flex; gap: 24px; flex-wrap: wrap; }
+
+    .section-title { font-size: 13px; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+
+    .card { background: #161b22; border: 1px solid #21262d; border-radius: 10px; margin-bottom: 28px; overflow: hidden; }
+    .card-header { display: flex; align-items: flex-start; gap: 14px; padding: 18px 22px; border-bottom: 1px solid #21262d; }
+    .card-body { padding: 18px 22px; }
+    .card-body p { margin-bottom: 12px; font-size: 14px; }
+    .card-body p:last-child { margin-bottom: 0; }
+
+    .badge { flex-shrink: 0; font-size: 11px; font-weight: 700; letter-spacing: .5px; padding: 3px 9px; border-radius: 20px; margin-top: 2px; }
+    .badge.p0 { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .badge.p1 { background: #2a2000; color: #f0a500; border: 1px solid #5a4000; }
+    .badge.p2 { background: #1a2a1a; color: #56d364; border: 1px solid #1f4d1f; }
+    .badge.ok { background: #0d2233; color: #58a6ff; border: 1px solid #0f4070; }
+    .badge.improve { background: #1a1040; color: #d2a8ff; border: 1px solid #4a3060; }
+
+    .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 4px; margin-right: 4px; }
+    .tag.logic  { background: #2d1f3d; color: #d2a8ff; border: 1px solid #4a3060; }
+    .tag.style  { background: #162032; color: #79c0ff; border: 1px solid #1f4060; }
+    .tag.safety { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .tag.spec   { background: #1a2a1a; color: #56d364; border: 1px solid #1f4d1f; }
+    .tag.design { background: #1a1040; color: #d2a8ff; border: 1px solid #4a3060; }
+
+    .title-group { flex: 1; }
+    .item-title { font-size: 16px; font-weight: 600; color: #e6edf3; line-height: 1.4; }
+    .item-sub   { font-size: 12px; color: #8b949e; margin-top: 4px; font-family: monospace; }
+
+    .code-wrap { margin: 14px 0; border-radius: 8px; overflow: hidden; border: 1px solid #21262d; }
+    .code-label { font-size: 11px; color: #8b949e; background: #1c2128; padding: 6px 14px; border-bottom: 1px solid #21262d; font-family: monospace; }
+    .code-label.bad  { border-left: 3px solid #f97583; }
+    .code-label.good { border-left: 3px solid #56d364; }
+    .code-label.note { border-left: 3px solid #f0a500; }
+    .code-label.info { border-left: 3px solid #58a6ff; }
+    pre { background: #0d1117; padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.6; font-family: "SFMono-Regular", Consolas, monospace; }
+    .del { color: #ffa198; background: #3d0000; display: block; }
+    .ins { color: #56d364; background: #003a00; display: block; }
+    .cmt { color: #8b949e; }
+
+    .callout { border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 13px; color: #c9d1d9; margin: 12px 0; }
+    .callout.info  { background: #0d2233; border-left: 3px solid #58a6ff; }
+    .callout.ok    { background: #0d2a0d; border-left: 3px solid #56d364; }
+    .callout.warn  { background: #2a2000; border-left: 3px solid #f0a500; }
+    .callout.error { background: #3d1a1a; border-left: 3px solid #f97583; }
+
+    .table-wrap { background: #161b22; border: 1px solid #21262d; border-radius: 10px; overflow: hidden; margin-bottom: 28px; }
+    .table-wrap h2 { font-size: 15px; font-weight: 600; color: #e6edf3; padding: 16px 22px; border-bottom: 1px solid #21262d; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 18px; color: #8b949e; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #21262d; background: #1c2128; }
+    td { padding: 11px 18px; border-bottom: 1px solid #161b22; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1c2128; }
+    td code, .card-body code { font-family: monospace; font-size: 12px; background: #21262d; padding: 1px 6px; border-radius: 4px; color: #79c0ff; }
+
+    .praise { background: #0d2233; border: 1px solid #1f4070; border-radius: 10px; padding: 18px 22px; margin-bottom: 28px; }
+    .praise h2 { font-size: 15px; font-weight: 600; color: #58a6ff; margin-bottom: 14px; }
+    .praise ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .praise li { font-size: 14px; color: #c9d1d9; padding-left: 22px; position: relative; }
+    .praise li::before { content: "✓"; position: absolute; left: 0; color: #56d364; font-weight: 700; }
+
+    .analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+    .analysis-box { background: #0d1117; border: 1px solid #21262d; border-radius: 8px; padding: 14px 16px; }
+    .analysis-box h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+    .analysis-box.before h4 { color: #f97583; }
+    .analysis-box.after  h4 { color: #56d364; }
+    .analysis-box ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .analysis-box li { font-size: 13px; color: #c9d1d9; padding-left: 16px; position: relative; }
+    .analysis-box.before li::before { content: "✗"; position: absolute; left: 0; color: #f97583; font-weight: 700; }
+    .analysis-box.after  li::before { content: "✓"; position: absolute; left: 0; color: #56d364; font-weight: 700; }
+
+    /* Flow diagram */
+    .flow-diagram { width: 100%; margin: 20px 0 8px; overflow: hidden; background: #0d1117; border: 1px solid #21262d; border-radius: 10px; padding: 20px 0; position: relative; cursor: pointer; }
+    .flow-diagram canvas { display: block; margin: 0 auto; }
+    .flow-hint { position: absolute; bottom: 10px; right: 14px; font-size: 11px; color: #8b949e; background: rgba(13,17,23,.75); padding: 3px 8px; border-radius: 4px; pointer-events: none; opacity: 0; transition: opacity .2s; }
+    .flow-diagram:hover .flow-hint { opacity: 1; }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.82); z-index: 9000; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; animation: fadeIn .15s ease; }
+    @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+    .modal-box { position: relative; width: 94vw; height: 90vh; background: #0d1117; border: 1px solid #30363d; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+    .modal-title { font-size: 13px; font-weight: 600; color: #e6edf3; padding: 10px 16px; border-bottom: 1px solid #21262d; display: flex; align-items: center; gap: 12px; }
+    .modal-title span { flex: 1; }
+    .modal-zoom-badge { font-size: 11px; color: #8b949e; font-family: monospace; min-width: 42px; text-align: right; }
+    .modal-toolbar { display: flex; gap: 6px; }
+    .modal-toolbar button { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: background .15s; }
+    .modal-toolbar button:hover { background: #30363d; }
+    .modal-canvas-wrap { flex: 1; overflow: hidden; position: relative; }
+    .modal-canvas-wrap canvas { display: block; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>审查修改建议 — utility/pbutil 泛型重构</h1>
+    <div class="meta">
+      <span>🗓 2026-05-14</span>
+      <span>📦 utility · holddata/leaguewar_union_info</span>
+      <span>🌿 h5_new_tf_v1043_leaguewar_optimize</span>
+      <span>👤 审查人：wenyu</span>
+    </div>
+  </header>
+
+  <!-- 概览 -->
+  <p class="section-title">变更概览</p>
+  <div class="callout ok" style="margin-bottom:28px">
+    本次变更新增 <code>utility/pbutil.go</code>，提供泛型函数 <code>CopyProtoMap</code>，并将 <code>holddata/leaguewar_union_info.go</code> 中手写的 proto 深拷贝循环替换为统一调用。核心收益：将类型安全从运行期提前到编译期，同时消除跨包的 proto 直接依赖分散。
+  </div>
+
+  <!-- 汇总 -->
+  <div class="table-wrap">
+    <h2>变更汇总</h2>
+    <table>
+      <thead>
+        <tr><th>文件</th><th>变更类型</th><th>要点</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>utility/pbutil.go</code></td>
+          <td><span class="badge improve">新增</span></td>
+          <td>泛型函数 <code>CopyProtoMap[K comparable, V proto.Message]</code>，proto 依赖隔离在独立文件</td>
+        </tr>
+        <tr>
+          <td><code>holddata/leaguewar_union_info.go</code></td>
+          <td><span class="badge ok">优化</span></td>
+          <td>移除 <code>proto</code> 直接 import，手写 clone 循环替换为 <code>utility.CopyProtoMap</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 流程图：类型安全路径对比 -->
+  <p class="section-title">类型安全路径对比</p>
+  <div class="flow-diagram" id="wrap-flow-safety" onclick="openModal('flow-safety')">
+    <canvas id="flow-safety" width="840" height="190"></canvas>
+    <div class="flow-hint">⤢ 点击展开</div>
+  </div>
+
+  <!-- 核心分析 -->
+  <p class="section-title" style="margin-top:40px">核心分析</p>
+
+  <!-- 分析卡片 1：类型断言安全性 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge improve">设计</span>
+      <div class="title-group">
+        <div class="item-title">类型断言：硬编码具体类型 → 类型参数断言</div>
+        <div class="item-sub">utility/pbutil.go · CopyProtoMap</div>
+      </div>
+      <span class="tag design">design</span>
+    </div>
+    <div class="card-body">
+      <div class="analysis-grid">
+        <div class="analysis-box before">
+          <h4>改前</h4>
+          <ul>
+            <li>具体类型硬编码在断言处</li>
+            <li>传错类型编译通过，运行时 panic</li>
+            <li>每种消息类型需单独写一个循环</li>
+            <li>类型正确性由调用方自律保证</li>
+          </ul>
+        </div>
+        <div class="analysis-box after">
+          <h4>改后</h4>
+          <ul>
+            <li>具体类型由类型推断自动填入</li>
+            <li>约束不满足编译直接报错</li>
+            <li>任意 map[K]proto.Message 复用同一函数</li>
+            <li>类型正确性由编译器强制保证</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-label bad">改前 — 硬编码类型断言</div>
+        <pre><span class="del">cloned := make(map[int64]*cspb.LeagueWarLeagueInfo, len(src))</span>
+<span class="del">for uid, info := range src {</span>
+<span class="del">    cloned[uid] = proto.Clone(info).(*cspb.LeagueWarLeagueInfo)</span>
+<span class="del">    <span class="cmt">// 传入其他消息类型 → 编译通过 → 运行时 panic</span></span>
+<span class="del">}</span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label good">改后 — 泛型约束 + 类型推断</div>
+        <pre><span class="ins">func CopyProtoMap[K comparable, V proto.Message](src map[K]V) map[K]V {</span>
+<span class="ins">    dst := make(map[K]V, len(src))</span>
+<span class="ins">    for k, v := range src {</span>
+<span class="ins">        dst[k] = proto.Clone(v).(V)  <span class="cmt">// V 由调用方类型推断保证，断言安全</span></span>
+<span class="ins">    }</span>
+<span class="ins">    return dst</span>
+<span class="ins">}</span>
+<span class="cmt">
+// 调用方：K=int64, V=*cspb.LeagueWarLeagueInfo 自动推断</span>
+<span class="ins">utility.CopyProtoMap(d.Groups[zvzGroupId])</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- 分析卡片 2：类型推断机制 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge improve">设计</span>
+      <div class="title-group">
+        <div class="item-title">Go 类型推断：从实参反推类型参数</div>
+        <div class="item-sub">Go 1.18 · Type Inference</div>
+      </div>
+      <span class="tag design">design</span>
+    </div>
+    <div class="card-body">
+      <p>调用 <code>utility.CopyProtoMap(d.Groups[zvzGroupId])</code> 时，编译器从实参类型 <code>map[int64]*cspb.LeagueWarLeagueInfo</code> 自动推断出 <code>K = int64</code>、<code>V = *cspb.LeagueWarLeagueInfo</code>，随即做两项约束检查：</p>
+      <div class="code-wrap">
+        <div class="code-label info">编译期约束验证过程</div>
+        <pre><span class="cmt">// Step 1：从实参类型推断类型参数</span>
+<span class="ins">K = int64                          // ← 从 map key 类型推断</span>
+<span class="ins">V = *cspb.LeagueWarLeagueInfo      // ← 从 map value 类型推断</span>
+
+<span class="cmt">// Step 2：验证约束</span>
+<span class="ins">int64 satisfies comparable         // ✓ map key 本就要求 comparable</span>
+<span class="ins">*LeagueWarLeagueInfo satisfies     // ✓ 实现了 Reset() String() ProtoMessage()</span>
+<span class="ins">  proto.Message
+
+<span class="cmt">// 若约束不满足：编译报错，不到运行时</span></span>
+<span class="del">utility.CopyProtoMap(map[int64]string{})  // compile error: string 不满足 proto.Message</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- 分析卡片 3：.(V) 安全性深析 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge improve">设计</span>
+      <div class="title-group">
+        <div class="item-title"><code>.(V)</code> 仍是运行时断言，但安全性来源已改变</div>
+        <div class="item-sub">GC Shape Stenciling · 类型参数上的类型断言</div>
+      </div>
+      <span class="tag design">design</span>
+    </div>
+    <div class="card-body">
+      <p><code>proto.Clone(v).(V)</code> 在技术层面仍是运行时类型断言，Go 的类型系统无法静态证明 <code>proto.Clone</code> 的返回值是 <code>V</code>。两种写法的安全性来源不同：</p>
+
+      <div class="code-wrap">
+        <div class="code-label note">两种断言的安全性对比</div>
+        <pre><span class="cmt">// 改前：安全性依赖"调用方碰巧传对了类型"</span>
+<span class="del">proto.Clone(info).(*cspb.LeagueWarLeagueInfo)</span>
+<span class="cmt">// 错误类型传入 → 编译通过 → 运行时 panic
+// 安全性保证：调用方自律，文档说明，没有任何强制</span>
+
+<span class="cmt">// 改后：安全性由"类型推断 + proto.Clone 契约"双重保证</span>
+<span class="ins">proto.Clone(v).(V)</span>
+<span class="cmt">// V 由类型推断从 map value 类型确定（编译期）
+// proto.Clone 保证返回与输入相同的具体类型（API 契约）
+// 两者结合 → .(V) 在运行时永远不会失败</span></pre>
+      </div>
+
+      <div class="callout info">
+        这是 Go 泛型与 C++ 模板的重要区别：Go 泛型约束描述接口行为，不描述具体结构，涉及接口函数返回值时仍需运行时断言。安全性的提升来自"把类型绑定的责任从调用方转移给类型系统"，而非消除断言本身。
+      </div>
+
+      <p>运行时开销方面：<code>*cspb.LeagueWarLeagueInfo</code> 是指针类型，Go 编译器通过 <strong>GC Shape Stenciling</strong> 让所有 <code>map[K]*proto.Message</code> 实例共享同一份机器码，额外开销仅一次间接寻址，与手写循环等价。</p>
+    </div>
+  </div>
+
+  <!-- 分析卡片 4：依赖隔离 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge improve">设计</span>
+      <div class="title-group">
+        <div class="item-title">proto 依赖收敛：从散落业务包到 pbutil 单点管理</div>
+        <div class="item-sub">utility/pbutil.go · import 隔离</div>
+      </div>
+      <span class="tag style">style</span>
+    </div>
+    <div class="card-body">
+      <p>改前 <code>holddata</code> 包直接 import <code>proto</code> 只为 <code>proto.Clone</code> 一行调用；改后移除该 import，proto 操作集中在 <code>utility/pbutil.go</code>。</p>
+      <div class="code-wrap">
+        <div class="code-label bad">改前 — holddata 直接依赖 proto</div>
+        <pre><span class="del">import "github.com/gogo/protobuf/proto"</span>
+<span class="cmt">// holddata 包因一行 Clone 调用引入重型依赖</span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label good">改后 — proto 依赖收敛到 pbutil</div>
+        <pre><span class="cmt">// utility/pbutil.go — proto 依赖的唯一入口</span>
+<span class="ins">import "github.com/gogo/protobuf/proto"</span>
+
+<span class="cmt">// holddata/leaguewar_union_info.go — 不再直接依赖 proto</span>
+<span class="ins">import "git.tap4fun.com/k3x/gs/utility"</span></pre>
+      </div>
+      <div class="callout ok">后续新增 proto 拷贝需求，统一调用 <code>utility.CopyProtoMap</code>，不需要在各业务包分别引入 proto 依赖。</div>
+    </div>
+  </div>
+
+  <!-- Praise -->
+  <div class="praise">
+    <h2>设计亮点</h2>
+    <ul>
+      <li><strong>约束选型精准</strong>：<code>K comparable</code> 与 Go map key 要求完全对应，<code>V proto.Message</code> 精确描述了"可被 proto.Clone 处理"的语义，约束既不过宽也不过窄。</li>
+      <li><strong>proto 依赖隔离</strong>：新建独立文件 <code>pbutil.go</code> 承载 proto 依赖，utility 包其余文件保持零 proto 依赖，职责边界清晰。</li>
+      <li><strong>调用方零感知</strong>：类型推断使调用方无需写类型参数，与手写循环的调用复杂度相当，迁移成本极低。</li>
+      <li><strong>可复用性</strong>：函数对 K/V 类型无具体约束，项目中任意 <code>map[K]*SomeProtoMsg</code> 的深拷贝均可直接复用，无需为每种消息类型单独实现。</li>
+    </ul>
+  </div>
+
+</div><!-- /container -->
+
+<!-- Modal overlay -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span id="modal-title-text"></span>
+      <span class="modal-zoom-badge" id="modal-zoom-text">100%</span>
+      <div class="modal-toolbar">
+        <button id="btn-zoom-in">+</button>
+        <button id="btn-zoom-out">−</button>
+        <button id="btn-reset">⊙</button>
+        <button id="btn-close">✕</button>
+      </div>
+    </div>
+    <div class="modal-canvas-wrap" id="modal-canvas-wrap">
+      <canvas id="modal-canvas"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+const DIAGRAMS = {
+  'flow-safety': {
+    title: '类型安全路径对比',
+    sourceW: 840, sourceH: 190,
+    nodeW: 150, nodeH: 44,
+    nodes: [
+      // 改前路径（上行）
+      { id:'b1', x:90,  y:55,  label:'调用方',        sub:'map[int64]*MsgA',  color:'#38bdf8', bg:'#0c1a26' },
+      { id:'b2', x:290, y:55,  label:'proto.Clone',   sub:'返回 proto.Message', color:'#8b949e', bg:'#161b22' },
+      { id:'b3', x:490, y:55,  label:'.(*MsgA)',      sub:'硬编码断言',        color:'#f97583', bg:'#200000' },
+      { id:'b4', x:700, y:55,  label:'运行时 panic',  sub:'传错类型时',        color:'#f97583', bg:'#3d1a1a' },
+      // 改后路径（下行）
+      { id:'a1', x:90,  y:140, label:'调用方',        sub:'map[int64]*MsgA',  color:'#38bdf8', bg:'#0c1a26' },
+      { id:'a2', x:290, y:140, label:'编译期约束',    sub:'V=*MsgA 验证通过', color:'#34d399', bg:'#001a0d' },
+      { id:'a3', x:490, y:140, label:'proto.Clone',   sub:'返回 proto.Message', color:'#8b949e', bg:'#161b22' },
+      { id:'a4', x:700, y:140, label:'.(V) 安全',     sub:'类型推断保证',      color:'#34d399', bg:'#001a0d' },
+    ],
+    edges: [
+      { from:'b1', to:'b2', flow:'sync',  color:'#38bdf8', label:'' },
+      { from:'b2', to:'b3', flow:'sync',  color:'#8b949e', label:'' },
+      { from:'b3', to:'b4', flow:'error', color:'#f97583', label:'类型不匹配' },
+      { from:'a1', to:'a2', flow:'sync',  color:'#34d399', label:'' },
+      { from:'a2', to:'a3', flow:'sync',  color:'#34d399', label:'' },
+      { from:'a3', to:'a4', flow:'sync',  color:'#34d399', label:'' },
+    ],
+    labels: [
+      { x:420, y:18,  text:'改前：运行时断言', color:'#f97583' },
+      { x:420, y:108, text:'改后：编译期约束 + 类型推断', color:'#34d399' },
+    ]
+  },
+};
+
+const flowCfg = {
+  sync:  { dash: [],    speed: 0,   dir:  1 },
+  async: { dash: [8,4], speed: 1.2, dir:  1 },
+  error: { dash: [5,3], speed: 1.5, dir:  1 },
+};
+
+function nodeById(data, id) { return data.nodes.find(n => n.id === id); }
+
+function drawEdge(ctx, data, e, t) {
+  const s = nodeById(data, e.from), d = nodeById(data, e.to);
+  if (!s || !d) return;
+  const cfg = flowCfg[e.flow] || flowCfg.sync;
+  const col = e.color || '#30363d';
+  ctx.save();
+  ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+  const off = cfg.speed > 0 ? (t * cfg.speed * cfg.dir) % 20 : 0;
+  ctx.setLineDash(cfg.dash); ctx.lineDashOffset = -off;
+  ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(d.x, d.y); ctx.stroke();
+  const ang = Math.atan2(d.y - s.y, d.x - s.x);
+  ctx.setLineDash([]); ctx.fillStyle = col;
+  ctx.translate(d.x - Math.cos(ang) * 22, d.y - Math.sin(ang) * 22);
+  ctx.rotate(ang);
+  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-10,5); ctx.lineTo(-10,-5); ctx.closePath(); ctx.fill();
+  ctx.restore();
+  if (e.label) {
+    ctx.fillStyle = '#8b949e'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(e.label, (s.x+d.x)/2, (s.y+d.y)/2 - 8);
+  }
+}
+
+function drawNode(ctx, data, n) {
+  const w = data.nodeW, h = data.nodeH, r = 6;
+  ctx.save();
+  ctx.shadowColor = n.color; ctx.shadowBlur = 14;
+  ctx.fillStyle = n.bg || '#161b22';
+  ctx.strokeStyle = n.color; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.roundRect(n.x - w/2, n.y - h/2, w, h, r); ctx.fill(); ctx.stroke();
+  ctx.restore();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#e6edf3'; ctx.font = '13px -apple-system,sans-serif';
+  ctx.fillText(n.label, n.x, n.sub ? n.y - 8 : n.y);
+  if (n.sub) { ctx.fillStyle = '#8b949e'; ctx.font = '11px monospace'; ctx.fillText(n.sub, n.x, n.y + 9); }
+}
+
+function renderFrame(ctx, cw, ch, data, t, tx, ty, scale) {
+  ctx.clearRect(0, 0, cw, ch);
+  ctx.save();
+  ctx.translate(tx, ty);
+  ctx.scale(scale, scale);
+  if (data.labels) {
+    data.labels.forEach(l => {
+      ctx.fillStyle = l.color; ctx.font = 'bold 12px -apple-system,sans-serif';
+      ctx.textAlign = 'center'; ctx.fillText(l.text, l.x, l.y);
+    });
+  }
+  data.edges.forEach(e => drawEdge(ctx, data, e, t));
+  data.nodes.forEach(n => drawNode(ctx, data, n));
+  ctx.restore();
+}
+
+(function startInline() {
+  let t = 0;
+  function loop() {
+    Object.entries(DIAGRAMS).forEach(([id, data]) => {
+      const canvas = document.getElementById(id);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const scale = canvas.width / data.sourceW;
+      canvas.height = Math.round(data.sourceH * scale);
+      renderFrame(ctx, canvas.width, canvas.height, data, t, 0, 0, scale);
+    });
+    t += 0.5;
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+// Modal
+const overlay = document.getElementById('modal-overlay');
+const modalCanvas = document.getElementById('modal-canvas');
+const modalCtx = modalCanvas.getContext('2d');
+const modalWrap = document.getElementById('modal-canvas-wrap');
+const zoomText = document.getElementById('modal-zoom-text');
+const titleText = document.getElementById('modal-title-text');
+let activeId = null, modalT = 0, animId = null;
+const st = { tx: 0, ty: 0, scale: 1 };
+
+function zoom(factor, cx, cy) {
+  const ns = Math.max(0.15, Math.min(10, st.scale * factor));
+  const r = ns / st.scale;
+  st.tx = cx*(1-r) + st.tx*r; st.ty = cy*(1-r) + st.ty*r; st.scale = ns;
+  zoomText.textContent = Math.round(ns*100) + '%';
+}
+function resetView(data) {
+  const cw = modalCanvas.width, ch = modalCanvas.height;
+  const base = cw / data.sourceW;
+  st.scale = base; st.tx = 0; st.ty = (ch - data.sourceH * base) / 2;
+  zoomText.textContent = Math.round(base*100) + '%';
+}
+function openModal(id) {
+  const data = DIAGRAMS[id]; if (!data) return;
+  activeId = id; titleText.textContent = data.title;
+  modalCanvas.width  = modalWrap.clientWidth  || window.innerWidth  * 0.94;
+  modalCanvas.height = modalWrap.clientHeight || window.innerHeight * 0.85;
+  resetView(data); overlay.classList.add('active');
+  if (animId) cancelAnimationFrame(animId);
+  (function loop() {
+    if (!overlay.classList.contains('active')) return;
+    renderFrame(modalCtx, modalCanvas.width, modalCanvas.height, DIAGRAMS[activeId], modalT, st.tx, st.ty, st.scale);
+    modalT += 0.5; animId = requestAnimationFrame(loop);
+  })();
+}
+function closeModal() { overlay.classList.remove('active'); if (animId) { cancelAnimationFrame(animId); animId = null; } }
+
+document.getElementById('btn-close').onclick   = closeModal;
+document.getElementById('btn-reset').onclick   = () => resetView(DIAGRAMS[activeId]);
+document.getElementById('btn-zoom-in').onclick  = () => zoom(1.25, modalCanvas.width/2, modalCanvas.height/2);
+document.getElementById('btn-zoom-out').onclick = () => zoom(0.8,  modalCanvas.width/2, modalCanvas.height/2);
+overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+modalCanvas.addEventListener('dblclick', () => resetView(DIAGRAMS[activeId]));
+modalCanvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const r = modalCanvas.getBoundingClientRect();
+  zoom(e.deltaY < 0 ? 1.1 : 0.9, e.clientX - r.left, e.clientY - r.top);
+}, { passive: false });
+let drag = null;
+modalCanvas.addEventListener('mousedown', e => { drag = { x: e.clientX, y: e.clientY, tx: st.tx, ty: st.ty }; });
+window.addEventListener('mousemove', e => { if (!drag) return; st.tx = drag.tx+(e.clientX-drag.x); st.ty = drag.ty+(e.clientY-drag.y); });
+window.addEventListener('mouseup', () => { drag = null; });
+let touches = null;
+modalCanvas.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) { touches = { type:'pan', x:e.touches[0].clientX, y:e.touches[0].clientY, tx:st.tx, ty:st.ty }; }
+  else if (e.touches.length === 2) {
+    const dx = e.touches[0].clientX-e.touches[1].clientX, dy = e.touches[0].clientY-e.touches[1].clientY;
+    touches = { type:'pinch', dist:Math.hypot(dx,dy), scale:st.scale, cx:(e.touches[0].clientX+e.touches[1].clientX)/2, cy:(e.touches[0].clientY+e.touches[1].clientY)/2 };
+  }
+  e.preventDefault();
+}, { passive:false });
+modalCanvas.addEventListener('touchmove', e => {
+  if (!touches) return;
+  if (touches.type==='pan' && e.touches.length===1) { st.tx=touches.tx+(e.touches[0].clientX-touches.x); st.ty=touches.ty+(e.touches[0].clientY-touches.y); }
+  else if (touches.type==='pinch' && e.touches.length===2) {
+    const dx=e.touches[0].clientX-e.touches[1].clientX, dy=e.touches[0].clientY-e.touches[1].clientY;
+    const ns=Math.max(0.15,Math.min(10,touches.scale*Math.hypot(dx,dy)/touches.dist));
+    const r=ns/st.scale, rb=modalCanvas.getBoundingClientRect();
+    st.tx=(touches.cx-rb.left)*(1-r)+st.tx*r; st.ty=(touches.cy-rb.top)*(1-r)+st.ty*r; st.scale=ns;
+    zoomText.textContent=Math.round(ns*100)+'%';
+  }
+  e.preventDefault();
+}, { passive:false });
+modalCanvas.addEventListener('touchend', () => { touches = null; }, { passive:false });
+</script>
+</body>
+</html>

@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>许愿池任务 ContentID 共享导致 SendEndMail 混入老活动奖励 · 2026-05-22</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; background: #0d1117; color: #c9d1d9; line-height: 1.7; padding: 40px 24px 80px; }
+    .container { max-width: 920px; margin: 0 auto; }
+
+    header { border-bottom: 1px solid #21262d; padding-bottom: 24px; margin-bottom: 40px; }
+    header h1 { font-size: 24px; font-weight: 700; color: #e6edf3; margin-bottom: 8px; }
+    .meta { font-size: 13px; color: #8b949e; display: flex; gap: 24px; flex-wrap: wrap; }
+
+    .section-title { font-size: 13px; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+
+    .card { background: #161b22; border: 1px solid #21262d; border-radius: 10px; margin-bottom: 28px; overflow: hidden; }
+    .card-header { display: flex; align-items: flex-start; gap: 14px; padding: 18px 22px; border-bottom: 1px solid #21262d; }
+    .card-body { padding: 18px 22px; }
+    .card-body p { margin-bottom: 12px; font-size: 14px; }
+    .card-body p:last-child { margin-bottom: 0; }
+
+    .badge { flex-shrink: 0; font-size: 11px; font-weight: 700; letter-spacing: .5px; padding: 3px 9px; border-radius: 20px; margin-top: 2px; }
+    .badge.p0, .badge.bug { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .badge.p1, .badge.cfg { background: #2a2000; color: #f0a500; border: 1px solid #5a4000; }
+    .badge.p2 { background: #1a2a1a; color: #56d364; border: 1px solid #1f4d1f; }
+    .badge.ok { background: #0d2233; color: #58a6ff; border: 1px solid #0f4070; }
+
+    .title-group { flex: 1; }
+    .item-title { font-size: 16px; font-weight: 600; color: #e6edf3; line-height: 1.4; }
+    .item-sub   { font-size: 12px; color: #8b949e; margin-top: 4px; font-family: monospace; }
+
+    .code-wrap { margin: 14px 0; border-radius: 8px; overflow: hidden; border: 1px solid #21262d; }
+    .code-label { font-size: 11px; color: #8b949e; background: #1c2128; padding: 6px 14px; border-bottom: 1px solid #21262d; font-family: monospace; }
+    .code-label.bad  { border-left: 3px solid #f97583; }
+    .code-label.good { border-left: 3px solid #56d364; }
+    .code-label.note { border-left: 3px solid #f0a500; }
+    pre { background: #0d1117; padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.6; font-family: "SFMono-Regular", Consolas, monospace; }
+    .del { color: #ffa198; background: #3d0000; display: block; }
+    .ins { color: #56d364; background: #003a00; display: block; }
+    .cmt { color: #8b949e; }
+
+    .callout { border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 13px; color: #c9d1d9; margin: 12px 0; }
+    .callout.info  { background: #0d2233; border-left: 3px solid #58a6ff; }
+    .callout.ok    { background: #0d2a0d; border-left: 3px solid #56d364; }
+    .callout.warn  { background: #2a2000; border-left: 3px solid #f0a500; }
+    .callout.error { background: #3d1a1a; border-left: 3px solid #f97583; }
+
+    .table-wrap { background: #161b22; border: 1px solid #21262d; border-radius: 10px; overflow: hidden; margin-bottom: 28px; }
+    .table-wrap h2 { font-size: 15px; font-weight: 600; color: #e6edf3; padding: 16px 22px; border-bottom: 1px solid #21262d; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 18px; color: #8b949e; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #21262d; background: #1c2128; }
+    td { padding: 11px 18px; border-bottom: 1px solid #161b22; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1c2128; }
+    td code, .card-body code { font-family: monospace; font-size: 12px; background: #21262d; padding: 1px 6px; border-radius: 4px; color: #79c0ff; }
+
+    .root-cause { background: #3d1a1a; border: 1px solid #6e2020; border-radius: 10px; padding: 20px 22px; margin-bottom: 28px; }
+    .root-cause h2 { font-size: 15px; font-weight: 600; color: #f97583; margin-bottom: 10px; }
+    .root-cause p  { font-size: 14px; color: #c9d1d9; line-height: 1.8; }
+
+    .open-in-browser { display: inline-block; margin-bottom: 20px; padding: 5px 14px; background: #161b22; border: 1px solid #30363d; border-radius: 6px; color: #8b949e; font-size: 12px; text-decoration: none; }
+    .open-in-browser:hover { border-color: #58a6ff; color: #58a6ff; }
+
+    .flow-diagram { width: 100%; margin: 24px 0 8px; overflow-x: auto; background: #0d1117; border: 1px solid #21262d; border-radius: 10px; padding: 24px 0; }
+    .flow-diagram canvas { display: block; margin: 0 auto; }
+
+    ol.steps { margin: 0; padding-left: 22px; font-size: 14px; display: flex; flex-direction: column; gap: 8px; }
+    ol.steps li { color: #c9d1d9; }
+    ul.risks { margin: 0; padding-left: 22px; font-size: 14px; display: flex; flex-direction: column; gap: 6px; }
+    ul.risks li { color: #c9d1d9; }
+
+    .layer-row { display: grid; grid-template-columns: 110px 1fr; gap: 0; margin-bottom: 0; }
+    .layer-row + .layer-row { border-top: 1px solid #21262d; }
+    .layer-label { padding: 14px 16px; font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #8b949e; text-transform: uppercase; border-right: 1px solid #21262d; display: flex; align-items: flex-start; padding-top: 16px; }
+    .layer-content { padding: 14px 18px; font-size: 14px; color: #c9d1d9; }
+    .layer-content strong { color: #e6edf3; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <a class="open-in-browser" href="file:///home/wenyu/Documents/Obsidian/SecondBrain/01-项目库/H5项目(330gs)/BUG报告/bug_许愿池任务ContentID共享_20260522.html">在浏览器中打开</a>
+
+  <header>
+    <h1>许愿池任务 ContentID 共享导致 SendEndMail 混入老活动奖励</h1>
+    <div class="meta">
+      <span>🗓 2026-05-22</span>
+      <span>📦 actv / wish_pool_v2</span>
+      <span>👤 wenyu</span>
+      <span>🔍 复盘分析</span>
+    </div>
+  </header>
+
+  <!-- ① 基本信息 -->
+  <p class="section-title">基本信息</p>
+  <div class="card" style="margin-bottom:28px;">
+    <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:12px 32px;">
+      <div style="font-size:13px;"><span style="color:#8b949e;">严重程度</span><br><span class="badge p1" style="display:inline-block;margin-top:6px;">High · P1</span></div>
+      <div style="font-size:13px;"><span style="color:#8b949e;">发现方式</span><br><span style="color:#e6edf3;">故障复盘 / 日志分析</span></div>
+      <div style="font-size:13px;"><span style="color:#8b949e;">影响模块</span><br><code>actv/cactv/internal/activity/template/wish_pool_v2</code></div>
+      <div style="font-size:13px;"><span style="color:#8b949e;">服务名称</span><br><span style="color:#e6edf3;">actv 活动服务</span></div>
+      <div style="font-size:13px;"><span style="color:#8b949e;">核心文件</span><br><code>wish_pool_v2/logic.go</code>&nbsp;·&nbsp;<code>gdconf/conf_actvquest_ext.go</code></div>
+      <div style="font-size:13px;"><span style="color:#8b949e;">关键函数</span><br><code>QuestPackProto</code>&nbsp;·&nbsp;<code>initTask</code>&nbsp;·&nbsp;<code>SendEndMail</code></div>
+    </div>
+  </div>
+
+  <!-- ② 根因结论（前置） -->
+  <div class="root-cause">
+    <h2>⚠ 根因结论</h2>
+    <p>
+      代码使用 <code style="background:#5a1a1a;color:#ffa198;">onlineCfg.ContentID</code> 作为任务配置的唯一查找键（<code style="background:#5a1a1a;color:#ffa198;">GetQuestCfgsByContentID</code>），
+      该函数对配置表做全表扫描，无活动维度隔离。当新活动 B 复用了旧活动 A 的 ContentID，且旧活动 A 的任务配置仍保留在表中，
+      新活动初始化时会将旧任务（T_A*）与新任务（T_B*）<strong style="color:#ffa198;">一并写入玩家进度</strong>。
+      玩家在新活动期间触发旧任务的完成条件，活动结束时 <code style="background:#5a1a1a;color:#ffa198;">SendEndMail</code> 调用
+      <code style="background:#5a1a1a;color:#ffa198;">GetActvQuestCfg(旧TaskId)</code> 可以正常找到旧配置，
+      从而把旧活动的奖励（如 T_A* 对应的 Reward）随新活动的结算邮件一起发出，造成<strong style="color:#ffa198;">玩家收到本不属于当前活动的奖励</strong>，
+      破坏游戏经济平衡。此路径全程无错误日志，属于<strong style="color:#ffa198;">静默数据污染</strong>。
+      <br><br>
+      触发条件：策划复用 ContentID 且未清理旧任务配置；根本缺陷：任务加载无活动隔离，代码对「ContentID 唯一性」无任何约束；
+      扩大因素：<code style="background:#5a1a1a;color:#ffa198;">checkAndAddNewTasks</code> 只增不减，旧任务 ID 一旦写入玩家进度永不移除。
+    </p>
+  </div>
+
+  <!-- ③ 触发链路流程图 -->
+  <p class="section-title">触发链路</p>
+  <div class="flow-diagram">
+    <canvas id="flow-trigger" width="860" height="380"></canvas>
+  </div>
+  <script>
+  (function() {
+    const canvas = document.getElementById('flow-trigger');
+    const ctx = canvas.getContext('2d');
+    let t = 0;
+
+    const nodes = [
+      { id:'n1', x:90,  y:130, label:'活动B开启',     sub:'CfgID=B ContentID=X',    color:'#f0a500', bg:'#1a1200' },
+      { id:'n2', x:300, y:130, label:'QuestPackProto', sub:'initTask / checkAndAdd', color:'#38bdf8', bg:'#0c1a26' },
+      { id:'n3', x:520, y:130, label:'QuestCfg全表扫描',sub:'ContentID=X 无隔离',    color:'#a78bfa', bg:'#1a1030' },
+      { id:'n4', x:740, y:130, label:'老任务混入prg',  sub:'T_A* 写入TaskInfos',     color:'#f97583', bg:'#200000', pulse:true },
+      { id:'n5', x:740, y:280, label:'SendEndMail',    sub:'活动B结束→OnEnd',        color:'#38bdf8', bg:'#0c1a26' },
+      { id:'n6', x:520, y:280, label:'GetActvQuestCfg',sub:'全局查 旧TaskId→nil',    color:'#f97583', bg:'#200000', pulse:true },
+      { id:'n7', x:300, y:280, label:'奖励被跳过',     sub:'taskConfig==nil continue',color:'#f97583', bg:'#200000' },
+      { id:'n8', x:90,  y:280, label:'玩家丢失奖励',   sub:'sendEndMail err log',    color:'#f97583', bg:'#200000', pulse:true },
+    ];
+
+    const edges = [
+      { from:'n1', to:'n2', flow:'sync',    color:'#f0a500', label:'玩家登录' },
+      { from:'n2', to:'n3', flow:'sync',    color:'#38bdf8', label:'ContentID' },
+      { from:'n3', to:'n4', flow:'return',  color:'#f97583', label:'含旧活动任务' },
+      { from:'n4', to:'n5', flow:'control', color:'#8b949e', label:'活动结束' },
+      { from:'n5', to:'n6', flow:'sync',    color:'#38bdf8', label:'遍历TaskInfos' },
+      { from:'n6', to:'n7', flow:'error',   color:'#f97583', label:'nil' },
+      { from:'n7', to:'n8', flow:'error',   color:'#f97583', label:'' },
+    ];
+
+    const flowCfg = {
+      sync:    { dash: [],          speed: 0,   dir:  1 },
+      async:   { dash: [8,4],       speed: 1.2, dir:  1 },
+      return:  { dash: [3,3],       speed: 0.6, dir: -1 },
+      control: { dash: [6,4],       speed: 0.8, dir:  1 },
+      error:   { dash: [5,3],       speed: 1.5, dir:  1 },
+    };
+
+    function nodeById(id) { return nodes.find(n => n.id === id); }
+
+    function drawEdge(e) {
+      const s = nodeById(e.from), d = nodeById(e.to);
+      if (!s || !d) return;
+      const cfg = flowCfg[e.flow] || flowCfg.sync;
+      const col = e.color || '#30363d';
+      ctx.save();
+      ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+      const off = cfg.speed > 0 ? (t * cfg.speed * cfg.dir) % 20 : 0;
+      ctx.setLineDash(cfg.dash); ctx.lineDashOffset = -off;
+      ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(d.x, d.y); ctx.stroke();
+      const ang = Math.atan2(d.y - s.y, d.x - s.x);
+      ctx.setLineDash([]); ctx.fillStyle = col;
+      ctx.translate(d.x - Math.cos(ang)*22, d.y - Math.sin(ang)*22);
+      ctx.rotate(ang);
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-10,5); ctx.lineTo(-10,-5); ctx.closePath(); ctx.fill();
+      ctx.restore();
+      if (e.label) {
+        ctx.fillStyle = '#8b949e'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(e.label, (s.x+d.x)/2, (s.y+d.y)/2 - 8);
+      }
+    }
+
+    function drawNode(n) {
+      const w = 160, h = 44, r = 6;
+      const glow = n.pulse ? 14 + 8*Math.sin(t*0.05) : 14;
+      ctx.save();
+      ctx.shadowColor = n.color; ctx.shadowBlur = glow;
+      ctx.fillStyle = n.bg || '#161b22';
+      ctx.strokeStyle = n.color; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.roundRect(n.x-w/2, n.y-h/2, w, h, r); ctx.fill(); ctx.stroke();
+      ctx.restore();
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#e6edf3'; ctx.font = '13px -apple-system, sans-serif';
+      ctx.fillText(n.label, n.x, n.sub ? n.y-8 : n.y);
+      if (n.sub) { ctx.fillStyle = '#8b949e'; ctx.font = '11px monospace'; ctx.fillText(n.sub, n.x, n.y+9); }
+    }
+
+    // row separator label
+    function drawRowLabels() {
+      ctx.fillStyle = '#30363d'; ctx.font = '11px monospace'; ctx.textAlign = 'left';
+      ctx.fillText('▶ 初始化阶段', 10, 100);
+      ctx.fillText('▶ 发奖阶段', 10, 250);
+    }
+
+    function loop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawRowLabels();
+      edges.forEach(drawEdge);
+      nodes.forEach(drawNode);
+      t += 0.5;
+      requestAnimationFrame(loop);
+    }
+    loop();
+  })();
+  </script>
+
+  <!-- ④ 现象描述 -->
+  <p class="section-title">现象描述</p>
+  <div class="card">
+    <div class="card-header">
+      <span class="badge bug">BUG</span>
+      <div class="title-group">
+        <div class="item-title">活动结束结算邮件中混入旧活动的奖励</div>
+        <div class="item-sub">wish_pool_v2/logic.go · SendEndMail</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <p>
+        活动 B 正常结束，<code>OnEnd</code> 触发 <code>SendEndMail</code>。玩家收到的结算邮件中<strong>包含了不属于当前活动 B 的奖励物品</strong>（与旧活动 A 的任务奖励相同）。
+        服务端全程<strong>无错误日志产生</strong>，代码逻辑正常执行，属于静默数据污染。
+      </p>
+      <p>
+        客户端表现：玩家发现邮件奖励与当期活动公告不符，收到的物品/数量超出预期，或包含历史活动才有的道具。
+      </p>
+      <div class="callout warn">
+        与「奖励丢失」不同：此 BUG 是<strong>多发了不该发的奖励</strong>，且没有 nil 报错作为报警信号，只能通过发奖 BI 日志与配置对比才能发现。
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ 复现步骤 -->
+  <p class="section-title">复现步骤</p>
+  <div class="card">
+    <div class="card-body">
+      <ol class="steps">
+        <li>配置活动 A（<code>CfgID=100</code>，<code>ContentID=50</code>），任务表中 <code>ContentId=50</code> 对应任务 T1/T2/T3，奖励分别为 R_A1/R_A2/R_A3（旧活动专属物品）。</li>
+        <li>活动 A 正常运行并结束，玩家 prg 已清结。</li>
+        <li>策划配置活动 B（<code>CfgID=200</code>，<strong>复用 <code>ContentID=50</code></strong>），在任务表为 <code>ContentId=50</code> 新增任务 T4/T5/T6，奖励为 R_B4/R_B5/R_B6（新活动物品）。<strong>旧任务 T1/T2/T3 未从配置表删除</strong>，仍挂在 ContentId=50 下。</li>
+        <li>活动 B 开启，玩家登录，触发 <code>QuestPackProto</code>。</li>
+        <li><code>initTask</code> 调用 <code>GetQuestCfgsByContentID(50)</code>，全表扫描返回 <strong>T1/T2/T3/T4/T5/T6 共 6 条</strong>，全部写入玩家 <code>TaskInfos</code>。</li>
+        <li>玩家在活动 B 期间进行正常游戏，老任务 T1/T2/T3 的完成条件（如累计抽卡次数等）被同样触发，状态变为 <code>QuestStateFinish</code>。</li>
+        <li>活动 B 结束，<code>SendEndMail</code> 遍历玩家 <code>TaskInfos</code>，T1/T2/T3 状态为 Finish，调用 <code>GetActvQuestCfg(T1)</code> 返回有效配置，R_A1/R_A2/R_A3 被发出。</li>
+        <li>玩家结算邮件中同时包含 R_B4/R_B5/R_B6（正确）与 R_A1/R_A2/R_A3（旧活动奖励，不该发），全程无错误日志。</li>
+      </ol>
+      <div class="callout error" style="margin-top:14px;">
+        此路径不产生任何 <code>nil</code> 报错，BI 发奖日志量正常，仅对比发奖物品与活动配置才能发现异常。
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑥ 相关日志 -->
+  <p class="section-title">相关日志 / 排查方式</p>
+  <div class="callout warn" style="margin-bottom:14px;">
+    此 BUG <strong>不产生错误日志</strong>，服务端全程运行正常。必须通过 BI 发奖日志与活动配置对比才能定位。
+  </div>
+  <div class="code-wrap">
+    <div class="code-label note">BI 发奖日志 · 排查 SQL / 查询思路</div>
+    <pre><span class="cmt">// 查询指定活动(actvID)的发奖记录，提取所有 rewardID</span>
+<span class="cmt">// 对比 rewardID 是否属于该活动 CfgID 对应的 ContentID 下的任务</span>
+SELECT player_id, reward_id, quest_id
+FROM actv_reward_log
+WHERE actv_id = &lt;活动B的actvID&gt;
+  AND reason = WishPoolQuestReward
+
+<span class="cmt">// 若 reward_id 对应的 ActvQuestCfg.ContentId 与活动B的ContentID相同，</span>
+<span class="cmt">// 但 quest_id 不在活动B预期的任务列表内，则确认为本BUG</span></pre>
+  </div>
+  <div class="code-wrap">
+    <div class="code-label note">次生路径日志（旧任务配置被删除后才出现）· logic.go:571</div>
+    <pre><span class="cmt">// 若旧任务后来被从配置表删除，则出现此日志（此时已是次生问题）</span>
+sendEndMail err, taskConfig is nil playerID:123456789, questID:10031
+
+<span class="cmt">// QuestPackProto 阶段（配置热更后）</span>
+ActvTmplWishPool QuestPackProto err, questMap[taskInfo.TaskId] is nil taskId:10031</pre>
+  </div>
+
+  <!-- ⑦ 根因分析 -->
+  <p class="section-title">根因分析</p>
+  <div class="table-wrap">
+    <div class="layer-row">
+      <div class="layer-label">触发条件</div>
+      <div class="layer-content">
+        <strong>策划为新活动复用了旧活动的 ContentID。</strong><br>
+        <code>ActvOnlineCfg.ContentID</code> 被设计为一个「内容模板标识」，可被多期活动引用（如排行榜、奖池配置均以 ContentID 作为 key）。但在任务配置层面，ContentID 被用作唯一聚合键，一旦复用，新旧任务数据混在同一 ContentID 下，代码无法区分。
+      </div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-label">根因</div>
+      <div class="layer-content">
+        <strong>任务加载无活动维度隔离，代码对「ContentID 唯一性」无任何约束保证。</strong><br>
+        <code>GetQuestCfgsByContentID</code>（<code>conf_actvquest_ext.go:41</code>）对 <code>ActvQuestCfg</code> 表做全表扫描，
+        只要 <code>ContentId == X</code> 就返回，不关心该任务属于哪一期活动（无 CfgID 过滤）。
+        <code>initTask</code> 和 <code>checkAndAddNewTasks</code> 盲目信任此返回值，将所有 ContentID=X 的任务一并写入玩家进度，
+        老任务（T_A*）与新任务（T_B*）混在同一个 <code>TaskInfos</code> 中无法区分。
+        <br><br>
+        <code>SendEndMail</code> 遍历 <code>TaskInfos</code> 时，对状态为 <code>QuestStateFinish</code> 的任务均调用
+        <code>GetActvQuestCfg(taskId)</code> 查奖励配置并发出——旧任务 T_A* 有有效配置、完成条件也可被触发，
+        因此旧活动的奖励（R_A*）被合法地随新活动结算邮件发出，<strong>全程无报错，属于逻辑正确但语义错误</strong>。
+      </div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-label">扩大因</div>
+      <div class="layer-content">
+        <strong><code>checkAndAddNewTasks</code> 只增不减，孤儿任务永远留在玩家进度中。</strong><br>
+        该函数逻辑：遍历 questMap，若 taskId 不在玩家现有 TaskInfos 中则追加。但反过来——玩家 TaskInfos 中已有的 taskId 如果不在 questMap 中，不会被清除。
+        一旦配置热更删除某任务，其 ID 在玩家进度中永久残留，每次 <code>QuestPackProto</code> 都会触发 nil 日志，
+        <code>SendEndMail</code> 也会对其静默丢奖。
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑧ 影响范围 -->
+  <p class="section-title">影响范围</p>
+  <div class="card">
+    <div class="card-body">
+      <p><strong>直接受影响：</strong>在活动 B 存续期间登录过的所有玩家，其 <code>TaskInfos</code> 中含有旧任务 T_A*，且在活动 B 期间触发了旧任务完成条件。</p>
+      <p><strong>数据异常：</strong>玩家额外收到旧活动的奖励（R_A*），游戏经济被注水。奖励已发出，状态已推进到 <code>QuestStateReward</code>，无法仅通过状态回滚修复，需人工核查发奖日志追回。</p>
+      <p><strong>服务稳定性：</strong>不影响服务进程，无崩溃/报警。</p>
+      <p><strong>可发现性：</strong>无错误日志，监控无异常。只有玩家主动举报或策划主动对比 BI 发奖数据时才会暴露，发现成本高。</p>
+      <div class="callout error" style="margin-top:4px;">此 BUG 属于<strong>静默数据污染</strong>，危害程度高于产生报错的 BUG，因为后者至少可以被监控感知。</div>
+    </div>
+  </div>
+
+  <!-- ⑨ 修复方案 -->
+  <p class="section-title">修复方案</p>
+  <div class="table-wrap" style="margin-bottom:20px;">
+    <h2>方案对比</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>方案</th>
+          <th>操作</th>
+          <th>影响范围</th>
+          <th>需重启</th>
+          <th>推荐</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge cfg">A</span> 配置规范</td>
+          <td>禁止复用 ContentID，不同期活动分配独立值</td>
+          <td>数据 / 运营流程</td>
+          <td>否</td>
+          <td><span style="color:#f0a500;">✓ 应急止血</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p1">B</span> SendEndMail 修复</td>
+          <td>改用 questMap 作用域查找替代全局 <code>GetActvQuestCfg</code></td>
+          <td><code>wish_pool_v2/logic.go</code></td>
+          <td>是</td>
+          <td><span style="color:#56d364;">✓✓ 推荐</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p1">C</span> 孤儿清理</td>
+          <td><code>checkAndAddNewTasks</code> 同时清理不在 questMap 中的任务</td>
+          <td><code>wish_pool_v2/logic.go</code></td>
+          <td>是</td>
+          <td><span style="color:#56d364;">✓✓ 彻底</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge ok">D</span> 配置加载隔离</td>
+          <td><code>GetQuestCfgsByContentID</code> 增加 CfgID 参数，从根本隔离任务归属</td>
+          <td><code>gdconf/conf_actvquest_ext.go</code> + 所有调用处</td>
+          <td>是</td>
+          <td><span style="color:#8b949e;">○ 长期</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 修复路径流程图 -->
+  <div class="flow-diagram">
+    <canvas id="flow-fix" width="860" height="280"></canvas>
+  </div>
+  <script>
+  (function() {
+    const canvas = document.getElementById('flow-fix');
+    const ctx = canvas.getContext('2d');
+    let t = 0;
+
+    const nodes = [
+      { id:'f1', x:90,  y:140, label:'SendEndMail',   sub:'活动结束',           color:'#38bdf8', bg:'#0c1a26' },
+      { id:'f2', x:290, y:140, label:'加载 questMap', sub:'限当前活动范围',      color:'#34d399', bg:'#001a0d', pulse:true },
+      { id:'f3', x:510, y:140, label:'questMap 查找', sub:'[taskInfo.TaskId]',  color:'#34d399', bg:'#001a0d' },
+      { id:'f4', x:730, y:80,  label:'有效任务→发奖', sub:'正常流程',            color:'#34d399', bg:'#001a0d', pulse:true },
+      { id:'f5', x:730, y:210, label:'无配置任务',    sub:'安全 skip 不丢奖',    color:'#8b949e', bg:'#161b22' },
+    ];
+
+    const edges = [
+      { from:'f1', to:'f2', flow:'sync',    color:'#38bdf8', label:'修复点 ①' },
+      { from:'f2', to:'f3', flow:'sync',    color:'#34d399', label:'' },
+      { from:'f3', to:'f4', flow:'control', color:'#34d399', label:'存在' },
+      { from:'f3', to:'f5', flow:'control', color:'#8b949e', label:'不存在' },
+    ];
+
+    const flowCfg = {
+      sync:    { dash: [],    speed: 0,   dir: 1 },
+      control: { dash: [6,4], speed: 0.8, dir: 1 },
+      error:   { dash: [5,3], speed: 1.5, dir: 1 },
+    };
+
+    function nodeById(id) { return nodes.find(n => n.id === id); }
+
+    function drawEdge(e) {
+      const s = nodeById(e.from), d = nodeById(e.to);
+      if (!s || !d) return;
+      const cfg = flowCfg[e.flow] || flowCfg.sync;
+      const col = e.color || '#30363d';
+      ctx.save();
+      ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+      const off = cfg.speed > 0 ? (t * cfg.speed * cfg.dir) % 20 : 0;
+      ctx.setLineDash(cfg.dash); ctx.lineDashOffset = -off;
+      ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(d.x, d.y); ctx.stroke();
+      const ang = Math.atan2(d.y - s.y, d.x - s.x);
+      ctx.setLineDash([]); ctx.fillStyle = col;
+      ctx.translate(d.x - Math.cos(ang)*22, d.y - Math.sin(ang)*22);
+      ctx.rotate(ang);
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-10,5); ctx.lineTo(-10,-5); ctx.closePath(); ctx.fill();
+      ctx.restore();
+      if (e.label) {
+        ctx.fillStyle = '#8b949e'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(e.label, (s.x+d.x)/2, (s.y+d.y)/2 - 8);
+      }
+    }
+
+    function drawNode(n) {
+      const w = 160, h = 44, r = 6;
+      const glow = n.pulse ? 14 + 8*Math.sin(t*0.05) : 14;
+      ctx.save();
+      ctx.shadowColor = n.color; ctx.shadowBlur = glow;
+      ctx.fillStyle = n.bg || '#161b22';
+      ctx.strokeStyle = n.color; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.roundRect(n.x-w/2, n.y-h/2, w, h, r); ctx.fill(); ctx.stroke();
+      ctx.restore();
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#e6edf3'; ctx.font = '13px -apple-system, sans-serif';
+      ctx.fillText(n.label, n.x, n.sub ? n.y-8 : n.y);
+      if (n.sub) { ctx.fillStyle = '#8b949e'; ctx.font = '11px monospace'; ctx.fillText(n.sub, n.x, n.y+9); }
+    }
+
+    function drawLabel() {
+      ctx.fillStyle = '#30363d'; ctx.font = '11px monospace'; ctx.textAlign = 'left';
+      ctx.fillText('▶ 修复路径（方案 B）', 10, 30);
+    }
+
+    function loop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawLabel();
+      edges.forEach(drawEdge);
+      nodes.forEach(drawNode);
+      t += 0.5;
+      requestAnimationFrame(loop);
+    }
+    loop();
+  })();
+  </script>
+
+  <!-- 代码修复示例 -->
+  <p class="section-title" style="margin-top:28px;">代码修复示例</p>
+
+  <!-- 方案B：SendEndMail -->
+  <div class="code-wrap">
+    <div class="code-label bad">当前代码 · logic.go:566–576 · SendEndMail 内循环</div>
+    <pre><span class="del">- taskConfig := gdconf.GetActvQuestCfg(taskInfo.TaskId)  // 全局查，无活动隔离</span>
+<span class="del">- if taskConfig == nil {</span>
+<span class="del">-     tlog.Errorf("sendEndMail err, taskConfig is nil playerID:%v, questID:%v", ps.OwnerID, taskInfo.TaskId)</span>
+<span class="del">-     continue  // 奖励静默丢失</span>
+<span class="del">- }</span></pre>
+  </div>
+  <div class="code-wrap">
+    <div class="code-label good">修复方案 B · SendEndMail 开头加载 questMap，循环内改用作用域查找</div>
+    <pre><span class="cmt">// SendEndMail 函数开头（a.QuestComp.RangeProgress 调用前）</span>
+<span class="ins">+ onlineCfg := gdconf.GetActvOnlineCfg(a.CfgID)</span>
+<span class="ins">+ questMap := gdconf.GetQuestMapCfgByContentID(onlineCfg.ContentID)</span>
+
+<span class="cmt">// 循环内替换全局查找</span>
+<span class="ins">+ taskConfig, ok := questMap[taskInfo.TaskId]  // 限当前活动范围</span>
+<span class="ins">+ if !ok || taskConfig == nil {</span>
+<span class="ins">+     tlog.Warnf("sendEndMail skip orphan task playerID:%v, questID:%v", ps.OwnerID, taskInfo.TaskId)</span>
+<span class="ins">+     continue</span>
+<span class="ins">+ }</span></pre>
+  </div>
+
+  <!-- 方案C：checkAndAddNewTasks 孤儿清理 -->
+  <div class="code-wrap">
+    <div class="code-label good">修复方案 C · checkAndAddNewTasks 增加孤儿任务清理</div>
+    <pre><span class="cmt">// checkAndAddNewTasks 末尾追加清理逻辑</span>
+<span class="ins">+ var validTaskInfos []*TaskInfo</span>
+<span class="ins">+ for _, taskInfo := range prg.TaskInfos {</span>
+<span class="ins">+     if questMap[taskInfo.TaskId] != nil {</span>
+<span class="ins">+         validTaskInfos = append(validTaskInfos, taskInfo)</span>
+<span class="ins">+     } else {</span>
+<span class="ins">+         tlog.Warnf("checkAndAddNewTasks remove orphan taskId:%v", taskInfo.TaskId)</span>
+<span class="ins">+         hasNewTasks = true</span>
+<span class="ins">+     }</span>
+<span class="ins">+ }</span>
+<span class="ins">+ prg.TaskInfos = validTaskInfos</span></pre>
+  </div>
+
+  <!-- ⑩ 验证方法 -->
+  <p class="section-title">验证方法</p>
+  <div class="card">
+    <div class="card-body">
+      <ol class="steps">
+        <li>搭建测试环境，配置活动 B（ContentID=50）在任务表中保留旧任务 T1/T2/T3，部署修复版本。</li>
+        <li>玩家登录触发 <code>QuestPackProto</code>，断言 <code>TaskInfos</code> 中<strong>只含 T4/T5/T6</strong>（新活动任务），不含 T1/T2/T3。</li>
+        <li>触发旧任务完成条件，断言 T1/T2/T3 状态不变化（不在 questMap 中，不参与进度追踪）。</li>
+        <li>手动触发 <code>SendEndMail</code>，检查发奖 BI 日志，确认仅包含 R_B4/R_B5/R_B6，无 R_A1/R_A2/R_A3。</li>
+        <li>验证方案 C（孤儿清理）：令玩家在旧配置存在时先登录（prg 写入旧任务），再热更删除旧任务，再次登录后确认孤儿 ID 被从 <code>TaskInfos</code> 清除。</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ⑪ 延伸风险 -->
+  <p class="section-title">延伸风险</p>
+  <div class="card">
+    <div class="card-body">
+      <ul class="risks">
+        <li><strong>同类模板风险：</strong><code>christmas_tree</code>、<code>lost_mine</code> 等其他使用 ContentID 加载任务的活动模板存在相同缺陷，建议全面排查历史活动 ContentID 是否有复用情况，核查对应发奖记录。</li>
+        <li><strong>奖励丢失次生风险：</strong>若旧任务配置在活动 B 运行期间被删除（热更清理），此前已写入玩家 prg 的旧 ID 将触发 <code>GetActvQuestCfg</code> 返回 nil，从而变成「奖励丢失」场景。两种场景的触发取决于旧配置是否删除，实质根因相同。</li>
+        <li><strong>可观测性缺口：</strong>此类静默多发的监控缺失。建议在 <code>SendEndMail</code> 中对发出奖励的 questId 做 questMap 归属校验，对不在 questMap 内的任务发奖行为打告警日志，提升可发现性。</li>
+        <li><strong>配置管理规范：</strong>建议在活动配置工具侧增加 ContentID 唯一性检测，或在 <code>GetActvOnlineCfgExt</code> 加载时扫描 ContentID 冲突并打 Warning，从数据源头拦截。</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

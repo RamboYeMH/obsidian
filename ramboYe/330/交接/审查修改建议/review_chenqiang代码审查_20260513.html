@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>代码审查修改建议 · 2026-05-13</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; background: #0d1117; color: #c9d1d9; line-height: 1.7; padding: 40px 24px 80px; }
+    .container { max-width: 900px; margin: 0 auto; }
+
+    header { border-bottom: 1px solid #21262d; padding-bottom: 24px; margin-bottom: 40px; }
+    header h1 { font-size: 24px; font-weight: 700; color: #e6edf3; margin-bottom: 8px; }
+    .meta { font-size: 13px; color: #8b949e; display: flex; gap: 24px; flex-wrap: wrap; }
+
+    .section-title { font-size: 13px; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+
+    .card { background: #161b22; border: 1px solid #21262d; border-radius: 10px; margin-bottom: 28px; overflow: hidden; }
+    .card-header { display: flex; align-items: flex-start; gap: 14px; padding: 18px 22px; border-bottom: 1px solid #21262d; }
+    .card-body { padding: 18px 22px; }
+    .card-body p { margin-bottom: 12px; font-size: 14px; }
+    .card-body p:last-child { margin-bottom: 0; }
+
+    .badge { flex-shrink: 0; font-size: 11px; font-weight: 700; letter-spacing: .5px; padding: 3px 9px; border-radius: 20px; margin-top: 2px; }
+    .badge.p0, .badge.bug { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .badge.p1, .badge.cfg { background: #2a2000; color: #f0a500; border: 1px solid #5a4000; }
+    .badge.p2 { background: #1a2a1a; color: #56d364; border: 1px solid #1f4d1f; }
+    .badge.ok { background: #0d2233; color: #58a6ff; border: 1px solid #0f4070; }
+
+    .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 4px; margin-right: 4px; }
+    .tag.logic  { background: #2d1f3d; color: #d2a8ff; border: 1px solid #4a3060; }
+    .tag.style  { background: #162032; color: #79c0ff; border: 1px solid #1f4060; }
+    .tag.safety { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .tag.spec   { background: #1a2a1a; color: #56d364; border: 1px solid #1f4d1f; }
+
+    .title-group { flex: 1; }
+    .item-title { font-size: 16px; font-weight: 600; color: #e6edf3; line-height: 1.4; }
+    .item-sub   { font-size: 12px; color: #8b949e; margin-top: 4px; font-family: monospace; }
+
+    .code-wrap { margin: 14px 0; border-radius: 8px; overflow: hidden; border: 1px solid #21262d; }
+    .code-label { font-size: 11px; color: #8b949e; background: #1c2128; padding: 6px 14px; border-bottom: 1px solid #21262d; font-family: monospace; }
+    .code-label.bad  { border-left: 3px solid #f97583; }
+    .code-label.good { border-left: 3px solid #56d364; }
+    .code-label.note { border-left: 3px solid #f0a500; }
+    pre { background: #0d1117; padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.6; font-family: "SFMono-Regular", Consolas, monospace; }
+    .del { color: #ffa198; background: #3d0000; display: block; }
+    .ins { color: #56d364; background: #003a00; display: block; }
+    .cmt { color: #8b949e; }
+
+    .callout { border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 13px; color: #c9d1d9; margin: 12px 0; }
+    .callout.info  { background: #0d2233; border-left: 3px solid #58a6ff; }
+    .callout.ok    { background: #0d2a0d; border-left: 3px solid #56d364; }
+    .callout.warn  { background: #2a2000; border-left: 3px solid #f0a500; }
+    .callout.error { background: #3d1a1a; border-left: 3px solid #f97583; }
+
+    .table-wrap { background: #161b22; border: 1px solid #21262d; border-radius: 10px; overflow: hidden; margin-bottom: 28px; }
+    .table-wrap h2 { font-size: 15px; font-weight: 600; color: #e6edf3; padding: 16px 22px; border-bottom: 1px solid #21262d; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 18px; color: #8b949e; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #21262d; background: #1c2128; }
+    td { padding: 11px 18px; border-bottom: 1px solid #161b22; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1c2128; }
+    td code, .card-body code { font-family: monospace; font-size: 12px; background: #21262d; padding: 1px 6px; border-radius: 4px; color: #79c0ff; }
+
+    .praise { background: #0d2233; border: 1px solid #1f4070; border-radius: 10px; padding: 18px 22px; margin-bottom: 28px; }
+    .praise h2 { font-size: 15px; font-weight: 600; color: #58a6ff; margin-bottom: 14px; }
+    .praise ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .praise li { font-size: 14px; color: #c9d1d9; padding-left: 22px; position: relative; }
+    .praise li::before { content: "✓"; position: absolute; left: 0; color: #56d364; font-weight: 700; }
+
+    .flow-diagram { width: 100%; margin: 24px 0 8px; overflow-x: auto; background: #0d1117; border: 1px solid #21262d; border-radius: 10px; padding: 24px 0; }
+    .flow-diagram svg { display: block; margin: 0 auto; }
+    .node-normal  { fill: #1c2128; stroke: #30363d; stroke-width: 1.5; }
+    .node-trigger { fill: #2a2000; stroke: #f0a500; stroke-width: 1.5; }
+    .node-error   { fill: #3d1a1a; stroke: #f97583; stroke-width: 2; }
+    .node-fix     { fill: #0d2a0d; stroke: #56d364; stroke-width: 1.5; }
+    .node-info    { fill: #0d2233; stroke: #58a6ff; stroke-width: 1.5; }
+    .node-text  { fill: #e6edf3; font-family: -apple-system, sans-serif; font-size: 12px; dominant-baseline: middle; text-anchor: middle; }
+    .node-sub   { fill: #8b949e; font-family: monospace; font-size: 10px; dominant-baseline: middle; text-anchor: middle; }
+    .flow-line       { fill: none; stroke: #30363d; stroke-width: 1.5; }
+    .flow-line.warn  { stroke: #f0a500; }
+    .flow-line.error { stroke: #f97583; }
+    .flow-line.ok    { stroke: #56d364; }
+    .flow-line.dash  { stroke-dasharray: 5 3; }
+
+    .fn { opacity: 0; animation: fadeNode 0.35s ease forwards; }
+    .fn:nth-child(1)  { animation-delay: 0.05s; } .fn:nth-child(2)  { animation-delay: 0.20s; }
+    .fn:nth-child(3)  { animation-delay: 0.35s; } .fn:nth-child(4)  { animation-delay: 0.50s; }
+    .fn:nth-child(5)  { animation-delay: 0.65s; } .fn:nth-child(6)  { animation-delay: 0.80s; }
+    .fn:nth-child(7)  { animation-delay: 0.95s; } .fn:nth-child(8)  { animation-delay: 1.10s; }
+    .fn:nth-child(9)  { animation-delay: 1.25s; } .fn:nth-child(10) { animation-delay: 1.40s; }
+    .fl { stroke-dasharray: 400; stroke-dashoffset: 400; animation: drawLine 0.4s ease forwards; }
+    .fl:nth-of-type(1) { animation-delay: 0.15s; } .fl:nth-of-type(2) { animation-delay: 0.30s; }
+    .fl:nth-of-type(3) { animation-delay: 0.45s; } .fl:nth-of-type(4) { animation-delay: 0.60s; }
+    .fl:nth-of-type(5) { animation-delay: 0.75s; } .fl:nth-of-type(6) { animation-delay: 0.90s; }
+    .fl:nth-of-type(7) { animation-delay: 1.05s; } .fl:nth-of-type(8) { animation-delay: 1.20s; }
+    @keyframes fadeNode { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes drawLine { to { stroke-dashoffset: 0; } }
+    .node-pulse    { animation: fadeNode 0.35s ease 0.80s forwards, pulse 2s ease 1.4s infinite; opacity: 0; }
+    .node-pulse-ok { animation: fadeNode 0.35s ease 1.25s forwards, pulseOk 2s ease 1.8s infinite; opacity: 0; }
+    @keyframes pulse   { 0%,100%{ filter:drop-shadow(0 0 0px transparent); } 50%{ filter:drop-shadow(0 0 8px #f97583aa); } }
+    @keyframes pulseOk { 0%,100%{ filter:drop-shadow(0 0 0px transparent); } 50%{ filter:drop-shadow(0 0 8px #56d364aa); } }
+
+    .overview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
+    .stat-box { background: #161b22; border: 1px solid #21262d; border-radius: 10px; padding: 18px 22px; text-align: center; }
+    .stat-num { font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+    .stat-num.p0 { color: #f97583; }
+    .stat-num.p1 { color: #f0a500; }
+    .stat-num.p2 { color: #56d364; }
+    .stat-label { font-size: 12px; color: #8b949e; }
+
+    .commit-block { background: #161b22; border: 1px solid #21262d; border-radius: 10px; padding: 14px 20px; margin-bottom: 14px; display: flex; align-items: center; gap: 14px; }
+    .commit-hash { font-family: monospace; font-size: 12px; color: #79c0ff; background: #0d2233; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+    .commit-msg { font-size: 14px; color: #e6edf3; }
+    .commit-meta { font-size: 12px; color: #8b949e; margin-top: 2px; }
+
+    .pre-existing { background: #1c2128; border: 1px solid #30363d; border-radius: 10px; padding: 16px 20px; margin-bottom: 28px; }
+    .pre-existing h3 { font-size: 13px; font-weight: 600; color: #8b949e; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .pre-existing table { font-size: 13px; }
+    .pre-existing th { background: transparent; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ── Header ── -->
+  <header>
+    <h1>代码审查修改建议</h1>
+    <div class="meta">
+      <span>🗓 2026-05-13</span>
+      <span>👤 被审查人：陈强（chenqiang）</span>
+      <span>🔍 审查人：文宇</span>
+      <span>🌿 分支：h5_new_tf_v1042_new_bug</span>
+    </div>
+  </header>
+
+  <!-- ── 1. 审查概览 ── -->
+  <p class="section-title">审查概览</p>
+
+  <div style="margin-bottom: 20px;">
+    <div class="commit-block">
+      <span class="commit-hash">ba520c99</span>
+      <div>
+        <div class="commit-msg">【联盟对决】MvpPlayer点击</div>
+        <div class="commit-meta">actv/cactv/internal/activity/template/union_duel/logic.go · +1 行</div>
+      </div>
+      <span class="badge ok" style="margin-left:auto;">CLEAN</span>
+    </div>
+    <div class="commit-block">
+      <span class="commit-hash">1ba4d51c</span>
+      <div>
+        <div class="commit-msg">H5-8721【征召】征召士兵剩余时间小于1min点击一键加速弹错误</div>
+        <div class="commit-meta">ctl_slgcamp.go · ctl_tech.go · gdconf/def_d2config.go · 及协议自动生成文件</div>
+      </div>
+      <span class="badge p2" style="margin-left:auto;">2 建议</span>
+    </div>
+  </div>
+
+  <div class="overview-grid">
+    <div class="stat-box">
+      <div class="stat-num p0">0</div>
+      <div class="stat-label">P0 · 必须修复</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num p1">0</div>
+      <div class="stat-label">P1 · 强烈建议</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num p2">2</div>
+      <div class="stat-label">P2 · 建议改进</div>
+    </div>
+  </div>
+
+  <!-- ── 2. 问题汇总表 ── -->
+  <div class="table-wrap">
+    <h2>问题汇总</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>优先级</th>
+          <th>问题描述</th>
+          <th>文件位置</th>
+          <th>类型</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge p2">P2</span></td>
+          <td>容差逻辑重复，两文件完全一致，后续易产生三处违规</td>
+          <td><code>ctl_slgcamp.go:347-350</code><br><code>ctl_tech.go:369-372</code></td>
+          <td><span class="tag style">规范-5</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p2">P2</span></td>
+          <td>配置常量命名含 "Research" 但同时用于征召（SlgCamp），语义不准确</td>
+          <td><code>gdconf/def_d2config.go</code></td>
+          <td><span class="tag style">命名</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 3. 问题详情 ── -->
+  <p class="section-title">问题详情</p>
+
+  <!-- P2-1：重复容差逻辑 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p2">P2</span>
+      <div class="title-group">
+        <div class="item-title">容差配置取值逻辑重复</div>
+        <div class="item-sub">ctl_slgcamp.go:347-350 &nbsp;·&nbsp; ctl_tech.go:369-372</div>
+      </div>
+      <span class="tag style">规范-5</span>
+    </div>
+    <div class="card-body">
+      <p>同一段取容差配置的代码在 <code>OnSlgCampProduceAccuReq</code> 和 <code>OnResearchCityTechAccuReq</code> 中逐字重复。当前 2 处尚未触发规范-5 的三处阈值，但已经是潜在风险：若后续其他加速函数（建筑、指挥官等）也需要此逻辑，第三处出现时将构成正式违规，且届时散落在多个文件中更难统一修改。</p>
+
+      <div class="code-wrap">
+        <div class="code-label bad">ctl_slgcamp.go:347 &amp; ctl_tech.go:369 — 重复出现两次</div>
+        <pre><span class="del">var toleranceSec int64</span>
+<span class="del">if toleranceCfg := gdconf.GetD2ConfigCfg(gdconf.ResearchAccuToleranceSec); toleranceCfg != nil {</span>
+<span class="del">    toleranceSec = int64(toleranceCfg.Val)</span>
+<span class="del">}</span></pre>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-label good">建议 — 提取为公共函数（可放 game/play/internal/ 或 slgcamp 包）</div>
+        <pre><span class="cmt">// getAccuToleranceSec 返回加速请求的时间容差秒数，读自 D2Config，无配置时返回 0。</span>
+<span class="ins">func getAccuToleranceSec() int64 {</span>
+<span class="ins">    if cfg := gdconf.GetD2ConfigCfg(gdconf.AccuToleranceSec); cfg != nil {</span>
+<span class="ins">        return int64(cfg.Val)</span>
+<span class="ins">    }</span>
+<span class="ins">    return 0</span>
+<span class="ins">}</span>
+
+<span class="cmt">// 调用处简化为一行</span>
+<span class="ins">toleranceSec := getAccuToleranceSec()</span></pre>
+      </div>
+
+      <div class="callout info">目前不强制要求立即提取，但建议在下一次涉及加速函数的改动中一并处理，防止三处违规。</div>
+    </div>
+  </div>
+
+  <!-- P2-2：命名歧义 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p2">P2</span>
+      <div class="title-group">
+        <div class="item-title">配置常量命名语义不准确</div>
+        <div class="item-sub">gdconf/def_d2config.go · ResearchAccuToleranceSec</div>
+      </div>
+      <span class="tag style">命名</span>
+    </div>
+    <div class="card-body">
+      <p>常量名 <code>ResearchAccuToleranceSec</code> 对应配置 key <code>"Research_Accu_Tolerance_Sec"</code>，字面语义为"科技研究加速容差"，但实际同时被征召生产加速（<code>OnSlgCampProduceAccuReq</code>）引用，并非科技研究专属。后续维护者看到 Research 前缀，容易误以为该配置只影响科技功能，产生误判。</p>
+
+      <div class="code-wrap">
+        <div class="code-label bad">当前 — gdconf/def_d2config.go</div>
+        <pre><span class="del">ResearchAccuToleranceSec = "Research_Accu_Tolerance_Sec"  // 【科技】科技加速请求时间容忍秒数</span></pre>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-label good">建议 — 去掉 Research 前缀，注释说明适用范围</div>
+        <pre><span class="ins">AccuToleranceSec = "Accu_Tolerance_Sec"  // 一键加速请求时间容差秒数（科技/征召通用）</span></pre>
+      </div>
+
+      <div class="callout warn">gdconf 文件由 <code>make conf</code> 自动生成，改名需同步修改配置表的 key 名，改动前确认配置表是否已更新。若配置表暂时无法改，命名保持现状也可接受，至少把注释补全。</div>
+    </div>
+  </div>
+
+  <!-- ── 流程图：修复前后校验逻辑对比 ── -->
+  <p class="section-title" style="margin-top:8px;">加速校验逻辑变更对比</p>
+  <div class="flow-diagram">
+    <svg width="860" height="280" viewBox="0 0 860 280" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arr"       markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#30363d"/></marker>
+        <marker id="arr-error" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#f97583"/></marker>
+        <marker id="arr-ok"    markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#56d364"/></marker>
+        <marker id="arr-warn"  markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#f0a500"/></marker>
+      </defs>
+
+      <!-- 左侧：修复前 -->
+      <!-- 连线 -->
+      <line class="flow-line fl" x1="110" y1="64" x2="110" y2="106" marker-end="url(#arr)"/>
+      <line class="flow-line fl error" x1="110" y1="150" x2="110" y2="192" marker-end="url(#arr-error)"/>
+      <line class="flow-line fl ok"    x1="180" y1="128" x2="250" y2="128" marker-end="url(#arr-ok)"/>
+      <line class="flow-line fl ok"    x1="300" y1="128" x2="300" y2="192" marker-end="url(#arr-ok)"/>
+
+      <!-- 节点 -->
+      <g class="fn"><rect class="node-normal" x="30" y="20" width="160" height="44" rx="6"/>
+        <text class="node-text" x="110" y="40">客户端发送加速请求</text>
+        <text class="node-sub"  x="110" y="56">req.Seconds</text>
+      </g>
+      <g class="fn"><rect class="node-trigger" x="30" y="106" width="160" height="44" rx="6"/>
+        <text class="node-text" x="110" y="122">时间校验（修复前）</text>
+        <text class="node-sub"  x="110" y="138">FinishTime − seconds &lt; now</text>
+      </g>
+      <g class="fn"><rect class="node-info" x="250" y="106" width="140" height="44" rx="6"/>
+        <text class="node-text" x="320" y="128">通过 → 执行加速</text>
+      </g>
+      <g class="node-pulse"><rect class="node-error" x="30" y="192" width="160" height="44" rx="6"/>
+        <text class="node-text" x="110" y="214">误拒：ErrCodeResearchParamError</text>
+      </g>
+      <g class="fn"><rect class="node-fix" x="250" y="192" width="140" height="44" rx="6"/>
+        <text class="node-text" x="320" y="214">✓ 加速成功</text>
+      </g>
+
+      <!-- 标签 -->
+      <text x="30" y="14" fill="#8b949e" font-size="11" font-family="monospace">修复前</text>
+      <text x="140" y="168" fill="#f97583" font-size="11" font-family="monospace">剩余 &lt; 1min 触发误拒</text>
+
+      <!-- 分隔线 -->
+      <line x1="430" y1="20" x2="430" y2="260" stroke="#21262d" stroke-width="1" stroke-dasharray="4 3"/>
+
+      <!-- 右侧：修复后 -->
+      <!-- 连线 -->
+      <line class="flow-line fl" x1="640" y1="64" x2="640" y2="106" marker-end="url(#arr)"/>
+      <line class="flow-line fl warn" x1="640" y1="106" x2="640" y2="84" marker-end="url(#arr)"/>
+      <line class="flow-line fl" x1="640" y1="150" x2="640" y2="192" marker-end="url(#arr)"/>
+      <line class="flow-line fl ok" x1="760" y1="128" x2="800" y2="128" marker-end="url(#arr-ok)"/>
+      <line class="flow-line fl ok" x1="640" y1="236" x2="800" y2="236" marker-end="url(#arr-ok)"/>
+
+      <g class="fn"><rect class="node-normal" x="560" y="20" width="160" height="44" rx="6"/>
+        <text class="node-text" x="640" y="40">客户端发送加速请求</text>
+        <text class="node-sub"  x="640" y="56">req.Seconds</text>
+      </g>
+      <g class="fn"><rect class="node-info" x="490" y="75" width="140" height="36" rx="6"/>
+        <text class="node-text" x="560" y="93">读取 D2Config</text>
+        <text class="node-sub"  x="560" y="105">toleranceSec（可配 0）</text>
+      </g>
+      <g class="fn"><rect class="node-fix" x="560" y="106" width="160" height="44" rx="6"/>
+        <text class="node-text" x="640" y="122">时间校验（修复后）</text>
+        <text class="node-sub"  x="640" y="138">FinishTime − seconds + tol &lt; now</text>
+      </g>
+      <g class="fn"><rect class="node-normal" x="560" y="192" width="160" height="44" rx="6"/>
+        <text class="node-text" x="640" y="214">超出容差 → 拒绝</text>
+      </g>
+      <g class="node-pulse-ok"><rect class="node-fix" x="800" y="106" width="50" height="44" rx="6"/>
+        <text class="node-text" x="825" y="128">✓</text>
+      </g>
+      <g class="node-pulse-ok"><rect class="node-fix" x="800" y="214" width="50" height="44" rx="6"/>
+        <text class="node-text" x="825" y="236">✓</text>
+      </g>
+
+      <text x="460" y="14" fill="#8b949e" font-size="11" font-family="monospace">修复后</text>
+      <text x="490" y="240" fill="#56d364" font-size="11" font-family="monospace">容差内正常加速</text>
+    </svg>
+  </div>
+
+  <!-- ── 4. 存量问题（非本次引入） ── -->
+  <p class="section-title">存量问题（非本次引入，仅记录）</p>
+  <div class="pre-existing">
+    <h3>以下问题在陈强修改的函数中存在，但早于本次提交，不计入本轮统计</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>函数</th>
+          <th>文件</th>
+          <th>问题</th>
+          <th>规范</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>OnSlgCampProduceAccuReq</code></td>
+          <td><code>ctl_slgcamp.go:325</code></td>
+          <td>函数共 90 行，超过 60 行上限；无函数注释</td>
+          <td>Rule 11 / Rule 13</td>
+        </tr>
+        <tr>
+          <td><code>OnResearchCityTechAccuReq</code></td>
+          <td><code>ctl_tech.go:342</code></td>
+          <td>函数共 79 行，超过 60 行上限；无函数注释</td>
+          <td>Rule 11 / Rule 13</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout warn" style="margin-top:12px;">建议在下次改动这两个函数时拆分子函数并补注释，避免欠债越积越多。</div>
+  </div>
+
+  <!-- ── 5. Praise ── -->
+  <div class="praise">
+    <h2>写得好的地方</h2>
+    <ul>
+      <li>MvpPlayerId 修复极简精准：1 行补字段，只改必要内容，无多余改动。</li>
+      <li>容差逻辑正确使用 <code>if</code> 初始化语句控制 <code>toleranceCfg</code> 作用域，符合规范-2。</li>
+      <li>config 为 nil 时 <code>toleranceSec</code> 保持默认值 0，安全回退到原始行为，不引入新风险。</li>
+      <li>Warn 日志同步补充了 <code>toleranceSec</code> 字段，线上排查时信息更完整。</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

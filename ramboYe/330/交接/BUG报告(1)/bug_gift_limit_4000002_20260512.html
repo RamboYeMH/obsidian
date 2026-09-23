@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bug：远征通行证礼包 4000002 限购永久封堵 · 2026-05-12</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background: #0d1117; color: #c9d1d9; line-height: 1.7;
+      padding: 40px 24px 80px;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+
+    header { border-bottom: 1px solid #21262d; padding-bottom: 24px; margin-bottom: 40px; }
+    header h1 { font-size: 24px; font-weight: 700; color: #e6edf3; margin-bottom: 8px; }
+    .meta { font-size: 13px; color: #8b949e; display: flex; gap: 24px; flex-wrap: wrap; }
+
+    .section-title {
+      font-size: 13px; font-weight: 600; color: #8b949e;
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
+    }
+
+    .card { background: #161b22; border: 1px solid #21262d; border-radius: 10px; margin-bottom: 28px; overflow: hidden; }
+    .card-header { display: flex; align-items: flex-start; gap: 14px; padding: 18px 22px; border-bottom: 1px solid #21262d; }
+    .card-body { padding: 18px 22px; }
+    .card-body p { margin-bottom: 12px; font-size: 14px; }
+    .card-body p:last-child { margin-bottom: 0; }
+
+    .badge { flex-shrink: 0; font-size: 11px; font-weight: 700; letter-spacing: .5px; padding: 3px 9px; border-radius: 20px; margin-top: 2px; }
+    .badge.bug { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .badge.cfg { background: #2a2000; color: #f0a500; border: 1px solid #5a4000; }
+    .badge.ok  { background: #0d2233; color: #58a6ff; border: 1px solid #0f4070; }
+
+    .title-group { flex: 1; }
+    .item-title { font-size: 16px; font-weight: 600; color: #e6edf3; line-height: 1.4; }
+    .item-sub   { font-size: 12px; color: #8b949e; margin-top: 4px; font-family: monospace; }
+
+    .code-wrap { margin: 14px 0; border-radius: 8px; overflow: hidden; border: 1px solid #21262d; }
+    .code-label { font-size: 11px; color: #8b949e; background: #1c2128; padding: 6px 14px; border-bottom: 1px solid #21262d; font-family: monospace; }
+    .code-label.bad  { border-left: 3px solid #f97583; }
+    .code-label.good { border-left: 3px solid #56d364; }
+    .code-label.note { border-left: 3px solid #f0a500; }
+    pre { background: #0d1117; padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.6; font-family: "SFMono-Regular", Consolas, monospace; }
+    .del { color: #ffa198; background: #3d0000; display: block; }
+    .ins { color: #56d364; background: #003a00; display: block; }
+    .cmt { color: #8b949e; }
+
+    .callout { border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 13px; color: #c9d1d9; margin: 12px 0; }
+    .callout.info { background: #0d2233; border-left: 3px solid #58a6ff; }
+    .callout.ok   { background: #0d2a0d; border-left: 3px solid #56d364; }
+    .callout.warn { background: #2a2000; border-left: 3px solid #f0a500; }
+
+    .table-wrap { background: #161b22; border: 1px solid #21262d; border-radius: 10px; overflow: hidden; margin-bottom: 28px; }
+    .table-wrap h2 { font-size: 15px; font-weight: 600; color: #e6edf3; padding: 16px 22px; border-bottom: 1px solid #21262d; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 18px; color: #8b949e; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #21262d; background: #1c2128; }
+    td { padding: 11px 18px; border-bottom: 1px solid #161b22; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1c2128; }
+    td code, .card-body code { font-family: monospace; font-size: 12px; background: #21262d; padding: 1px 6px; border-radius: 4px; color: #79c0ff; }
+
+    .root-cause { background: #3d1a1a; border: 1px solid #6e2020; border-radius: 10px; padding: 20px 22px; margin-bottom: 28px; }
+    .root-cause h2 { font-size: 15px; font-weight: 600; color: #f97583; margin-bottom: 10px; }
+    .root-cause p  { font-size: 14px; color: #c9d1d9; line-height: 1.8; }
+
+    /* ── Flow Diagram ── */
+    .flow-diagram { width: 100%; margin: 24px 0 8px; overflow-x: auto; background: #0d1117; border: 1px solid #21262d; border-radius: 10px; padding: 24px 0; }
+    .flow-diagram svg { display: block; margin: 0 auto; }
+
+    .node-normal  { fill: #1c2128; stroke: #30363d; stroke-width: 1.5; }
+    .node-trigger { fill: #2a2000; stroke: #f0a500; stroke-width: 1.5; }
+    .node-error   { fill: #3d1a1a; stroke: #f97583; stroke-width: 2; }
+    .node-fix     { fill: #0d2a0d; stroke: #56d364; stroke-width: 1.5; }
+    .node-info    { fill: #0d2233; stroke: #58a6ff; stroke-width: 1.5; }
+
+    .node-text { fill: #e6edf3; font-family: -apple-system, sans-serif; font-size: 12px; dominant-baseline: middle; text-anchor: middle; }
+    .node-sub  { fill: #8b949e; font-family: monospace; font-size: 10px; dominant-baseline: middle; text-anchor: middle; }
+    .node-label { fill: #8b949e; font-family: -apple-system, sans-serif; font-size: 10px; dominant-baseline: middle; text-anchor: middle; }
+
+    .flow-line { fill: none; stroke: #30363d; stroke-width: 1.5; }
+    .flow-line.warn  { stroke: #f0a500; }
+    .flow-line.error { stroke: #f97583; }
+    .flow-line.ok    { stroke: #56d364; }
+    .flow-line.dash  { stroke-dasharray: 5 3; }
+
+    /* 入场动画 */
+    .fn { opacity: 0; animation: fadeNode 0.35s ease forwards; }
+    .fn:nth-child(1)  { animation-delay: 0.05s; }
+    .fn:nth-child(2)  { animation-delay: 0.20s; }
+    .fn:nth-child(3)  { animation-delay: 0.35s; }
+    .fn:nth-child(4)  { animation-delay: 0.50s; }
+    .fn:nth-child(5)  { animation-delay: 0.65s; }
+    .fn:nth-child(6)  { animation-delay: 0.80s; }
+    .fn:nth-child(7)  { animation-delay: 0.95s; }
+    .fn:nth-child(8)  { animation-delay: 1.10s; }
+    .fn:nth-child(9)  { animation-delay: 1.25s; }
+    .fn:nth-child(10) { animation-delay: 1.40s; }
+
+    .fl { stroke-dasharray: 400; stroke-dashoffset: 400; animation: drawLine 0.4s ease forwards; }
+    .fl:nth-of-type(1) { animation-delay: 0.15s; }
+    .fl:nth-of-type(2) { animation-delay: 0.30s; }
+    .fl:nth-of-type(3) { animation-delay: 0.45s; }
+    .fl:nth-of-type(4) { animation-delay: 0.60s; }
+    .fl:nth-of-type(5) { animation-delay: 0.75s; }
+    .fl:nth-of-type(6) { animation-delay: 0.90s; }
+    .fl:nth-of-type(7) { animation-delay: 1.05s; }
+    .fl:nth-of-type(8) { animation-delay: 1.20s; }
+
+    @keyframes fadeNode {
+      from { opacity: 0; transform: translateY(5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes drawLine { to { stroke-dashoffset: 0; } }
+
+    @keyframes pulse {
+      0%, 100% { filter: drop-shadow(0 0 0px transparent); }
+      50%       { filter: drop-shadow(0 0 8px #f97583aa); }
+    }
+    .node-pulse { animation: fadeNode 0.35s ease 0.80s forwards, pulse 2s ease 1.4s infinite; opacity: 0; }
+
+    @keyframes pulseOk {
+      0%, 100% { filter: drop-shadow(0 0 0px transparent); }
+      50%       { filter: drop-shadow(0 0 8px #56d364aa); }
+    }
+    .node-pulse-ok { animation: fadeNode 0.35s ease 1.25s forwards, pulseOk 2s ease 1.8s infinite; opacity: 0; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>Bug 排查：远征通行证礼包 4000002 限购永久封堵</h1>
+    <div class="meta">
+      <span>🗓 2026-05-12</span>
+      <span>🌿 h5_new_tf_v1042_new</span>
+      <span>📦 game/play · gdconf</span>
+      <span>👤 玩家 ID：5727108</span>
+    </div>
+  </header>
+
+  <!-- 根因结论 -->
+  <section>
+    <h2 class="section-title">根因结论</h2>
+    <div class="root-cause">
+      <h2>配置遗漏：4000002 未加入 Expedition_Gift_RefreshType 列表</h2>
+      <p>
+        礼包 4000002 的 <code>buy_type = 1</code>（GiftLimitForever）使购买计数统计玩家<strong>终身全部购买记录</strong>，不区分赛季。
+        远征新赛季开始时 <code>checkBattlefieldGiftCount</code> 会清除 <code>Expedition_Gift_RefreshType</code> 列表中礼包的旧记录，
+        但 <strong>4000002 被遗漏在该列表之外</strong>，导致上赛季记录永不清除。
+        玩家再次购买时 <code>boughtCount = 1 ≥ buyLimit = 1</code>，永久封堵。
+        同档礼包 4000001 已在列表中，每赛季正常重置，行为表现不同。
+      </p>
+    </div>
+
+    <!-- 触发链路流程图 -->
+    <div class="flow-diagram">
+      <svg width="860" height="340" viewBox="0 0 860 340" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr"       markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#30363d"/></marker>
+          <marker id="arr-warn"  markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#f0a500"/></marker>
+          <marker id="arr-error" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#f97583"/></marker>
+          <marker id="arr-ok"    markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#56d364"/></marker>
+        </defs>
+
+        <!-- Row 1: 购买请求 → orderCheckLimit → GetGiftBoughtCount -->
+        <!-- 连线 -->
+        <line class="flow-line fl"       x1="168" y1="44" x2="278" y2="44" marker-end="url(#arr)"/>
+        <line class="flow-line fl"       x1="448" y1="44" x2="558" y2="44" marker-end="url(#arr)"/>
+        <!-- 节点 -->
+        <g class="fn">
+          <rect class="node-trigger" x="8"   y="22" width="160" height="44" rx="6"/>
+          <text class="node-text"    x="88"  y="40">玩家购买请求</text>
+          <text class="node-sub"     x="88"  y="56">productId: 4000002</text>
+        </g>
+        <g class="fn">
+          <rect class="node-normal" x="278" y="22" width="170" height="44" rx="6"/>
+          <text class="node-text"   x="363" y="40">orderCheckLimit</text>
+          <text class="node-sub"    x="363" y="56">ctl_order_check.go:321</text>
+        </g>
+        <g class="fn">
+          <rect class="node-normal" x="558" y="22" width="180" height="44" rx="6"/>
+          <text class="node-text"   x="648" y="40">GetGiftBoughtCount</text>
+          <text class="node-sub"    x="648" y="56">shop.go:413</text>
+        </g>
+
+        <!-- 分支说明：GiftLimitForever -->
+        <line class="flow-line fl warn" x1="648" y1="66" x2="648" y2="108" marker-end="url(#arr-warn)"/>
+        <g class="fn">
+          <rect class="node-trigger" x="548" y="108" width="200" height="44" rx="6"/>
+          <text class="node-text"    x="648" y="126">buy_type = GiftLimitForever</text>
+          <text class="node-sub"     x="648" y="142">直接返回 len(Records)</text>
+        </g>
+
+        <!-- Row 2: Records 查询 -->
+        <line class="flow-line fl warn" x1="548" y1="130" x2="388" y2="130" marker-end="url(#arr-warn)"/>
+        <g class="fn">
+          <rect class="node-normal" x="208" y="108" width="180" height="44" rx="6"/>
+          <text class="node-text"   x="298" y="126">Records["4000002"]</text>
+          <text class="node-sub"    x="298" y="142">len = 1（上赛季记录）</text>
+        </g>
+
+        <!-- 根因节点 -->
+        <line class="flow-line fl error" x1="298" y1="152" x2="298" y2="192" marker-end="url(#arr-error)"/>
+        <g class="node-pulse">
+          <rect class="node-error" x="148" y="192" width="300" height="52" rx="6"/>
+          <text class="node-text"  x="298" y="212">根因：4000002 不在刷新列表</text>
+          <text class="node-sub"   x="298" y="230">Expedition_Gift_RefreshType 遗漏配置</text>
+        </g>
+
+        <!-- 结果：boughtCount >= buyLimit -->
+        <line class="flow-line fl error" x1="448" y1="218" x2="558" y2="218" marker-end="url(#arr-error)"/>
+        <g class="fn">
+          <rect class="node-error" x="558" y="196" width="200" height="44" rx="6"/>
+          <text class="node-text"  x="658" y="214">boughtCount=1 ≥ buyLimit=1</text>
+          <text class="node-sub"   x="658" y="230">ErrCodeOrderBuyLimit</text>
+        </g>
+
+        <!-- 对比：4000001 正常路径 -->
+        <text class="node-label" x="100" y="295" text-anchor="start" fill="#56d364" font-size="11" font-weight="600">对比：4000001 正常路径</text>
+        <line class="flow-line fl ok dash" x1="8" y1="310" x2="200" y2="310" marker-end="url(#arr-ok)"/>
+        <g class="fn">
+          <rect class="node-fix" x="200" y="290" width="160" height="38" rx="6"/>
+          <text class="node-text" x="280" y="305">在刷新列表中</text>
+          <text class="node-sub"  x="280" y="319">登录时旧记录被清除</text>
+        </g>
+        <line class="flow-line fl ok" x1="360" y1="309" x2="480" y2="309" marker-end="url(#arr-ok)"/>
+        <g class="fn">
+          <rect class="node-fix" x="480" y="290" width="160" height="38" rx="6"/>
+          <text class="node-text" x="560" y="305">Records 归零</text>
+          <text class="node-sub"  x="560" y="319">boughtCount=0 → 可购买</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 触发路径详情 -->
+  <section>
+    <h2 class="section-title">触发路径</h2>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge bug">日志</span>
+        <div class="title-group">
+          <div class="item-title">错误日志入口</div>
+          <div class="item-sub">game/play/internal/ctl_order_check.go:352</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="code-wrap">
+          <div class="code-label note">线上日志</div>
+          <pre>2026-05-12 11:49:21  info  ctl_order_check.go:352
+OrderCreateCheck playerId:5727108 productId:4000002 currency:Money
+requestId:7638847417667614267 <span class="del">err num_lmt:1 max:1</span></pre>
+        </div>
+        <p><code>num_lmt:1</code> 为已购次数，<code>max:1</code> 为 <code>buy_limit</code> 上限，相等触发拦截。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge cfg">配置</span>
+        <div class="title-group">
+          <div class="item-title">D2GiftCfg.tsv 关键字段</div>
+          <div class="item-sub">D2GiftCfg.tsv line 1435</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap" style="margin-bottom:12px;">
+          <table>
+            <thead><tr><th>字段</th><th>值</th><th>含义</th></tr></thead>
+            <tbody>
+              <tr><td><code>buy_type</code></td><td><code>1</code></td><td>GiftLimitForever —— 统计<strong>终身</strong>购买次数</td></tr>
+              <tr><td><code>buy_limit</code></td><td><code>1</code></td><td>最多购买 1 次</td></tr>
+              <tr><td><code>cycle_refresh</code></td><td><code>1</code></td><td>预期按赛季刷新（实际未生效）</td></tr>
+              <tr><td><code>cycle</code></td><td><code>0</code></td><td>周期为 0，大周期计数路径不起作用</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><code>cycle_refresh = 1</code> 是配置意图，但 <code>GiftLimitForever</code> 计数路径完全忽略 cycle 相关字段。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge cfg">配置</span>
+        <div class="title-group">
+          <div class="item-title">Expedition_Gift_RefreshType 列表遗漏 4000002</div>
+          <div class="item-sub">D2ConfigCfg.tsv · key: Expedition_Gift_RefreshType</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="code-wrap">
+          <div class="code-label bad">✗ 当前配置（节选）</div>
+          <pre><span class="del">... 4000001, 4000021, 4000022, 4000023 ...</span>
+<span class="cmt">// 4000002 不在列表中</span></pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label note">关键代码 — ctl_battlefield.go:2368</div>
+          <pre>for _, giftType := range gdconf.GetD2ConstCfgIntArray(gdconf.ExpeditionGiftRefreshtype) {
+    <span class="cmt">// 仅遍历列表内的礼包，4000002 永远不会进入此循环</span>
+    records := p.ShopRecord.Records[productKey]
+    for _, record := range records {
+        if record.ArriveTime >= checkTime {  <span class="cmt">// 保留本赛季记录</span>
+            newRecord = append(newRecord, record)
+        }
+    }
+    p.ShopRecord.Records[productKey] = newRecord  <span class="cmt">// 4000002 不走这里，旧记录永不清除</span>
+}</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 修复方案 -->
+  <section>
+    <h2 class="section-title">修复方案</h2>
+
+    <!-- 修复流程图 -->
+    <div class="flow-diagram">
+      <svg width="860" height="200" viewBox="0 0 860 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr2"    markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#30363d"/></marker>
+          <marker id="arr2-ok" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#56d364"/></marker>
+        </defs>
+
+        <line class="flow-line fl ok" x1="168" y1="60"  x2="248" y2="60"  marker-end="url(#arr2-ok)"/>
+        <line class="flow-line fl ok" x1="418" y1="60"  x2="498" y2="60"  marker-end="url(#arr2-ok)"/>
+        <line class="flow-line fl ok" x1="668" y1="60"  x2="748" y2="60"  marker-end="url(#arr2-ok)"/>
+
+        <g class="fn">
+          <rect class="node-trigger" x="8"   y="38" width="160" height="44" rx="6"/>
+          <text class="node-text"    x="88"  y="56">加入配置列表</text>
+          <text class="node-sub"     x="88"  y="72">4000002 → RefreshType</text>
+        </g>
+        <g class="fn">
+          <rect class="node-normal"  x="248" y="38" width="170" height="44" rx="6"/>
+          <text class="node-text"    x="333" y="56">热更配置</text>
+          <text class="node-sub"     x="333" y="72">不停服</text>
+        </g>
+        <g class="fn">
+          <rect class="node-normal"  x="498" y="38" width="170" height="44" rx="6"/>
+          <text class="node-text"    x="583" y="56">玩家重新登录</text>
+          <text class="node-sub"     x="583" y="72">PlayerLoginBattlefieldEvent</text>
+        </g>
+        <g class="node-pulse-ok">
+          <rect class="node-fix"     x="748" y="38" width="100" height="44" rx="6"/>
+          <text class="node-text"    x="798" y="56">✓ 修复</text>
+          <text class="node-sub"     x="798" y="72">可正常购买</text>
+        </g>
+
+        <text class="node-label" x="430" y="145" text-anchor="middle" fill="#8b949e" font-size="11">checkBattlefieldGiftCount 在登录时执行，清除 4000002 的旧赛季记录 → Records 归零 → boughtCount = 0</text>
+      </svg>
+    </div>
+
+    <div class="table-wrap">
+      <h2>方案对比</h2>
+      <table>
+        <thead><tr><th>方案</th><th>操作</th><th>影响范围</th><th>需要重启</th><th>推荐</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>配置热更</td>
+            <td>将 <code>4000002</code> 加入 <code>Expedition_Gift_RefreshType</code> 并热更</td>
+            <td>全服，玩家重新登录后自动修复</td>
+            <td>否</td>
+            <td>✅ 首选</td>
+          </tr>
+          <tr>
+            <td>GM 指令</td>
+            <td>清除指定玩家 <code>Records["4000002"]</code>（当前无现成 GM，需新增）</td>
+            <td>单个玩家，立即生效</td>
+            <td>否</td>
+            <td>紧急单点修复</td>
+          </tr>
+          <tr>
+            <td>MongoDB 直改</td>
+            <td>DBA 将玩家 ShopRecord 中 <code>Records["4000002"]</code> 改为空数组</td>
+            <td>单个玩家，立即生效</td>
+            <td>否</td>
+            <td>⚠️ 风险高，慎用</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="badge ok">首选</span>
+        <div class="title-group">
+          <div class="item-title">配置热更具体操作</div>
+          <div class="item-sub">D2ConfigCfg.tsv · Expedition_Gift_RefreshType</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="code-wrap">
+          <div class="code-label bad">✗ 当前</div>
+          <pre>[... 4000001, 4000021, 4000022, ...]</pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label good">✓ 修复后</div>
+          <pre><span class="ins">[... 4000001, 4000002, 4000021, 4000022, ...]</span></pre>
+        </div>
+        <div class="callout warn">热更后在线玩家需重新登录，离线玩家下次登录时自动修复。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 验证 -->
+  <section>
+    <h2 class="section-title">验证方法</h2>
+    <div class="callout info">
+      1. 配置热更后，让玩家 5727108 重新登录。<br>
+      2. 再次尝试购买礼包 4000002。<br>
+      3. 确认日志中不再出现 <code>err num_lmt</code>，购买流程正常完成。<br>
+      4. 同时验证 4000001 购买仍正常，确认未引入新问题。
+    </div>
+  </section>
+
+  <!-- 延伸风险 -->
+  <section>
+    <h2 class="section-title">延伸风险</h2>
+    <div class="callout warn">
+      检查是否还有其他远征通行证礼包（如 4000003、4000004 等）同样遗漏在 <code>Expedition_Gift_RefreshType</code> 列表中，一并补充，避免下个赛季重现同类问题。
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

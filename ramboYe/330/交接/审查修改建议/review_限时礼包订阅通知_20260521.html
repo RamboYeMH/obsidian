@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>限时礼包订阅通知 · 审查修改建议 · 2026-05-21</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; background: #0d1117; color: #c9d1d9; line-height: 1.7; padding: 40px 24px 80px; }
+    .container { max-width: 960px; margin: 0 auto; }
+
+    header { border-bottom: 1px solid #21262d; padding-bottom: 24px; margin-bottom: 40px; }
+    header h1 { font-size: 24px; font-weight: 700; color: #e6edf3; margin-bottom: 8px; }
+    .meta { font-size: 13px; color: #8b949e; display: flex; gap: 24px; flex-wrap: wrap; }
+
+    .section-title { font-size: 13px; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+
+    .card { background: #161b22; border: 1px solid #21262d; border-radius: 10px; margin-bottom: 28px; overflow: hidden; }
+    .card-header { display: flex; align-items: flex-start; gap: 14px; padding: 18px 22px; border-bottom: 1px solid #21262d; }
+    .card-body { padding: 18px 22px; }
+    .card-body p { margin-bottom: 12px; font-size: 14px; }
+    .card-body p:last-child { margin-bottom: 0; }
+
+    .badge { flex-shrink: 0; font-size: 11px; font-weight: 700; letter-spacing: .5px; padding: 3px 9px; border-radius: 20px; margin-top: 2px; }
+    .badge.p0, .badge.bug { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .badge.p1 { background: #2a2000; color: #f0a500; border: 1px solid #5a4000; }
+    .badge.p2 { background: #1a2a1a; color: #56d364; border: 1px solid #1f4d1f; }
+    .badge.ok { background: #0d2233; color: #58a6ff; border: 1px solid #0f4070; }
+    .badge.new { background: #0d2a18; color: #34d399; border: 1px solid #0f5030; }
+
+    .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 4px; margin-right: 4px; }
+    .tag.logic  { background: #2d1f3d; color: #d2a8ff; border: 1px solid #4a3060; }
+    .tag.style  { background: #162032; color: #79c0ff; border: 1px solid #1f4060; }
+    .tag.safety { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .tag.spec   { background: #1a2a1a; color: #56d364; border: 1px solid #1f4d1f; }
+
+    .title-group { flex: 1; }
+    .item-title { font-size: 16px; font-weight: 600; color: #e6edf3; line-height: 1.4; }
+    .item-sub   { font-size: 12px; color: #8b949e; margin-top: 4px; font-family: monospace; }
+
+    .code-wrap { margin: 14px 0; border-radius: 8px; overflow: hidden; border: 1px solid #21262d; }
+    .code-label { font-size: 11px; color: #8b949e; background: #1c2128; padding: 6px 14px; border-bottom: 1px solid #21262d; font-family: monospace; }
+    .code-label.bad  { border-left: 3px solid #f97583; }
+    .code-label.good { border-left: 3px solid #56d364; }
+    .code-label.note { border-left: 3px solid #f0a500; }
+    pre { background: #0d1117; padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.6; font-family: "SFMono-Regular", Consolas, monospace; }
+    .del { color: #ffa198; background: #3d0000; display: block; }
+    .ins { color: #56d364; background: #003a00; display: block; }
+    .cmt { color: #8b949e; }
+
+    .callout { border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 13px; color: #c9d1d9; margin: 12px 0; }
+    .callout.info  { background: #0d2233; border-left: 3px solid #58a6ff; }
+    .callout.ok    { background: #0d2a0d; border-left: 3px solid #56d364; }
+    .callout.warn  { background: #2a2000; border-left: 3px solid #f0a500; }
+    .callout.error { background: #3d1a1a; border-left: 3px solid #f97583; }
+
+    .table-wrap { background: #161b22; border: 1px solid #21262d; border-radius: 10px; overflow: hidden; margin-bottom: 28px; }
+    .table-wrap h2 { font-size: 15px; font-weight: 600; color: #e6edf3; padding: 16px 22px; border-bottom: 1px solid #21262d; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 18px; color: #8b949e; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #21262d; background: #1c2128; }
+    td { padding: 11px 18px; border-bottom: 1px solid #161b22; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1c2128; }
+    td code, .card-body code { font-family: monospace; font-size: 12px; background: #21262d; padding: 1px 6px; border-radius: 4px; color: #79c0ff; }
+
+    .praise { background: #0d2233; border: 1px solid #1f4070; border-radius: 10px; padding: 18px 22px; margin-bottom: 28px; }
+    .praise h2 { font-size: 15px; font-weight: 600; color: #58a6ff; margin-bottom: 14px; }
+    .praise ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .praise li { font-size: 14px; color: #c9d1d9; padding-left: 22px; position: relative; }
+    .praise li::before { content: "✓"; position: absolute; left: 0; color: #56d364; font-weight: 700; }
+
+    .open-in-browser { display: inline-block; margin-bottom: 20px; padding: 5px 14px; background: #161b22; border: 1px solid #30363d; border-radius: 6px; color: #8b949e; font-size: 12px; text-decoration: none; }
+    .open-in-browser:hover { border-color: #58a6ff; color: #58a6ff; }
+
+    .flow-diagram { width: 100%; margin: 24px 0 8px; overflow-x: auto; background: #0d1117; border: 1px solid #21262d; border-radius: 10px; padding: 24px 0; }
+    .flow-diagram canvas { display: block; margin: 0 auto; }
+    .flow-caption { text-align: center; font-size: 12px; color: #8b949e; margin-bottom: 20px; }
+
+    .overview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+    .overview-stat { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px 18px; text-align: center; }
+    .overview-stat .num { font-size: 28px; font-weight: 700; line-height: 1; margin-bottom: 6px; }
+    .overview-stat .lbl { font-size: 12px; color: #8b949e; }
+    .num.p0 { color: #f97583; }
+    .num.p1 { color: #f0a500; }
+    .num.p2 { color: #56d364; }
+    .num.new { color: #34d399; }
+
+    .cfg-table { background: #161b22; border: 1px solid #21262d; border-radius: 10px; overflow: hidden; margin-bottom: 28px; }
+    .cfg-table h2 { font-size: 15px; font-weight: 600; color: #e6edf3; padding: 16px 22px; border-bottom: 1px solid #21262d; }
+    .cfg-row { display: grid; grid-template-columns: 160px 1fr; border-bottom: 1px solid #21262d; }
+    .cfg-row:last-child { border-bottom: none; }
+    .cfg-key { padding: 12px 18px; font-family: monospace; font-size: 12px; color: #f0a500; background: #1c2128; display: flex; align-items: center; }
+    .cfg-val { padding: 12px 18px; font-size: 13px; color: #c9d1d9; }
+    .cfg-val ul { padding-left: 18px; }
+    .cfg-val li { margin-bottom: 4px; }
+    .cfg-val code { font-family: monospace; font-size: 12px; background: #21262d; padding: 1px 6px; border-radius: 4px; color: #79c0ff; }
+
+    section { margin-bottom: 40px; }
+    h2.sec { font-size: 18px; font-weight: 600; color: #e6edf3; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid #21262d; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <a class="open-in-browser" href="file:///home/wenyu/Documents/Obsidian/SecondBrain/01-项目库/H5项目(330gs)/审查修改建议/review_限时礼包订阅通知_20260521.html">在浏览器中打开</a>
+
+  <header>
+    <h1>限时礼包订阅通知 — 审查修改建议</h1>
+    <div class="meta">
+      <span>🗓 2026-05-21</span>
+      <span>📦 game/play/internal · gdconf</span>
+      <span>🌿 h5_new_tf_v1044</span>
+      <span>👤 wenyu</span>
+      <span>🔖 新功能：限时礼包到期前订阅通知</span>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- 1. 审查概览                                             -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2 class="sec">审查概览</h2>
+    <div class="overview-grid">
+      <div class="overview-stat"><div class="num p0">0</div><div class="lbl">P0 — 必须修复</div></div>
+      <div class="overview-stat"><div class="num p1">2</div><div class="lbl">P1 — 强烈建议</div></div>
+      <div class="overview-stat"><div class="num p2">2</div><div class="lbl">P2 — 建议改进</div></div>
+      <div class="overview-stat"><div class="num new">4</div><div class="lbl">改动文件数</div></div>
+    </div>
+
+    <div class="table-wrap">
+      <h2>改动文件一览</h2>
+      <table>
+        <thead><tr><th>文件</th><th>改动类型</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>gdconf/conf_d2gift.go</code></td>
+            <td><span class="tag spec">字段新增</span></td>
+            <td><code>D2GiftCfg</code> 新增 <code>SubNotifyTemplateId int32</code>，配置表同步加列</td>
+          </tr>
+          <tr>
+            <td><code>gdconf/conf_subscribe_ext.go</code></td>
+            <td><span class="tag spec">常量新增</span></td>
+            <td>新增 <code>TimeLimitGiftExpire = 11001</code> 作为推荐模板 ID 起点</td>
+          </tr>
+          <tr>
+            <td><code>game/play/internal/subscribe.go</code></td>
+            <td><span class="tag logic">逻辑新增</span></td>
+            <td>新增 <code>addTimeLimitGiftMsg</code>，下线时遍历礼包、计算推送时间、写入 Redis</td>
+          </tr>
+          <tr>
+            <td><code>game/play/internal/ctl_subscribe.go</code></td>
+            <td><span class="tag logic">接入点</span></td>
+            <td><code>onPlayerOfflineSubscribe</code> 中增加调用 <code>addTimeLimitGiftMsg</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- 2. 订阅系统整体流程                                      -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2 class="sec">订阅系统整体流程</h2>
+    <p style="font-size:14px;color:#8b949e;margin-bottom:16px;">
+      整个推送体系分为<strong style="color:#c9d1d9;">注册阶段</strong>（玩家下线时写入 Redis）和<strong style="color:#c9d1d9;">发送阶段</strong>（Ticker 轮询消费），限时礼包通知接入注册阶段。
+    </p>
+
+    <!-- 注册流程图 -->
+    <p class="section-title">写入路径 — 玩家下线触发</p>
+    <div class="flow-diagram">
+      <canvas id="flow-write" width="860" height="210"></canvas>
+    </div>
+    <p class="flow-caption">绿色高亮节点为本次新增；PushQueue 与 TemplateMsgQueue 均为 Redis ZSet，Score = 发送时间戳</p>
+
+    <!-- 发送流程图 -->
+    <p class="section-title" style="margin-top:24px;">消费路径 — Ticker 定时发送</p>
+    <div class="flow-diagram">
+      <canvas id="flow-consume" width="860" height="150"></canvas>
+    </div>
+    <p class="flow-caption">onTickerSubscribe 每 Tick 弹出到期消息，离线玩家写 SendWaitQueue（Redis Stream），在线玩家直接忽略</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- 3. addTimeLimitGiftMsg 内部逻辑                          -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2 class="sec">addTimeLimitGiftMsg 处理逻辑</h2>
+    <div class="flow-diagram">
+      <canvas id="flow-gift" width="860" height="250"></canvas>
+    </div>
+    <p class="flow-caption">红色节点表示提前 continue 跳过；绿色终点为成功写入队列路径</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- 4. 问题汇总表                                           -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2 class="sec">问题汇总</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>优先级</th>
+            <th>问题描述</th>
+            <th>文件位置</th>
+            <th>类型</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge p1">P1</span></td>
+            <td>抖音玩家无法收到限时礼包通知，IsDouYin 过滤在最上层</td>
+            <td><code>ctl_subscribe.go:204</code></td>
+            <td><span class="tag logic">logic</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge p1">P1</span></td>
+            <td>同一玩家多个礼包配置相同 SubNotifyTemplateId，会产生多条推送</td>
+            <td><code>subscribe.go:176</code></td>
+            <td><span class="tag logic">logic</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge p2">P2</span></td>
+            <td>TimeLimitGiftExpire 常量未在逻辑代码中引用，语义不清晰</td>
+            <td><code>conf_subscribe_ext.go:93</code></td>
+            <td><span class="tag style">style</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge p2">P2</span></td>
+            <td>Args[0] 隐式为"分钟"，无注释说明单位约定</td>
+            <td><code>subscribe.go:199</code></td>
+            <td><span class="tag spec">spec</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- 5. 问题详情                                             -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2 class="sec">问题详情</h2>
+
+    <!-- P1-1 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="badge p1">P1</span>
+        <div class="title-group">
+          <div class="item-title">抖音玩家无法收到限时礼包通知</div>
+          <div class="item-sub">ctl_subscribe.go:204 — onPlayerOfflineSubscribe</div>
+        </div>
+        <span class="tag logic">logic</span>
+      </div>
+      <div class="card-body">
+        <p>
+          <code>onPlayerOfflineSubscribe</code> 在最顶层对抖音玩家直接 return，导致
+          <code>addTimeLimitGiftMsg</code> 对抖音用户<strong>永远不会执行</strong>。
+          而 <code>addTimeLimitGiftMsg</code> 内部已通过 <code>GetPlayerOpenId</code> 获取正确的
+          <code>MoHeDY</code> channel，具备支持抖音推送的能力，但被上层过滤挡住。
+        </p>
+        <div class="callout warn">
+          当前结论：若业务明确不需要对抖音用户推送限时礼包，则此行为正确，<strong>需在代码注释中显式说明</strong>。
+          若未来需要支持抖音，改造点为此处。
+        </div>
+        <div class="code-wrap">
+          <div class="code-label note">ctl_subscribe.go:199–207 — 当前过滤逻辑</div>
+          <pre><span class="cmt">// 下线添加订阅消息</span>
+func (play *Play) onPlayerOfflineSubscribe(param *event.Param) {
+    if gconf.IsIceVersion() {
+        return
+    }
+    pPlayer := param.Get(gdevent.ParamPlayer).(*mplayer.Player)
+<span class="del">    if pPlayer.IsDouYin() {   // ← 抖音用户全部跳过，含限时礼包通知</span>
+        return
+    }</pre>
+        </div>
+        <p><strong>建议：</strong>在 <code>IsDouYin()</code> 判断处添加注释，明确说明"限时礼包通知暂不支持抖音渠道"，避免后续开发者误判为遗漏。</p>
+      </div>
+    </div>
+
+    <!-- P1-2 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="badge p1">P1</span>
+        <div class="title-group">
+          <div class="item-title">多礼包同模板可能产生重复内容推送</div>
+          <div class="item-sub">subscribe.go:176 — addTimeLimitGiftMsg 遍历逻辑</div>
+        </div>
+        <span class="tag logic">logic</span>
+      </div>
+      <div class="card-body">
+        <p>
+          当玩家同时拥有多个礼包，且这些礼包的 <code>SubNotifyTemplateId</code> 配置为相同值（如均为 11001）时，
+          循环会对每个礼包分别调用 <code>addPlayerMsg</code>，在 Redis 中写入多条推送记录。
+          这些推送内容完全相同（同一模板文案），只有发送时间不同，玩家会在不同时刻收到多条措辞一致的通知。
+        </p>
+        <div class="callout warn">
+          若业务预期"每个礼包独立通知"则为正确行为；若预期"同类礼包只通知一次（最早到期那条）"则需要额外去重。
+          请与产品对齐预期后，在代码注释中说明策略。
+        </div>
+        <div class="code-wrap">
+          <div class="code-label note">subscribe.go:174–207 — 当前遍历逻辑（每礼包独立推送）</div>
+          <pre><span class="cmt">// 若需"同模板只推一次最早到期"，在循环外维护一个 map[SubscribeTemplateId]int64</span>
+<span class="cmt">// 记录每个模板最小的 sendSecTs，循环结束后再统一调用 addPlayerMsg</span>
+func (play *Play) addTimeLimitGiftMsg(player *mplayer.Player, nowSecTs int64) {
+    playerId := player.GetPlayerId()
+    for giftId, giftLimit := range player.ShopRecord.GiftTimeLimitRecords {
+        <span class="cmt">// 每个礼包各自推送，相同模板可能产生多条</span>
+        ...
+        play.addPlayerMsg(templateId, playerId, channel, openId, sendSecTs)
+    }
+}</pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label good">若需去重：每模板只保留最早到期的一条</div>
+          <pre><span class="ins">// earliestSendTs 记录每个 templateId 最早应推送的时间</span>
+<span class="ins">earliestSendTs := make(map[gdconf.SubscribeTemplateId]int64)</span>
+
+for giftId, giftLimit := range player.ShopRecord.GiftTimeLimitRecords {
+    ...
+    if sendSecTs := endSecTs - advanceSec; sendSecTs > nowSecTs {
+<span class="ins">        if prev, ok := earliestSendTs[templateId]; !ok || sendSecTs &lt; prev {</span>
+<span class="ins">            earliestSendTs[templateId] = sendSecTs</span>
+<span class="ins">        }</span>
+    }
+}
+<span class="ins">for templateId, sendSecTs := range earliestSendTs {</span>
+<span class="ins">    openId, channel, _ := play.SubscribeMgr.GetPlayerOpenId(...)</span>
+<span class="ins">    play.addPlayerMsg(templateId, playerId, channel, openId, sendSecTs)</span>
+<span class="ins">}</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- P2-1 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="badge p2">P2</span>
+        <div class="title-group">
+          <div class="item-title">TimeLimitGiftExpire 常量未被逻辑代码引用</div>
+          <div class="item-sub">conf_subscribe_ext.go:93</div>
+        </div>
+        <span class="tag style">style</span>
+      </div>
+      <div class="card-body">
+        <p>
+          新增的常量 <code>TimeLimitGiftExpire = 11001</code> 在运行逻辑中从未被引用——
+          模板 ID 由 <code>giftCfg.SubNotifyTemplateId</code> 从配置表读取，不由常量硬编码决定。
+          常量当前仅作"推荐起始值"存在，容易让读者误以为代码强依赖此值。
+        </p>
+        <div class="code-wrap">
+          <div class="code-label bad">当前 — 注释不足，语义模糊</div>
+          <pre>// 限时礼包
+TimeLimitGiftExpire SubscribeTemplateId = 11001 // 限时礼包即将到期</pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label good">建议 — 补充注释说明此常量的用途</div>
+          <pre>// 限时礼包
+// TimeLimitGiftExpire 为推荐的模板 ID 起始值，填入 D2GiftCfg.sub_notify_template_id 列。
+// 逻辑层通过配置读取模板 ID，此常量不直接参与运行时判断。
+TimeLimitGiftExpire SubscribeTemplateId = 11001 // 限时礼包即将到期</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- P2-2 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="badge p2">P2</span>
+        <div class="title-group">
+          <div class="item-title">Args[0] 的单位约定（分钟）未注释说明</div>
+          <div class="item-sub">subscribe.go:199</div>
+        </div>
+        <span class="tag spec">spec</span>
+      </div>
+      <div class="card-body">
+        <p>
+          <code>advanceSec := int64(subItemCfg.Args[0]) * 60</code> 中，
+          <code>Args[0]</code> 被隐式解释为"分钟数"，乘以 60 换算为秒。
+          这一单位约定未在代码中说明，配置表填错单位（如直接填秒）将导致推送时间异常且难以排查。
+          对比 <code>addPlayerOfflineRecallMsg</code> 中 <code>Args[0] * types.Day / types.Second</code>
+          的做法，两者单位语义不一致，需明确区分。
+        </p>
+        <div class="code-wrap">
+          <div class="code-label bad">当前 — 单位不透明</div>
+          <pre>advanceSec := int64(subItemCfg.Args[0]) * 60</pre>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label good">建议 — 补充注释或具名常量</div>
+          <pre><span class="ins">// Args[0] 单位：分钟，配置表填写提前通知分钟数（如 30 = 提前30分钟）</span>
+advanceSec := int64(subItemCfg.Args[0]) * 60</pre>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- 6. Praise                                               -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div class="praise">
+    <h2>✦ 正确改动 Praise</h2>
+    <ul>
+      <li>
+        <strong>三层 nil 防护完备</strong>：<code>giftCfg</code>、<code>giftLimit</code>、<code>subItemCfg</code>
+        均在使用前做了 nil 检查，不存在空指针风险（L2）。
+      </li>
+      <li>
+        <strong>playerId 缓存复用</strong>：循环外声明 <code>playerId := player.GetPlayerId()</code>，
+        避免在每次迭代中重复调用（符合规范 1、20）。
+      </li>
+      <li>
+        <strong>sendSecTs 作用域精准</strong>：使用 <code>if sendSecTs := ...; sendSecTs &gt; nowSecTs</code>
+        的 if 初始化写法，变量生命周期严格限制在使用位置（符合规范 2）。
+      </li>
+      <li>
+        <strong>超过3参数换行</strong>：<code>play.addPlayerMsg(...)</code> 5个参数全部换行对齐，
+        清晰易读（符合规范 7）。
+      </li>
+      <li>
+        <strong>与已有模式高度一致</strong>：函数命名、调用链、Redis 写入方式均沿用
+        <code>addShieldMsg</code>、<code>addDepotMsg</code> 等已有函数的规范，
+        后续维护者可以凭已有知识理解此函数。
+      </li>
+      <li>
+        <strong>gdconf 改动最小化</strong>：仅在 <code>D2GiftCfg</code> 尾部追加一个字段，
+        不影响已有字段的存储映射；常量加在对应语义区块末尾，不破坏原有分组结构。
+      </li>
+    </ul>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- 7. 配置联动说明                                          -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2 class="sec">配置表联动说明</h2>
+    <div class="callout info" style="margin-bottom:16px;">
+      代码改动完成后，以下三张配置表需同步配置，否则功能不会生效。
+    </div>
+    <div class="cfg-table">
+      <h2>需配置的表</h2>
+      <div class="cfg-row">
+        <div class="cfg-key">D2GiftCfg</div>
+        <div class="cfg-val">
+          新增列 <code>sub_notify_template_id</code>（类型 int32）。
+          需要推送通知的礼包填入对应 <code>SubscribeItemCfg</code> 的 ID（如 <code>11001</code>）；
+          不需要推送的礼包填 <code>0</code> 或留空（默认为 0）。
+        </div>
+      </div>
+      <div class="cfg-row">
+        <div class="cfg-key">SubscribeCfg</div>
+        <div class="cfg-val">
+          新增一行：<code>Id = 11001</code>，<code>SubscribeItem = [11001]</code>，
+          <code>Title / Content</code> 填写订阅入口展示文案（玩家在订阅列表中看到的描述）。
+        </div>
+      </div>
+      <div class="cfg-row">
+        <div class="cfg-key">SubscribeItemCfg</div>
+        <div class="cfg-val">
+          新增一行：<code>Id = 11001</code>。
+          <ul>
+            <li><code>Args[0]</code>：提前通知分钟数（整数，如 <code>30</code> = 礼包到期前30分钟推送）</li>
+            <li><code>Title</code>：推送消息标题</li>
+            <li><code>Content</code>：推送消息内容</li>
+            <li><code>Notice</code>：推送尾部通知文案（含 <code>%s</code> 占位符，自动替换为玩家昵称）</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout ok">
+      <strong>验证方式</strong>：使用 GM 命令 <code>SetGmOpenId</code> 指定测试 openId，
+      下线后用 <code>redis-cli</code> 查看 <code>WxSubscribe:PushQueue</code> ZSet 是否在目标时间戳有新成员。
+    </div>
+  </section>
+
+</div><!-- /container -->
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Canvas Scripts                                                   -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<!-- flow-write: 下线注册路径 -->
+<script>
+(function() {
+  const canvas = document.getElementById('flow-write');
+  const ctx = canvas.getContext('2d');
+  let t = 0;
+
+  const nodes = [
+    { id: 'offline',   x: 80,  y: 105, label: '玩家下线',               sub: 'PlayerOfflineEvent',       color: '#f0a500', bg: '#1a1200' },
+    { id: 'fn_offline',x: 275, y: 105, label: 'onPlayerOfflineSubscribe', sub: 'ctl_subscribe.go',         color: '#a78bfa', bg: '#1a1030' },
+    { id: 'fn_gift',   x: 500, y: 60,  label: 'addTimeLimitGiftMsg',     sub: '▶ subscribe.go [NEW]',     color: '#34d399', bg: '#001a0d' },
+    { id: 'fn_other',  x: 500, y: 155, label: '其他 addXxxMsg',           sub: 'shield / depot / camp…',   color: '#8b949e', bg: '#161b22' },
+    { id: 'redis',     x: 740, y: 105, label: 'Redis PushQueue',          sub: 'ZSet score=sendSecTs',      color: '#38bdf8', bg: '#0c1a26' },
+  ];
+
+  const edges = [
+    { from: 'offline',    to: 'fn_offline', flow: 'sync',  color: '#f0a500', label: '下线事件' },
+    { from: 'fn_offline', to: 'fn_gift',    flow: 'sync',  color: '#34d399', label: '新增链路' },
+    { from: 'fn_offline', to: 'fn_other',   flow: 'sync',  color: '#8b949e', label: '' },
+    { from: 'fn_gift',    to: 'redis',      flow: 'sync',  color: '#38bdf8', label: 'addPlayerMsg' },
+    { from: 'fn_other',   to: 'redis',      flow: 'sync',  color: '#8b949e', label: '' },
+  ];
+
+  const flowCfg = {
+    sync:    { dash: [],     speed: 0,   dir:  1 },
+    async:   { dash: [8,4],  speed: 1.2, dir:  1 },
+    return:  { dash: [3,3],  speed: 0.6, dir: -1 },
+    control: { dash: [6,4],  speed: 0.8, dir:  1 },
+    error:   { dash: [5,3],  speed: 1.5, dir:  1 },
+  };
+
+  function nodeById(id) { return nodes.find(n => n.id === id); }
+
+  function drawEdge(e) {
+    const s = nodeById(e.from), d = nodeById(e.to);
+    if (!s || !d) return;
+    const cfg = flowCfg[e.flow] || flowCfg.sync;
+    const col = e.color || '#30363d';
+    ctx.save();
+    ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+    const off = cfg.speed > 0 ? (t * cfg.speed * cfg.dir) % 20 : 0;
+    ctx.setLineDash(cfg.dash); ctx.lineDashOffset = -off;
+    ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(d.x, d.y); ctx.stroke();
+    const ang = Math.atan2(d.y - s.y, d.x - s.x);
+    ctx.setLineDash([]); ctx.fillStyle = col;
+    ctx.save();
+    ctx.translate(d.x - Math.cos(ang) * 22, d.y - Math.sin(ang) * 22);
+    ctx.rotate(ang);
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-10, 5); ctx.lineTo(-10, -5); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    if (e.label) {
+      ctx.fillStyle = '#8b949e'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(e.label, (s.x + d.x) / 2, (s.y + d.y) / 2 - 8);
+    }
+    ctx.restore();
+  }
+
+  function drawNode(n) {
+    const w = 168, h = 44, r = 6;
+    ctx.save();
+    ctx.shadowColor = n.color; ctx.shadowBlur = 14;
+    ctx.fillStyle = n.bg || '#161b22';
+    ctx.strokeStyle = n.color; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (ctx.roundRect) { ctx.roundRect(n.x - w/2, n.y - h/2, w, h, r); }
+    else { ctx.rect(n.x - w/2, n.y - h/2, w, h); }
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#e6edf3'; ctx.font = '12px -apple-system, sans-serif';
+    ctx.fillText(n.label, n.x, n.sub ? n.y - 8 : n.y);
+    if (n.sub) { ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace'; ctx.fillText(n.sub, n.x, n.y + 9); }
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    edges.forEach(drawEdge);
+    nodes.forEach(drawNode);
+    t += 0.5;
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+
+<!-- flow-consume: Ticker消费路径 -->
+<script>
+(function() {
+  const canvas = document.getElementById('flow-consume');
+  const ctx = canvas.getContext('2d');
+  let t = 0;
+
+  const nodes = [
+    { id: 'ticker',   x: 90,  y: 55, label: 'onTickerSubscribe',     sub: 'subscribe.go (定时)',    color: '#a78bfa', bg: '#1a1030' },
+    { id: 'redis2',   x: 290, y: 55, label: 'Redis PushQueue',        sub: 'ZPopBeforeScore(now)',  color: '#38bdf8', bg: '#0c1a26' },
+    { id: 'send',     x: 510, y: 55, label: 'sendPlayerSubscribeMsg', sub: '检查：玩家是否在线',     color: '#8b949e', bg: '#161b22' },
+    { id: 'queue',    x: 720, y: 55, label: 'SendWaitQueue',          sub: 'Redis Stream → 推送服务', color: '#38bdf8', bg: '#0c1a26' },
+    { id: 'online',   x: 90,  y: 120, label: '玩家上线',              sub: 'ClearPlayerMsg',         color: '#f0a500', bg: '#1a1200' },
+    { id: 'clear',    x: 290, y: 120, label: '清理待发消息',           sub: 'Lua脚本原子清除',        color: '#f97583', bg: '#200000' },
+  ];
+
+  const edges = [
+    { from: 'ticker', to: 'redis2', flow: 'sync',    color: '#a78bfa', label: '弹出到期消息' },
+    { from: 'redis2', to: 'send',   flow: 'sync',    color: '#38bdf8', label: '' },
+    { from: 'send',   to: 'queue',  flow: 'async',   color: '#8b949e', label: '仅离线玩家' },
+    { from: 'online', to: 'clear',  flow: 'control', color: '#f0a500', label: '上线事件' },
+    { from: 'clear',  to: 'redis2', flow: 'error',   color: '#f97583', label: '清理队列' },
+  ];
+
+  const flowCfg = {
+    sync:    { dash: [],     speed: 0,   dir:  1 },
+    async:   { dash: [8,4],  speed: 1.2, dir:  1 },
+    return:  { dash: [3,3],  speed: 0.6, dir: -1 },
+    control: { dash: [6,4],  speed: 0.8, dir:  1 },
+    error:   { dash: [5,3],  speed: 1.5, dir:  1 },
+  };
+
+  function nodeById(id) { return nodes.find(n => n.id === id); }
+
+  function drawEdge(e) {
+    const s = nodeById(e.from), d = nodeById(e.to);
+    if (!s || !d) return;
+    const cfg = flowCfg[e.flow] || flowCfg.sync;
+    const col = e.color || '#30363d';
+    ctx.save();
+    ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+    const off = cfg.speed > 0 ? (t * cfg.speed * cfg.dir) % 20 : 0;
+    ctx.setLineDash(cfg.dash); ctx.lineDashOffset = -off;
+    ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(d.x, d.y); ctx.stroke();
+    const ang = Math.atan2(d.y - s.y, d.x - s.x);
+    ctx.setLineDash([]); ctx.fillStyle = col;
+    ctx.save();
+    ctx.translate(d.x - Math.cos(ang) * 22, d.y - Math.sin(ang) * 22);
+    ctx.rotate(ang);
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-10, 5); ctx.lineTo(-10, -5); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    if (e.label) {
+      ctx.fillStyle = '#8b949e'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(e.label, (s.x + d.x) / 2, (s.y + d.y) / 2 - 8);
+    }
+    ctx.restore();
+  }
+
+  function drawNode(n) {
+    const w = 168, h = 44, r = 6;
+    ctx.save();
+    ctx.shadowColor = n.color; ctx.shadowBlur = 12;
+    ctx.fillStyle = n.bg || '#161b22';
+    ctx.strokeStyle = n.color; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (ctx.roundRect) { ctx.roundRect(n.x - w/2, n.y - h/2, w, h, r); }
+    else { ctx.rect(n.x - w/2, n.y - h/2, w, h); }
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#e6edf3'; ctx.font = '12px -apple-system, sans-serif';
+    ctx.fillText(n.label, n.x, n.sub ? n.y - 8 : n.y);
+    if (n.sub) { ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace'; ctx.fillText(n.sub, n.x, n.y + 9); }
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    edges.forEach(drawEdge);
+    nodes.forEach(drawNode);
+    t += 0.5;
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+
+<!-- flow-gift: addTimeLimitGiftMsg 内部逻辑 -->
+<script>
+(function() {
+  const canvas = document.getElementById('flow-gift');
+  const ctx = canvas.getContext('2d');
+  let t = 0;
+
+  const nodes = [
+    { id: 'records',   x: 70,  y: 95,  label: 'GiftTimeLimitRecords', sub: '遍历 ShopRecord',         color: '#38bdf8', bg: '#0c1a26' },
+    { id: 'check_cfg', x: 240, y: 95,  label: '检查 SubNotifyTemplateId', sub: '== 0 则跳过',          color: '#8b949e', bg: '#161b22' },
+    { id: 'get_open',  x: 430, y: 95,  label: 'GetPlayerOpenId',       sub: '检查订阅状态',             color: '#8b949e', bg: '#161b22' },
+    { id: 'calc',      x: 620, y: 95,  label: '计算 sendSecTs',         sub: 'EndTime − Args[0]×60',   color: '#8b949e', bg: '#161b22' },
+    { id: 'add_msg',   x: 800, y: 95,  label: 'addPlayerMsg',           sub: '写入 PushQueue',          color: '#34d399', bg: '#001a0d' },
+    { id: 'skip',      x: 430, y: 200, label: 'continue（跳过）',       sub: 'nil / =0 / 未订阅 / 过期', color: '#f97583', bg: '#200000' },
+  ];
+
+  const edges = [
+    { from: 'records',   to: 'check_cfg', flow: 'sync',  color: '#38bdf8', label: '逐礼包遍历' },
+    { from: 'check_cfg', to: 'get_open',  flow: 'sync',  color: '#8b949e', label: '≠ 0' },
+    { from: 'get_open',  to: 'calc',      flow: 'sync',  color: '#8b949e', label: '已订阅' },
+    { from: 'calc',      to: 'add_msg',   flow: 'sync',  color: '#34d399', label: 'sendSecTs>now' },
+    { from: 'check_cfg', to: 'skip',      flow: 'error', color: '#f97583', label: '= 0' },
+    { from: 'get_open',  to: 'skip',      flow: 'error', color: '#f97583', label: '未订阅' },
+    { from: 'calc',      to: 'skip',      flow: 'error', color: '#f97583', label: '已过期' },
+  ];
+
+  const flowCfg = {
+    sync:    { dash: [],     speed: 0,   dir:  1 },
+    async:   { dash: [8,4],  speed: 1.2, dir:  1 },
+    return:  { dash: [3,3],  speed: 0.6, dir: -1 },
+    control: { dash: [6,4],  speed: 0.8, dir:  1 },
+    error:   { dash: [5,3],  speed: 1.5, dir:  1 },
+  };
+
+  function nodeById(id) { return nodes.find(n => n.id === id); }
+
+  function drawEdge(e) {
+    const s = nodeById(e.from), d = nodeById(e.to);
+    if (!s || !d) return;
+    const cfg = flowCfg[e.flow] || flowCfg.sync;
+    const col = e.color || '#30363d';
+    ctx.save();
+    ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+    const off = cfg.speed > 0 ? (t * cfg.speed * cfg.dir) % 20 : 0;
+    ctx.setLineDash(cfg.dash); ctx.lineDashOffset = -off;
+    ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(d.x, d.y); ctx.stroke();
+    const ang = Math.atan2(d.y - s.y, d.x - s.x);
+    ctx.setLineDash([]); ctx.fillStyle = col;
+    ctx.save();
+    ctx.translate(d.x - Math.cos(ang) * 22, d.y - Math.sin(ang) * 22);
+    ctx.rotate(ang);
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-10, 5); ctx.lineTo(-10, -5); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    if (e.label) {
+      const mx = (s.x + d.x) / 2, my = (s.y + d.y) / 2;
+      ctx.fillStyle = '#8b949e'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(e.label, mx, my - 8);
+    }
+    ctx.restore();
+  }
+
+  function drawNode(n) {
+    const w = 158, h = 44, r = 6;
+    ctx.save();
+    ctx.shadowColor = n.color; ctx.shadowBlur = 14;
+    ctx.fillStyle = n.bg || '#161b22';
+    ctx.strokeStyle = n.color; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    if (ctx.roundRect) { ctx.roundRect(n.x - w/2, n.y - h/2, w, h, r); }
+    else { ctx.rect(n.x - w/2, n.y - h/2, w, h); }
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#e6edf3'; ctx.font = '12px -apple-system, sans-serif';
+    ctx.fillText(n.label, n.x, n.sub ? n.y - 8 : n.y);
+    if (n.sub) { ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace'; ctx.fillText(n.sub, n.x, n.y + 9); }
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    edges.forEach(drawEdge);
+    nodes.forEach(drawNode);
+    t += 0.5;
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+
+</body>
+</html>

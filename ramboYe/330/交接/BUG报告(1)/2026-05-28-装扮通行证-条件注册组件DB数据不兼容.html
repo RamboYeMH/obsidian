@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BUG报告 · 装扮通行证活动模块 init 失败</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #1a1a2e;
+      background: #f4f6fb;
+      padding: 32px 16px 64px;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #c0392b 0%, #922b21 100%);
+      color: #fff;
+      border-radius: 12px;
+      padding: 28px 32px 24px;
+      margin-bottom: 24px;
+    }
+    .header-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .3px;
+    }
+    .badge-critical { background: #fff; color: #c0392b; }
+    .badge-waiting  { background: rgba(255,255,255,.2); color: #fff; border: 1px solid rgba(255,255,255,.4); }
+    .badge-module   { background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.3); }
+    .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .header-sub { font-size: 13px; opacity: .75; }
+
+    /* ── Card ── */
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 20px 12px;
+      border-bottom: 1px solid #f0f0f5;
+      font-size: 13px;
+      font-weight: 700;
+      color: #2c3e50;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .card-header .icon { font-size: 16px; }
+    .card-body { padding: 20px; }
+
+    /* ── Error box ── */
+    .error-box {
+      background: #1e1e2e;
+      border-radius: 8px;
+      padding: 16px 20px;
+      color: #ff7b7b;
+      font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+      font-size: 12.5px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+      border-left: 4px solid #c0392b;
+    }
+
+    /* ── Activity info table ── */
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .info-table tr:not(:last-child) td { border-bottom: 1px solid #f0f2f7; }
+    .info-table td { padding: 9px 12px; font-size: 13px; }
+    .info-table td:first-child {
+      width: 140px;
+      color: #7f8c9a;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .info-table td:last-child { color: #1a1a2e; }
+    .mono { font-family: "JetBrains Mono", "Fira Code", monospace; font-size: 12px; }
+
+    /* ── Code diff ── */
+    .diff-block {
+      background: #1e1e2e;
+      border-radius: 8px;
+      overflow: hidden;
+      font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+      font-size: 12.5px;
+      line-height: 1.6;
+    }
+    .diff-filename {
+      background: #2a2a3e;
+      color: #a0a8c0;
+      padding: 7px 16px;
+      font-size: 11px;
+      border-bottom: 1px solid #333;
+    }
+    .diff-line { padding: 1px 16px; white-space: pre; }
+    .diff-del { background: rgba(192,57,43,.25); color: #ff8a80; }
+    .diff-add { background: rgba(39,174,96,.2);  color: #69f0ae; }
+    .diff-ctx { color: #606880; }
+    .diff-comment { color: #5c6a8a; font-style: italic; }
+
+    /* ── Timeline ── */
+    .timeline { list-style: none; padding: 0; position: relative; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 18px; top: 0; bottom: 0;
+      width: 2px;
+      background: #e8eaf0;
+    }
+    .timeline li {
+      position: relative;
+      padding: 0 0 22px 46px;
+    }
+    .timeline li:last-child { padding-bottom: 0; }
+    .tl-dot {
+      position: absolute;
+      left: 10px; top: 4px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+      z-index: 1;
+    }
+    .tl-dot-ok   { background: #27ae60; color: #fff; }
+    .tl-dot-warn { background: #f39c12; color: #fff; }
+    .tl-dot-err  { background: #c0392b; color: #fff; }
+    .tl-date {
+      font-size: 11px;
+      font-weight: 700;
+      color: #7f8c9a;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
+    .tl-desc { font-size: 13px; color: #2c3e50; }
+    .tl-sub  { font-size: 12px; color: #95a5a6; margin-top: 3px; }
+
+    /* ── Fix cards ── */
+    .fix-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 640px) { .fix-grid { grid-template-columns: 1fr; } }
+    .fix-card {
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .fix-card-short { background: #fff8e1; border: 1px solid #ffe082; }
+    .fix-card-long  { background: #e8f5e9; border: 1px solid #a5d6a7; }
+    .fix-card h4 {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .fix-card-short h4 { color: #e65100; }
+    .fix-card-long  h4 { color: #1b5e20; }
+    .fix-label {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .fix-label-a { background: #ffcc02; color: #7a5200; }
+    .fix-label-b { background: #ff8a65; color: #4e1503; }
+    .fix-label-c { background: #81c784; color: #1b4a1e; }
+    .fix-p { font-size: 12.5px; color: #444; margin-bottom: 8px; }
+    .fix-code {
+      background: #1e1e2e;
+      border-radius: 6px;
+      padding: 10px 14px;
+      color: #a8d8a8;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 11.5px;
+      line-height: 1.6;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    /* ── Risk table ── */
+    .risk-table { width: 100%; border-collapse: collapse; }
+    .risk-table th {
+      background: #f4f6fb;
+      padding: 9px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #7f8c9a;
+      text-align: left;
+      border-bottom: 2px solid #e8eaf0;
+    }
+    .risk-table td {
+      padding: 9px 14px;
+      font-size: 13px;
+      border-bottom: 1px solid #f0f2f7;
+      vertical-align: top;
+    }
+    .risk-table tr:last-child td { border-bottom: none; }
+    .risk-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .risk-same    { background: #fce4ec; color: #880e4f; }
+    .risk-similar { background: #fff3e0; color: #e65100; }
+
+    /* ── Verify list ── */
+    .verify-list { list-style: none; }
+    .verify-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 13px;
+      border-bottom: 1px solid #f0f2f7;
+    }
+    .verify-list li:last-child { border-bottom: none; }
+    .verify-check {
+      width: 18px; height: 18px;
+      border: 2px solid #bdc3cc;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #aab;
+      margin-top: 32px;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-meta">
+      <span class="badge badge-critical">⚠ CRITICAL</span>
+      <span class="badge badge-waiting">待修复</span>
+      <span class="badge badge-module">actv 模块</span>
+      <span class="badge badge-module">h5_new_tf_v1043</span>
+    </div>
+    <h1>装扮通行证活动模块 init 失败</h1>
+    <div class="header-sub">invalid comp type · CompType=1 (Rank) · 2026-05-28</div>
+  </div>
+
+  <!-- 现象 -->
+  <div class="card">
+    <div class="card-header"><span class="icon">🔴</span> 现象</div>
+    <div class="card-body">
+      <div class="error-box">emerg   core/core.go:105   module *internal.ActvModule init error
+[Actv][Module]load actv module err: invalid comp type,
+prg={
+  ActvID:   7643488726890213691
+  CompType: 1
+  OwnerID:  0
+  Data:     {"actvprogressbase":{"ownerid":0}, "ranking":{"ranklist":[...]}}
+}</div>
+    </div>
+  </div>
+
+  <!-- 活动信息 -->
+  <div class="card">
+    <div class="card-header"><span class="icon">📋</span> 涉及活动</div>
+    <div class="card-body">
+      <table class="info-table">
+        <tr><td>ActvID</td>  <td class="mono">7643488726890213691</td></tr>
+        <tr><td>CfgID</td>   <td class="mono">1012202</td></tr>
+        <tr><td>活动类型</td><td><strong>37</strong> — ActvTypeCostumePass（装扮通行证）</td></tr>
+        <tr><td>Scope</td>   <td><strong>1</strong> — ActvScopeServer（全服活动）</td></tr>
+        <tr><td>OwnerID</td> <td class="mono">700</td></tr>
+        <tr><td>StartTs</td> <td class="mono">1779638400000 &nbsp;→&nbsp; 2026-05-25 00:00:00</td></tr>
+        <tr><td>State</td>   <td><strong>2</strong> — 运行中</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 根本原因 -->
+  <div class="card">
+    <div class="card-header"><span class="icon">🔍</span> 根本原因</div>
+    <div class="card-body">
+
+      <p style="margin-bottom:14px; font-size:13px; color:#444;">
+        1043 版本对 <code style="background:#f4f6fb;padding:1px 5px;border-radius:3px;">costume_pass</code>
+        的 Rank 组件注册条件做了收紧，导致升级后服务无法加载旧版写入的 CompType=1 数据。
+      </p>
+
+      <!-- diff -->
+      <div class="diff-block" style="margin-bottom:20px;">
+        <div class="diff-filename">game/actv/internal/activity/template/costume_pass/api.go</div>
+        <div class="diff-line diff-ctx">func (a *ActvTmplCostumePass) Init(...) {</div>
+        <div class="diff-line diff-ctx">    a.RegComponent(CompTypeQuest, a.QuestComp)</div>
+        <div class="diff-line diff-del">-   if a.Scope == gdactv.ActvScopeServer {            // 1042_new：仅判断 Scope</div>
+        <div class="diff-line diff-add">+   if a.existRank() {                                // 1043：增加 cfg.RankList != 0 检查</div>
+        <div class="diff-line diff-ctx">        a.Rank = rank.NewActvCompRank(...)</div>
+        <div class="diff-line diff-ctx">        a.RegComponent(CompTypeRank, a.Rank)          // CompType = 1</div>
+        <div class="diff-line diff-ctx">    }</div>
+        <div class="diff-line diff-ctx">}</div>
+        <div class="diff-filename" style="margin-top:4px;">新增函数 existRank()</div>
+        <div class="diff-line diff-add">+func (a *ActvTmplCostumePass) existRank() bool {</div>
+        <div class="diff-line diff-add">+    if a.Scope != gdactv.ActvScopeServer { return false }</div>
+        <div class="diff-line diff-add">+    cfg := gdconf.GetActivityDressUPPassSubjectCfg(a.GetContentID())</div>
+        <div class="diff-line diff-add">+    if cfg == nil || cfg.RankList == 0 { return false }  // 新增配置判断</div>
+        <div class="diff-line diff-add">+    return true</div>
+        <div class="diff-line diff-add">+}</div>
+      </div>
+
+      <!-- 设计缺陷 -->
+      <p style="font-size:13px; color:#444; margin-bottom:10px;">
+        另一个结构性缺陷在 <code style="background:#f4f6fb;padding:1px 5px;border-radius:3px;">comp_holder.go:63</code>：
+        遇到 DB 中存在但代码未注册的 CompType，直接 <strong>return error</strong>，导致整个 actv 模块 init 失败。
+      </p>
+      <div class="diff-block">
+        <div class="diff-filename">game/actv/internal/activity/template/base/comp_holder.go</div>
+        <div class="diff-line diff-ctx">func (ch *GameActvComponentHolder) LoadProgresses(...) error {</div>
+        <div class="diff-line diff-ctx">    for _, prgData := range prgDatas {</div>
+        <div class="diff-line diff-ctx">        comp := ch.GetComponent(prgData.CompType)</div>
+        <div class="diff-line diff-del">-       if comp == nil {</div>
+        <div class="diff-line diff-del">-           return fmt.Errorf("invalid comp type, prg=%+v", prgData)  // 整个模块崩溃</div>
+        <div class="diff-line diff-del">-       }</div>
+        <div class="diff-line diff-comment">        // 应改为 warn + skip，见修复方案</div>
+        <div class="diff-line diff-ctx">    }</div>
+        <div class="diff-line diff-ctx">}</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 时间线 -->
+  <div class="card">
+    <div class="card-header"><span class="icon">⏱</span> 时间线</div>
+    <div class="card-body">
+      <ul class="timeline">
+        <li>
+          <div class="tl-dot tl-dot-ok">✓</div>
+          <div class="tl-date">2026-05-25 00:00:00</div>
+          <div class="tl-desc">活动以 <strong>1042_new 代码</strong>启动</div>
+          <div class="tl-sub">Scope==Server → 满足旧条件 → CompType=1 (Rank) 正常注册 → 排行榜数据开始写入 DB</div>
+        </li>
+        <li>
+          <div class="tl-dot tl-dot-ok">✓</div>
+          <div class="tl-date">2026-05-25 ~ 2026-05-28</div>
+          <div class="tl-desc">活动正常运行，15 名玩家产生排行榜数据</div>
+          <div class="tl-sub">DB 中 CompType=1、OwnerID=0 的 ranking 记录持续累积</div>
+        </li>
+        <li>
+          <div class="tl-dot tl-dot-warn">!</div>
+          <div class="tl-date">部署节点（具体时间待确认）</div>
+          <div class="tl-desc"><strong>1043 代码上线</strong>，引入 existRank() 新条件</div>
+          <div class="tl-sub">ActivityDressUPPassSubjectCfg.RankList == 0 → existRank() 返回 false</div>
+        </li>
+        <li>
+          <div class="tl-dot tl-dot-err">✗</div>
+          <div class="tl-date">2026-05-28（服务重启）</div>
+          <div class="tl-desc">actv 模块 init 失败，所有活动功能不可用</div>
+          <div class="tl-sub">LoadProgresses 读到 CompType=1 → GetComponent(1)==nil → "invalid comp type" → emerg</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 影响范围 -->
+  <div class="card">
+    <div class="card-header"><span class="icon">📡</span> 影响范围</div>
+    <div class="card-body">
+      <table class="risk-table">
+        <thead>
+          <tr>
+            <th>模板</th>
+            <th>条件注册位置</th>
+            <th>风险</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>costume_pass</strong></td>
+            <td class="mono" style="font-size:12px;">api.go — existRank()</td>
+            <td><span class="risk-tag risk-same">本次问题</span></td>
+          </tr>
+          <tr>
+            <td><strong>wish_pool</strong></td>
+            <td class="mono" style="font-size:12px;">api.go:140 — if existRank(cfg)</td>
+            <td><span class="risk-tag risk-similar">同类风险</span></td>
+          </tr>
+          <tr>
+            <td><strong>maze</strong></td>
+            <td class="mono" style="font-size:12px;">api.go:45 — if ... { RegComponent(2, Rank) }</td>
+            <td><span class="risk-tag risk-similar">同类风险</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 修复方案 -->
+  <div class="card">
+    <div class="card-header"><span class="icon">🔧</span> 修复方案</div>
+    <div class="card-body">
+      <div class="fix-grid">
+
+        <!-- 短期 -->
+        <div>
+          <p style="font-size:12px;font-weight:700;color:#e65100;margin-bottom:12px;">⚡ 短期（恢复服务启动）</p>
+
+          <div class="fix-card fix-card-short" style="margin-bottom:12px;">
+            <span class="fix-label fix-label-a">方案 A（推荐）</span>
+            <h4>恢复 RankList 配置</h4>
+            <p class="fix-p">将该活动 ContentID 对应的 rank_list 恢复为非零值，排行数据不丢失。</p>
+            <div class="fix-code">// 1. 查 content_id
+db.ActivityOnlineCfg.findOne({id: 1012202})
+
+// 2. 恢复 rank_list
+db.ActivityDressUPPassSubjectCfg.updateOne(
+  {id: &lt;content_id&gt;},
+  {$set: {rank_list: 1}}
+)</div>
+          </div>
+
+          <div class="fix-card fix-card-short">
+            <span class="fix-label fix-label-b">方案 B</span>
+            <h4>清除旧 CompType=1 数据</h4>
+            <p class="fix-p">直接删除 DB 里的 ranking 数据，排行榜数据会丢失。</p>
+            <div class="fix-code">db.actvprogress.deleteMany({
+  actvid: Long('7643488726890213691'),
+  comptype: 1
+})</div>
+          </div>
+        </div>
+
+        <!-- 长期 -->
+        <div>
+          <p style="font-size:12px;font-weight:700;color:#1b5e20;margin-bottom:12px;">🛡 长期（防止同类 crash）</p>
+
+          <div class="fix-card fix-card-long">
+            <span class="fix-label fix-label-c">方案 C</span>
+            <h4>LoadProgresses 改为 warn + skip</h4>
+            <p class="fix-p">
+              遇到未注册的 CompType 时跳过而非 return error，
+              避免配置变更导致整个 actv 模块无法启动。
+            </p>
+            <div class="fix-code" style="color:#c8f7c5;">// comp_holder.go:61
+comp := ch.GetComponent(prgData.CompType)
+if comp == nil {
+-   return fmt.Errorf("invalid comp type, ...")
++   tlog.Warnf("skip unknown comp type "+
++       "(config may have changed), prg=%+v",
++       prgData)
++   continue
+}</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 验证步骤 -->
+  <div class="card">
+    <div class="card-header"><span class="icon">✅</span> 验证步骤</div>
+    <div class="card-body">
+      <ul class="verify-list">
+        <li><div class="verify-check"></div><span>服务重启后，actv 模块无 emerg 日志</span></li>
+        <li><div class="verify-check"></div><span>活动 <code style="background:#f4f6fb;padding:1px 4px;border-radius:3px;">7643488726890213691</code> 正常加载（日志出现 "load actv succ"）</span></li>
+        <li><div class="verify-check"></div><span>选方案 A：排行榜数据在客户端正常展示，历史积分保留</span></li>
+        <li><div class="verify-check"></div><span>选方案 C：重启日志中出现 Warn 级别的 "skip unknown comp type"，但不再 crash</span></li>
+        <li><div class="verify-check"></div><span>其他活动（wish_pool、maze）功能正常，无新增报错</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    生成时间：2026-05-28 &nbsp;·&nbsp; 项目：H5项目(330gs) &nbsp;·&nbsp; 分支：h5_new_tf_v1043
+  </div>
+
+</div>
+</body>
+</html>

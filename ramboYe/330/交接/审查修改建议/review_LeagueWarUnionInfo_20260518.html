@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeagueWarUnionInfo 审查修改建议 · 2026-05-18</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; background: #0d1117; color: #c9d1d9; line-height: 1.7; padding: 40px 24px 80px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { border-bottom: 1px solid #21262d; padding-bottom: 24px; margin-bottom: 40px; }
+    header h1 { font-size: 24px; font-weight: 700; color: #e6edf3; margin-bottom: 8px; }
+    .meta { font-size: 13px; color: #8b949e; display: flex; gap: 24px; flex-wrap: wrap; }
+    .section-title { font-size: 13px; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+    .card { background: #161b22; border: 1px solid #21262d; border-radius: 10px; margin-bottom: 28px; overflow: hidden; }
+    .card-header { display: flex; align-items: flex-start; gap: 14px; padding: 18px 22px; border-bottom: 1px solid #21262d; }
+    .card-body { padding: 18px 22px; }
+    .card-body p { margin-bottom: 12px; font-size: 14px; }
+    .card-body p:last-child { margin-bottom: 0; }
+    .badge { flex-shrink: 0; font-size: 11px; font-weight: 700; letter-spacing: .5px; padding: 3px 9px; border-radius: 20px; margin-top: 2px; }
+    .badge.p0 { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .badge.p1 { background: #2a2000; color: #f0a500; border: 1px solid #5a4000; }
+    .badge.p2 { background: #1a2a1a; color: #56d364; border: 1px solid #1f4d1f; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 4px; margin-right: 4px; }
+    .tag.logic  { background: #2d1f3d; color: #d2a8ff; border: 1px solid #4a3060; }
+    .tag.style  { background: #162032; color: #79c0ff; border: 1px solid #1f4060; }
+    .tag.safety { background: #3d1a1a; color: #f97583; border: 1px solid #6e2020; }
+    .tag.spec   { background: #1a2a1a; color: #56d364; border: 1px solid #1f4d1f; }
+    .title-group { flex: 1; }
+    .item-title { font-size: 16px; font-weight: 600; color: #e6edf3; line-height: 1.4; }
+    .item-sub   { font-size: 12px; color: #8b949e; margin-top: 4px; font-family: monospace; }
+    .item-tags  { margin-top: 6px; }
+    .code-wrap { margin: 14px 0; border-radius: 8px; overflow: hidden; border: 1px solid #21262d; }
+    .code-label { font-size: 11px; color: #8b949e; background: #1c2128; padding: 6px 14px; border-bottom: 1px solid #21262d; font-family: monospace; }
+    .code-label.bad  { border-left: 3px solid #f97583; }
+    .code-label.good { border-left: 3px solid #56d364; }
+    pre { background: #0d1117; padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.6; font-family: "SFMono-Regular", Consolas, monospace; }
+    .del { color: #ffa198; background: #3d0000; display: block; }
+    .ins { color: #56d364; background: #003a00; display: block; }
+    .cmt { color: #8b949e; display: block; }
+    .callout { border-radius: 0 6px 6px 0; padding: 10px 14px; font-size: 13px; color: #c9d1d9; margin: 12px 0; }
+    .callout.info  { background: #0d2233; border-left: 3px solid #58a6ff; }
+    .callout.warn  { background: #2a2000; border-left: 3px solid #f0a500; }
+    .callout.error { background: #3d1a1a; border-left: 3px solid #f97583; }
+    .table-wrap { background: #161b22; border: 1px solid #21262d; border-radius: 10px; overflow: hidden; margin-bottom: 28px; }
+    .table-wrap h2 { font-size: 15px; font-weight: 600; color: #e6edf3; padding: 16px 22px; border-bottom: 1px solid #21262d; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 18px; color: #8b949e; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #21262d; background: #1c2128; }
+    td { padding: 11px 18px; border-bottom: 1px solid #161b22; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1c2128; }
+    td code, .card-body code { font-family: monospace; font-size: 12px; background: #21262d; padding: 1px 6px; border-radius: 4px; color: #79c0ff; }
+    .overview { background: #3d1a1a; border: 1px solid #6e2020; border-radius: 10px; padding: 20px 22px; margin-bottom: 28px; }
+    .overview h2 { font-size: 15px; font-weight: 600; color: #f97583; margin-bottom: 10px; }
+    .overview p  { font-size: 14px; color: #c9d1d9; line-height: 1.8; }
+    .praise { background: #0d2233; border: 1px solid #1f4070; border-radius: 10px; padding: 18px 22px; margin-bottom: 28px; }
+    .praise h2 { font-size: 15px; font-weight: 600; color: #58a6ff; margin-bottom: 14px; }
+    .praise ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .praise li { font-size: 14px; color: #c9d1d9; padding-left: 22px; position: relative; }
+    .praise li::before { content: "✓"; position: absolute; left: 0; color: #56d364; font-weight: 700; }
+    .open-in-browser { display: inline-block; margin-bottom: 20px; padding: 5px 14px; background: #161b22; border: 1px solid #30363d; border-radius: 6px; color: #8b949e; font-size: 12px; text-decoration: none; }
+    .open-in-browser:hover { border-color: #58a6ff; color: #58a6ff; }
+    .flow-diagram { width: 100%; margin: 20px 0 8px; overflow-x: auto; background: #0d1117; border: 1px solid #21262d; border-radius: 10px; padding: 20px 0; }
+    .flow-diagram canvas { display: block; margin: 0 auto; }
+    .section-sep { font-size: 12px; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 1px solid #21262d; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <a class="open-in-browser" href="file:///home/wenyu/Documents/Obsidian/SecondBrain/01-项目库/H5项目(330gs)/审查修改建议/review_LeagueWarUnionInfo_20260518.html">在浏览器中打开</a>
+
+  <header>
+    <h1>LeagueWarUnionInfo 代码审查报告</h1>
+    <div class="meta">
+      <span>🗓 2026-05-18</span>
+      <span>📦 actv/cactv · 巅峰领地</span>
+      <span>🌿 h5_new_tf_v1043_leaguewar_optimize</span>
+      <span>👤 审查人：wenyu</span>
+    </div>
+  </header>
+
+  <!-- 审查概览 -->
+  <div class="overview">
+    <h2>审查概览</h2>
+    <p>
+      审查范围：<code>holddata/peak_territory/leaguewar_union_info.go</code> 及相关调用链（<code>union_power/api.go</code>、<code>holddata/mgr.go</code>）。聚焦 <code>LeagueWarUnionInfo</code> 全局对象的读写正确性、脏标记完整性和异常场景处理。<br><br>
+      共发现 <strong>7 个问题</strong>：
+      <strong style="color:#f97583">P0 × 2</strong>（逻辑 Bug，影响线上）&nbsp;·&nbsp;
+      <strong style="color:#f0a500">P1 × 2</strong>（潜在隐患）&nbsp;·&nbsp;
+      <strong style="color:#56d364">P2 × 4</strong>（规范 / 风格）
+    </p>
+  </div>
+
+  <!-- 问题汇总表 -->
+  <div class="table-wrap">
+    <h2>问题汇总</h2>
+    <table>
+      <thead>
+        <tr><th>优先级</th><th>问题描述</th><th>文件位置</th><th>类型</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge p0">P0</span></td>
+          <td>Layer1 联盟无 info 时入围名额缩水</td>
+          <td><code>union_power/api.go:257</code></td>
+          <td><span class="tag logic">logic</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p0">P0</span></td>
+          <td>高圈层联盟无 ServerId 时完全跳过，匹配邮件丢失</td>
+          <td><code>union_power/api.go:326</code></td>
+          <td><span class="tag logic">logic</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p1">P1</span></td>
+          <td>Get() 读操作有写入副作用，污染 groups map</td>
+          <td><code>leaguewar_union_info.go:84</code></td>
+          <td><span class="tag logic">logic</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p1">P1</span></td>
+          <td>裸 map 对外暴露，可绕过脏标记机制</td>
+          <td><code>leaguewar_union_info.go:21</code></td>
+          <td><span class="tag safety">safety</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p2">P2</span></td>
+          <td>!ok 时访问 nil ack，日志打印 ErrCodeSuccess 误导排查</td>
+          <td><code>union_power/api.go:352</code></td>
+          <td><span class="tag style">style</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p2">P2</span></td>
+          <td>ClearGroup 直接访问字段，绕过 accessor</td>
+          <td><code>leaguewar_union_info.go:90</code></td>
+          <td><span class="tag spec">spec</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p2">P2</span></td>
+          <td>ClearAllGroups 末尾 MakeDirty() 冗余，两层脏标记边界不清</td>
+          <td><code>leaguewar_union_info.go:95</code></td>
+          <td><span class="tag style">style</span></td>
+        </tr>
+        <tr>
+          <td><span class="badge p2">P2</span></td>
+          <td>DecodeFromDB 判空赋值与 accessor 懒初始化重复，是死代码</td>
+          <td><code>leaguewar.go · DecodeFromDB():125</code></td>
+          <td><span class="tag spec">spec</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== P0 ===== -->
+  <div class="section-sep">P0 — 必须修复</div>
+
+  <!-- P0-1 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p0">P0</span>
+      <div class="title-group">
+        <div class="item-title">Layer1 联盟无 info 时入围名额缩水</div>
+        <div class="item-sub">union_power/api.go · buildChosenUnion():257</div>
+        <div class="item-tags"><span class="tag logic">logic</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <p><strong>问题说明：</strong><code>buildChosenUnion</code> 遍历 <code>UnionLayer</code> 中所有 Layer1 联盟，当某联盟在 <code>LeagueWarUnionInfo</code> 中找不到记录（<code>info == nil</code>）时，该联盟既不进入 <code>newChosenUnion</code>，也因为在 <code>seen</code> map 中而被 <code>buildLayer1Supplement</code> 跳过。结果：<strong>实际入围联盟数少于配置上限</strong>。</p>
+      <p><strong>触发场景：</strong>每赛季第一轮（<code>LeagueWarUnionInfo</code> 尚无历史数据）或服务重启后数据加载异常时，所有 Layer1 联盟均 info == nil，入围名单将为空，第一轮活动无人参加。</p>
+      <div class="callout error">影响：巅峰领地赛季第一轮参赛联盟为 0，玩家完全无法参加活动。</div>
+      <div class="code-wrap">
+        <div class="code-label bad">bad · api.go:257–268</div>
+        <pre><span class="del">for uid, layer := range unionGroup.GetUnionLayer() {</span>
+<span class="del">    if layer == Layer1 {</span>
+<span class="del">        if info := peak_territory.GetUnionInfo(zvzGroupId, uid); info != nil {</span>
+<span class="del">            newChosenUnion[uid] = int64(info.ServerId)</span>
+<span class="del">        }</span>
+<span class="del">        // info==nil: uid 不进 newChosenUnion，但仍在 seen 里 → 名额空缺</span>
+<span class="del">    }</span>
+<span class="del">}</span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label good">good · 修复建议</div>
+        <pre><span class="ins">for uid, layer := range unionGroup.GetUnionLayer() {</span>
+<span class="ins">    if layer == Layer1 {</span>
+<span class="ins">        if info := peak_territory.GetUnionInfo(zvzGroupId, uid); info != nil {</span>
+<span class="ins">            newChosenUnion[uid] = int64(info.ServerId)</span>
+<span class="ins">        } else {</span>
+<span class="ins">            // info 缺失时保留资格，serverId 由 queryAllParticipantUnionInfo 异步补全</span>
+<span class="ins">            newChosenUnion[uid] = unionGroup.GetChosenUnion()[uid]</span>
+<span class="ins">        }</span>
+<span class="ins">    }</span>
+<span class="ins">}</span></pre>
+      </div>
+      <div class="callout info">修复要点：info 缺失时仍保留联盟入围资格，以 <code>ChosenUnion</code> 中存储的上轮 serverId 作为临时值，<code>sendUnionInfoReq</code> 的异步回调会补全正确数据。</div>
+    </div>
+  </div>
+
+  <!-- P0-2 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p0">P0</span>
+      <div class="title-group">
+        <div class="item-title">高圈层联盟无 ServerId 时完全跳过，匹配邮件丢失</div>
+        <div class="item-sub">union_power/api.go · queryAllParticipantUnionInfo():326</div>
+        <div class="item-tags"><span class="tag logic">logic</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <p><strong>问题说明：</strong>高圈层联盟（layer &gt; 1）的 ServerId 完全依赖 <code>LeagueWarUnionInfo</code> 中上轮留存的记录。当 info == nil 时，代码直接跳过 <code>sendUnionInfoReq</code>，导致这些联盟缺少 <code>LeagueWarLeagueInfo</code>。下游的 <code>sendMatchSuccessMail</code> 在 <code>info == nil</code> 时提前 <code>continue</code>，<strong>匹配成功邮件无法发送</strong>。</p>
+      <p><strong>触发场景：</strong>赛季第一轮（联盟首次晋升高圈层，无历史记录）、服务重启后数据加载失败。</p>
+      <div class="callout error">影响：高圈层联盟收不到匹配成功邮件，玩家不知道自己已参加巅峰领地。</div>
+
+      <div class="flow-diagram">
+        <canvas id="flow-layer" width="840" height="310"></canvas>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-label bad">bad · api.go:322–332</div>
+        <pre><span class="del">for uid, layer := range unionGroup.GetUnionLayer() {</span>
+<span class="del">    if layer == Layer1 {</span>
+<span class="del">        continue</span>
+<span class="del">    }</span>
+<span class="del">    if info := peak_territory.GetLeagueWarUnionInfo().Get(zvzGroupId, uid); info != nil {</span>
+<span class="del">        a.sendUnionInfoReq(zvzGroupId, uid, info.ServerId)</span>
+<span class="del">    } else {</span>
+<span class="del">        tlog.Warnf("... no UnionLeagueInfo, skip query")</span>
+<span class="del">        // 无降级路径 → 联盟缺 info → 邮件发不出</span>
+<span class="del">    }</span>
+<span class="del">}</span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label good">good · 增加 ChosenUnion 降级路径</div>
+        <pre><span class="ins">for uid, layer := range unionGroup.GetUnionLayer() {</span>
+<span class="ins">    if layer == Layer1 {</span>
+<span class="ins">        continue</span>
+<span class="ins">    }</span>
+<span class="ins">    serverId := int32(0)</span>
+<span class="ins">    if info := peak_territory.GetLeagueWarUnionInfo().Get(zvzGroupId, uid); info != nil {</span>
+<span class="ins">        serverId = info.ServerId</span>
+<span class="ins">    } else if sid, ok := unionGroup.GetChosenUnion()[uid]; ok && sid > 0 {</span>
+<span class="ins">        serverId = int32(sid)</span>
+<span class="ins">        tlog.Warnf("ZVZ ZvzGroup:%v uid:%v layer:%v UnionLeagueInfo missing, fallback serverId:%v",</span>
+<span class="ins">            zvzGroupId, uid, layer, serverId)</span>
+<span class="ins">    } else {</span>
+<span class="ins">        tlog.Warnf("ZVZ ZvzGroup:%v uid:%v layer:%v no UnionLeagueInfo and no ChosenUnion, skip",</span>
+<span class="ins">            zvzGroupId, uid, layer)</span>
+<span class="ins">        continue</span>
+<span class="ins">    }</span>
+<span class="ins">    a.sendUnionInfoReq(zvzGroupId, uid, serverId)</span>
+<span class="ins">}</span></pre>
+      </div>
+      <div class="callout info">修复要点：优先从 <code>LeagueWarUnionInfo</code> 取 ServerId，缺失时降级到 <code>ChosenUnion</code>（存有上轮 serverId），两者均无时才跳过并打印明确原因。</div>
+    </div>
+  </div>
+
+  <!-- ===== P1 ===== -->
+  <div class="section-sep">P1 — 强烈建议修复</div>
+
+  <!-- P1-1 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p1">P1</span>
+      <div class="title-group">
+        <div class="item-title">Get() 读操作有写入副作用，污染 groups map</div>
+        <div class="item-sub">leaguewar_union_info.go · Get():84 / GetGroup():71</div>
+        <div class="item-tags"><span class="tag logic">logic</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <p><strong>问题说明：</strong><code>Get()</code> 内部调用 <code>GetGroup()</code>，后者在 <code>zvzGroupId</code> 不存在时会 <code>make</code> 一个空 group 并写入 <code>groups</code> map。每次对不存在的 key 调用 <code>Get</code>，都会产生空 group 驻留内存——读操作改变了内部状态。</p>
+      <p><strong>影响范围：</strong><code>GetUnionInfoGroups()</code> 同样调用 <code>GetGroup()</code>。<code>onUnionPowerRankCb</code> 在每次排行榜刷新（每 30 秒）时对全量 zvzGroupId 调用，持续生成空 group，且空 group 会被错误地视为"该分区有联盟数据"。</p>
+      <div class="callout warn">潜在影响：<code>BeSelectServerCnt</code> 统计遍历 <code>GetUnionInfoGroups()</code> 结果，空 group 在当前逻辑下不影响计数，但写入副作用是架构隐患，未来扩展时易出错。</div>
+
+      <div class="flow-diagram">
+        <canvas id="flow-get" width="840" height="200"></canvas>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-label bad">bad · leaguewar_union_info.go:71–86</div>
+        <pre><span class="del">// GetGroup 同时用于读写路径，读路径会创建空 group</span>
+<span class="del">func (d *LeagueWarUnionInfoData) GetGroup(zvzGroupId int32) map[int64]*cspb.LeagueWarLeagueInfo {</span>
+<span class="del">    groups := d.Getgroups()</span>
+<span class="del">    if groups[zvzGroupId] == nil {</span>
+<span class="del">        groups[zvzGroupId] = make(map[int64]*cspb.LeagueWarLeagueInfo)</span>
+<span class="del">    }</span>
+<span class="del">    return groups[zvzGroupId]</span>
+<span class="del">}</span>
+<span class="del"></span>
+<span class="del">func (d *LeagueWarUnionInfoData) Get(zvzGroupId int32, unionId int64) *cspb.LeagueWarLeagueInfo {</span>
+<span class="del">    return d.GetGroup(zvzGroupId)[unionId]  // 读操作触发写入</span>
+<span class="del">}</span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label good">good · 拆分只读和读写两个方法</div>
+        <pre><span class="cmt">// getGroup 只读，key 不存在返回 nil（用于 Get / 遍历场景）</span>
+<span class="ins">func (d *LeagueWarUnionInfoData) getGroup(zvzGroupId int32) map[int64]*cspb.LeagueWarLeagueInfo {</span>
+<span class="ins">    return d.Getgroups()[zvzGroupId]</span>
+<span class="ins">}</span>
+<span class="ins"></span>
+<span class="cmt">// GetGroup 读写，key 不存在时自动创建（仅写入路径调用：Set / ClearGroup）</span>
+<span class="ins">func (d *LeagueWarUnionInfoData) GetGroup(zvzGroupId int32) map[int64]*cspb.LeagueWarLeagueInfo {</span>
+<span class="ins">    groups := d.Getgroups()</span>
+<span class="ins">    if groups[zvzGroupId] == nil {</span>
+<span class="ins">        groups[zvzGroupId] = make(map[int64]*cspb.LeagueWarLeagueInfo)</span>
+<span class="ins">    }</span>
+<span class="ins">    return groups[zvzGroupId]</span>
+<span class="ins">}</span>
+<span class="ins"></span>
+<span class="ins">func (d *LeagueWarUnionInfoData) Get(zvzGroupId int32, unionId int64) *cspb.LeagueWarLeagueInfo {</span>
+<span class="ins">    if g := d.getGroup(zvzGroupId); g != nil {</span>
+<span class="ins">        return g[unionId]</span>
+<span class="ins">    }</span>
+<span class="ins">    return nil</span>
+<span class="ins">}</span></pre>
+      </div>
+      <div class="callout info">连带修改：<code>GetUnionInfoGroups()</code>（L21）改为调用 <code>getGroup()</code>；<code>onUnionPowerRankCb</code> 中遍历 <code>GetUnionInfoGroups()</code> 的逻辑同步更新。</div>
+    </div>
+  </div>
+
+  <!-- P1-2 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p1">P1</span>
+      <div class="title-group">
+        <div class="item-title">裸 map 对外暴露，可绕过脏标记机制</div>
+        <div class="item-sub">leaguewar_union_info.go · GetUnionInfoGroups():21</div>
+        <div class="item-tags"><span class="tag safety">safety</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <p><strong>问题说明：</strong><code>GetUnionInfoGroups()</code> 直接返回内部 map 引用，调用方可以不经过 <code>Set()</code> 直接修改 map 中的 <code>LeagueWarLeagueInfo</code> 字段，不触发 <code>markGroupDirty</code>，改动不会被持久化。<code>onUnionPowerRankCb</code> 中的 <code>info.ServerId = serverId</code> 就是这种模式——只是因为后面紧跟了 <code>Set()</code> 才凑巧正确，属于脆弱写法。</p>
+      <div class="callout warn">风险：如果开发者只改了 <code>info</code> 字段而忘了调 <code>Set()</code>，数据运行期正确但重启后丢失，且没有任何报错。</div>
+      <div class="code-wrap">
+        <div class="code-label bad">bad · onUnionPowerRankCb 中直接改指针字段（api.go:459–464）</div>
+        <pre><span class="del">if info := unionInfoData.Get(zvzGroupId, unionId); info != nil && info.ServerId != serverId {</span>
+<span class="del">    info.ServerId = serverId                          // 直接改指针字段</span>
+<span class="del">    unionInfoData.Set(zvzGroupId, unionId, info)      // 依赖调用方记得调 Set</span>
+<span class="del">}</span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label good">good · 封装 UpdateServerId，强制走脏标记路径</div>
+        <pre><span class="cmt">// 在 LeagueWarUnionInfoData 上新增方法</span>
+<span class="ins">func (d *LeagueWarUnionInfoData) UpdateServerId(zvzGroupId int32, unionId int64, serverId int32) {</span>
+<span class="ins">    g := d.getGroup(zvzGroupId)</span>
+<span class="ins">    if g == nil {</span>
+<span class="ins">        return</span>
+<span class="ins">    }</span>
+<span class="ins">    info := g[unionId]</span>
+<span class="ins">    if info == nil || info.ServerId == serverId {</span>
+<span class="ins">        return</span>
+<span class="ins">    }</span>
+<span class="ins">    info.ServerId = serverId</span>
+<span class="ins">    d.markGroupDirty(zvzGroupId)</span>
+<span class="ins">}</span>
+<span class="ins"></span>
+<span class="cmt">// 调用方简化为一行</span>
+<span class="ins">unionInfoData.UpdateServerId(zvzGroupId, unionId, serverId)</span></pre>
+      </div>
+      <div class="callout info"><code>refreshSingleUnionRank</code> 回调（api.go:500–503）中的同类写法同步替换为 <code>UpdateServerId</code>。</div>
+    </div>
+  </div>
+
+  <!-- ===== P2 ===== -->
+  <div class="section-sep">P2 — 建议修复</div>
+
+  <!-- P2-1 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p2">P2</span>
+      <div class="title-group">
+        <div class="item-title">!ok 时访问 nil ack，日志打印 ErrCodeSuccess 误导排查</div>
+        <div class="item-sub">union_power/api.go · sendUnionInfoReq():352</div>
+        <div class="item-tags"><span class="tag style">style</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <p><strong>问题说明：</strong>类型断言 <code>ri.Ack.(*cspb.A2GActvZvzUnionInfoAck)</code> 失败时 <code>ack</code> 为 nil，条件 <code>!ok || ack.Err != ...</code> 合并在一行，<code>!ok</code> 成立时继续执行 <code>ack.GetErr()</code>。proto 生成的 Get 方法对 nil receiver 返回零值（= ErrCodeSuccess = 0），不 panic，但日志打印 <code>ack err: 0</code>，看起来是成功，实际是类型转换失败，<strong>排查时完全误导方向</strong>。</p>
+      <div class="code-wrap">
+        <div class="code-label bad">bad · api.go:352–357</div>
+        <pre><span class="del">ack, ok := ri.Ack.(*cspb.A2GActvZvzUnionInfoAck)</span>
+<span class="del">if !ok || ack.Err != cspb.ErrCodeSuccess || ack.LeagueInfo == nil {</span>
+<span class="del">    // !ok 时 ack==nil，GetErr() 返回 0，日志显示 "err: 0"（ErrCodeSuccess）</span>
+<span class="del">    tlog.Warnf("ZVZ ZvzGroup:%v uid:%v ack err:%v", zvzGroupId, uid, ack.GetErr())</span>
+<span class="del">    ...</span>
+<span class="del">}</span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label good">good · 分开处理类型断言失败和业务错误</div>
+        <pre><span class="ins">ack, ok := ri.Ack.(*cspb.A2GActvZvzUnionInfoAck)</span>
+<span class="ins">if !ok {</span>
+<span class="ins">    tlog.Warnf("ZVZ ZvzGroup:%v uid:%v ack type error: %T", zvzGroupId, uid, ri.Ack)</span>
+<span class="ins">    return</span>
+<span class="ins">}</span>
+<span class="ins">if ack.Err != cspb.ErrCodeSuccess || ack.LeagueInfo == nil {</span>
+<span class="ins">    tlog.Warnf("ZVZ ZvzGroup:%v uid:%v ack err:%v", zvzGroupId, uid, ack.GetErr())</span>
+<span class="ins">    delete(ug.GetChosenUnion(), uid)</span>
+<span class="ins">    delete(ug.GetUnionLayer(), uid)</span>
+<span class="ins">    return</span>
+<span class="ins">}</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- P2-2 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p2">P2</span>
+      <div class="title-group">
+        <div class="item-title">ClearGroup 直接访问字段，绕过 accessor</div>
+        <div class="item-sub">leaguewar_union_info.go · ClearGroup():90</div>
+        <div class="item-tags"><span class="tag spec">spec</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <p><strong>问题说明：</strong>其他所有方法通过 <code>d.Getgroups()</code> accessor 访问 <code>groups</code> 字段，唯独 <code>ClearGroup</code> 直接访问 <code>d.groups</code>。如果 accessor 将来加入并发保护或其他逻辑，这里会是漏网之鱼。</p>
+      <div class="code-wrap">
+        <div class="code-label bad">bad · leaguewar_union_info.go:89–92</div>
+        <pre><span class="del">func (d *LeagueWarUnionInfoData) ClearGroup(zvzGroupId int32) {</span>
+<span class="del">    d.groups[zvzGroupId] = make(map[int64]*cspb.LeagueWarLeagueInfo)  // 绕过 accessor</span>
+<span class="del">    d.markGroupDirty(zvzGroupId)</span>
+<span class="del">}</span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label good">good</div>
+        <pre><span class="ins">func (d *LeagueWarUnionInfoData) ClearGroup(zvzGroupId int32) {</span>
+<span class="ins">    d.Getgroups()[zvzGroupId] = make(map[int64]*cspb.LeagueWarLeagueInfo)</span>
+<span class="ins">    d.markGroupDirty(zvzGroupId)</span>
+<span class="ins">}</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- P2-3 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p2">P2</span>
+      <div class="title-group">
+        <div class="item-title">ClearAllGroups 末尾 MakeDirty() 冗余，两层脏标记边界不清</div>
+        <div class="item-sub">leaguewar_union_info.go · ClearAllGroups():95–101</div>
+        <div class="item-tags"><span class="tag style">style</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <p><strong>问题说明：</strong><code>markGroupDirty</code> 内部已调用 <code>d.MakeDirty()</code>，<code>ClearAllGroups</code> 最后的 <code>d.MakeDirty()</code> 是重复调用。两层脏标记设计本身合理（<code>util.Dirty</code> 供 HoldDataMgr 的 <code>IsDirty()</code> 感知；<code>dirtyGroups</code> 精确定位哪个 group 文档需要写库），但缺少说明，维护者容易误认为单独调用 <code>MakeDirty()</code> 就足够，漏掉 <code>markGroupDirty</code>。</p>
+      <div class="code-wrap">
+        <div class="code-label bad">bad · leaguewar_union_info.go:95–101</div>
+        <pre><span class="del">func (d *LeagueWarUnionInfoData) ClearAllGroups() {</span>
+<span class="del">    for zvzGroupId := range d.Getgroups() {</span>
+<span class="del">        d.markGroupDirty(zvzGroupId)  // 内部已含 MakeDirty()</span>
+<span class="del">    }</span>
+<span class="del">    d.Setgroups(make(map[int32]map[int64]*cspb.LeagueWarLeagueInfo))</span>
+<span class="del">    d.MakeDirty()  // 冗余调用</span>
+<span class="del">}</span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label good">good · 删除冗余调用，补充两层设计说明</div>
+        <pre><span class="cmt">// 脏标记分两层：util.Dirty 供 HoldDataMgr.IsDirty() 感知；</span>
+<span class="cmt">// dirtyGroups 精确记录哪些 group 文档需写库。</span>
+<span class="cmt">// 统一通过 markGroupDirty 更新两层，不要单独调用 MakeDirty。</span>
+<span class="ins">func (d *LeagueWarUnionInfoData) ClearAllGroups() {</span>
+<span class="ins">    for zvzGroupId := range d.Getgroups() {</span>
+<span class="ins">        d.markGroupDirty(zvzGroupId)</span>
+<span class="ins">    }</span>
+<span class="ins">    d.Setgroups(make(map[int32]map[int64]*cspb.LeagueWarLeagueInfo))</span>
+<span class="ins">}</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- P2-4 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="badge p2">P2</span>
+      <div class="title-group">
+        <div class="item-title">DecodeFromDB 判空赋值与 accessor 懒初始化重复，是死代码</div>
+        <div class="item-sub">leaguewar.go · DecodeFromDB():125</div>
+        <div class="item-tags"><span class="tag spec">spec</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <p><strong>问题说明：</strong>原始 <code>DecodeFromDB</code> 中有 7 个 <code>if nil { make(...) }</code> 判空赋值块，用于初始化 DB 加载后可能为 nil 的 map 字段。但 <code>accessor_engine2</code> 生成的每个 <code>Get</code> 方法内部已包含相同的判空赋值逻辑——调用一次 <code>Get</code> 字段就会被自动初始化，因此外层判断条件恒为 <code>false</code>，7 个 <code>if</code> 块全是死代码。</p>
+      <p><strong>根因：</strong>代码作者不了解 <code>accessor_engine2</code> 生成的 <code>Get</code> 方法内置了懒初始化，手动重复了相同逻辑。</p>
+      <div class="code-wrap">
+        <div class="code-label bad">bad · leaguewar.go:125–152（节选）</div>
+        <pre><span class="del">// GetUnionLayer() 内部已有：if p.UnionLayer == nil { p.UnionLayer = make(...) }</span>
+<span class="del">// 所以外层的 nil 判断恒为 false，是死代码</span>
+<span class="del">if unionGroup.GetUnionLayer() == nil {</span>
+<span class="del">    unionGroup.SetUnionLayer(make(map[int64]int32))</span>
+<span class="del">}</span>
+<span class="del">if unionGroup.GetUnionMatchScore() == nil {</span>
+<span class="del">    unionGroup.SetUnionMatchScore(make(map[int64]int64))</span>
+<span class="del">}</span>
+<span class="del">// ... 共 7 个同类块</span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-label good">good · 封装 ensureInit()，直接调用 Get 触发懒初始化</div>
+        <pre><span class="cmt">// accessor_engine2 生成的 Get 方法内置判空赋值，调用一次即可完成初始化</span>
+<span class="ins">func (g *LeagueWarGroup) ensureInit() {</span>
+<span class="ins">    g.GetUnionInfo()</span>
+<span class="ins">    g.GetOccupyRgn()</span>
+<span class="ins">    g.GetChosenUnion()</span>
+<span class="ins">    g.GetUnionLayer()</span>
+<span class="ins">    g.GetUnionMatchScore()</span>
+<span class="ins">    g.GetMatchResult()</span>
+<span class="ins">    g.GetUnionHistoryLayer()</span>
+<span class="ins">}</span></pre>
+      </div>
+      <div class="callout info">以后新增字段时，在 <code>ensureInit()</code> 补一行 <code>Get</code> 调用即可，不需要手写 <code>make</code>。</div>
+    </div>
+  </div>
+
+  <!-- Praise -->
+  <div class="praise">
+    <h2>写得好的地方</h2>
+    <ul>
+      <li><strong>按 group 拆分 MongoDB 文档：</strong>每个 zvzGroupId 独立一条文档（<code>LeagueWarUnionInfo_&lt;id&gt;</code>），避免单文档随参赛联盟数线性膨胀，读写粒度合理。</li>
+      <li><strong>GetDirtyGroupDocs() 使用深拷贝：</strong>持久化前对脏数据做深拷贝再清脏标记，保证快照与后续写入互不干扰，防止数据竞争。</li>
+      <li><strong>needDoMatch() 重启安全设计：</strong>用 <code>endTs + matchDelayMs</code> 时间条件替代一次性 Timer，服务重启后 OnTick 自动补偿执行，无需额外持久化 Timer 状态，设计简洁。</li>
+      <li><strong>buildLayer1Supplement 去重逻辑清晰：</strong>用 <code>seen map</code> 统一处理"已在任意圈层"的去重，与入围逻辑复用同一套 <code>fillLayer1FromRank</code>，避免重复实现。</li>
+    </ul>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// Flow 1: 高圈层联盟查询 现状 vs 修复后
+(function() {
+  const canvas = document.getElementById('flow-layer');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let t = 0;
+
+  const nodes = [
+    // 现状 row (y=90)
+    { id:'a1', x:90,  y:90,  label:'OnEnd()',          sub:'',               color:'#f0a500', bg:'#1a1200' },
+    { id:'b1', x:280, y:90,  label:'高圈层联盟',        sub:'GetUnionLayer()',color:'#a78bfa', bg:'#1a1030' },
+    { id:'c1', x:470, y:90,  label:'UnionInfo.Get()',   sub:'',               color:'#a78bfa', bg:'#1a1030' },
+    { id:'d1', x:680, y:90,  label:'info==nil → skip',  sub:'邮件丢失',       color:'#f97583', bg:'#200000' },
+    // 修复后 row (y=230)
+    { id:'a2', x:90,  y:230, label:'OnEnd()',           sub:'',               color:'#34d399', bg:'#001a0d' },
+    { id:'b2', x:280, y:230, label:'高圈层联盟',         sub:'GetUnionLayer()',color:'#34d399', bg:'#001a0d' },
+    { id:'c2', x:470, y:230, label:'UnionInfo.Get()',    sub:'',               color:'#34d399', bg:'#001a0d' },
+    { id:'d2', x:680, y:230, label:'降级 ChosenUnion',   sub:'→ sendUnionInfoReq',color:'#34d399',bg:'#001a0d'},
+  ];
+
+  const edges = [
+    { from:'a1', to:'b1', flow:'sync',    color:'#f0a500', label:'' },
+    { from:'b1', to:'c1', flow:'sync',    color:'#a78bfa', label:'遍历' },
+    { from:'c1', to:'d1', flow:'error',   color:'#f97583', label:'nil' },
+    { from:'a2', to:'b2', flow:'sync',    color:'#34d399', label:'' },
+    { from:'b2', to:'c2', flow:'sync',    color:'#34d399', label:'遍历' },
+    { from:'c2', to:'d2', flow:'control', color:'#34d399', label:'nil→降级' },
+  ];
+
+  const flowCfg = {
+    sync:    { dash:[],      speed:0,   dir: 1 },
+    control: { dash:[6,4],   speed:0.8, dir: 1 },
+    error:   { dash:[5,3],   speed:1.5, dir: 1 },
+  };
+
+  function nodeById(id) { return nodes.find(n => n.id === id); }
+
+  function drawEdge(e) {
+    const s = nodeById(e.from), d = nodeById(e.to);
+    if (!s || !d) return;
+    const cfg = flowCfg[e.flow] || flowCfg.sync;
+    const col = e.color || '#30363d';
+    ctx.save();
+    ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+    const off = cfg.speed > 0 ? (t * cfg.speed * cfg.dir) % 20 : 0;
+    ctx.setLineDash(cfg.dash); ctx.lineDashOffset = -off;
+    ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(d.x, d.y); ctx.stroke();
+    const ang = Math.atan2(d.y - s.y, d.x - s.x);
+    ctx.setLineDash([]); ctx.fillStyle = col;
+    ctx.save();
+    ctx.translate(d.x - Math.cos(ang)*22, d.y - Math.sin(ang)*22);
+    ctx.rotate(ang);
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-10,5); ctx.lineTo(-10,-5); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    ctx.restore();
+    if (e.label) {
+      ctx.fillStyle = '#8b949e'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(e.label, (s.x+d.x)/2, (s.y+d.y)/2 - 8);
+    }
+  }
+
+  function drawNode(n) {
+    const w=160, h=44, r=6;
+    ctx.save();
+    ctx.shadowColor = n.color; ctx.shadowBlur = 12;
+    ctx.fillStyle = n.bg || '#161b22';
+    ctx.strokeStyle = n.color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.roundRect(n.x-w/2, n.y-h/2, w, h, r); ctx.fill(); ctx.stroke();
+    ctx.restore();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#e6edf3'; ctx.font = '13px -apple-system, sans-serif';
+    ctx.fillText(n.label, n.x, n.sub ? n.y-8 : n.y);
+    if (n.sub) { ctx.fillStyle = '#8b949e'; ctx.font = '11px monospace'; ctx.fillText(n.sub, n.x, n.y+9); }
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.fillStyle = '#f97583'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('▼ 现状（存在问题）', 16, 20);
+    ctx.fillStyle = '#34d399';
+    ctx.fillText('▼ 修复后', 16, 175);
+    ctx.restore();
+    edges.forEach(drawEdge);
+    nodes.forEach(drawNode);
+    t += 0.5;
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+
+<script>
+// Flow 2: Get() 副作用
+(function() {
+  const canvas = document.getElementById('flow-get');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let t = 0;
+
+  const nodes = [
+    { id:'a', x:100, y:100, label:'调用方',       sub:'Get / GetUnionInfoGroups',  color:'#f0a500', bg:'#1a1200' },
+    { id:'b', x:330, y:100, label:'GetGroup()',    sub:'leaguewar_union_info:71',    color:'#a78bfa', bg:'#1a1030' },
+    { id:'c', x:570, y:52,  label:'key 存在',      sub:'→ 正常返回',                color:'#34d399', bg:'#001a0d' },
+    { id:'d', x:570, y:155, label:'key 不存在',    sub:'→ make 写入 groups!',       color:'#f97583', bg:'#200000' },
+  ];
+
+  const edges = [
+    { from:'a', to:'b', flow:'sync',    color:'#f0a500', label:'读操作' },
+    { from:'b', to:'c', flow:'control', color:'#34d399', label:'found' },
+    { from:'b', to:'d', flow:'error',   color:'#f97583', label:'not found' },
+  ];
+
+  const flowCfg = {
+    sync:    { dash:[],    speed:0,   dir: 1 },
+    control: { dash:[6,4], speed:0.8, dir: 1 },
+    error:   { dash:[5,3], speed:1.5, dir: 1 },
+  };
+
+  function nodeById(id) { return nodes.find(n => n.id === id); }
+
+  function drawEdge(e) {
+    const s = nodeById(e.from), d = nodeById(e.to);
+    if (!s || !d) return;
+    const cfg = flowCfg[e.flow] || flowCfg.sync;
+    const col = e.color || '#30363d';
+    ctx.save();
+    ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+    const off = cfg.speed > 0 ? (t * cfg.speed * cfg.dir) % 20 : 0;
+    ctx.setLineDash(cfg.dash); ctx.lineDashOffset = -off;
+    ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(d.x, d.y); ctx.stroke();
+    const ang = Math.atan2(d.y - s.y, d.x - s.x);
+    ctx.setLineDash([]); ctx.fillStyle = col;
+    ctx.save();
+    ctx.translate(d.x - Math.cos(ang)*22, d.y - Math.sin(ang)*22);
+    ctx.rotate(ang);
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-10,5); ctx.lineTo(-10,-5); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    ctx.restore();
+    if (e.label) {
+      ctx.fillStyle = '#8b949e'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(e.label, (s.x+d.x)/2, (s.y+d.y)/2 - 8);
+    }
+  }
+
+  function drawNode(n) {
+    const w=160, h=44, r=6;
+    ctx.save();
+    ctx.shadowColor = n.color; ctx.shadowBlur = 12;
+    ctx.fillStyle = n.bg || '#161b22';
+    ctx.strokeStyle = n.color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.roundRect(n.x-w/2, n.y-h/2, w, h, r); ctx.fill(); ctx.stroke();
+    ctx.restore();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#e6edf3'; ctx.font = '13px -apple-system, sans-serif';
+    ctx.fillText(n.label, n.x, n.sub ? n.y-8 : n.y);
+    if (n.sub) { ctx.fillStyle = '#8b949e'; ctx.font = '11px monospace'; ctx.fillText(n.sub, n.x, n.y+9); }
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    edges.forEach(drawEdge);
+    nodes.forEach(drawNode);
+    t += 0.5;
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+
+</body>
+</html>

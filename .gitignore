@@ -6,3 +6,6 @@
 **/.obsidian/workspace-mobile.json
 **/.obsidian/cache
 .trash/
+
+# mem_watch 自动采集的 pprof 二进制文件，不进仓库
+ramboYe/330/prof/

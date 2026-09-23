@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>MarchActRally — NewTroopExtra 消耗 BUG</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d1117;color:#e0e0e0;font-family:'Segoe UI','PingFang SC',sans-serif;padding:16px 20px 40px;user-select:none}
+.header{text-align:center;margin-bottom:14px}
+.header h1{font-size:17px;color:#f0f0f0;font-weight:700;margin-bottom:4px}
+.header p{font-size:12px;color:#6b7280}
+/* indicator */
+.indicator{display:flex;justify-content:center;align-items:center;gap:6px;margin-bottom:12px}
+.dot{width:9px;height:9px;border-radius:50%;background:#1e293b;border:2px solid #334155;cursor:pointer;transition:all .2s}
+.dot.done{background:#1d4ed8;border-color:#3b82f6}
+.dot.active{background:#3b82f6;border-color:#93c5fd;transform:scale(1.35)}
+.dot.bdone{background:#6b21a8;border-color:#9333ea}
+.dot.bactive{background:#9333ea;border-color:#d8b4fe;transform:scale(1.35);box-shadow:0 0 8px rgba(147,51,234,.6)}
+/* desc */
+.desc{text-align:center;margin-bottom:12px;min-height:40px}
+.desc-title{font-size:14px;font-weight:700;color:#f0f0f0;margin-bottom:3px}
+.desc-hint{font-size:11.5px;color:#9ca3af}
+/* layout */
+.panels{display:flex;gap:16px;max-width:1400px;margin:0 auto 14px;align-items:flex-start}
+/* panel */
+.panel{flex:1;background:#161b25;border-radius:9px;border:1.5px solid #2a2f3e;overflow:hidden;transition:border-color .3s,box-shadow .3s}
+.panel.p-ok {border-color:#166534;box-shadow:0 0 16px rgba(22,101,52,.15)}
+.panel.p-bug{border-color:#7e22ce;box-shadow:0 0 16px rgba(126,34,206,.25)}
+.phead{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid #2a2f3e;font-size:12px;font-weight:700;position:sticky;top:0;z-index:10;background:#161b25}
+.badge{padding:2px 7px;border-radius:9px;font-size:10px;font-weight:700}
+.bok {background:#14532d;color:#4ade80}
+.bbug{background:#3b0764;color:#e879f9}
+.pfile{margin-left:auto;font-size:10.5px;color:#6b7280;font-family:'Consolas',monospace}
+.pbody{overflow-y:auto;max-height:62vh;scroll-behavior:smooth}
+/* code lines */
+.cl{display:flex;align-items:stretch;min-height:21px;transition:background .2s,opacity .2s;position:relative}
+.ln{width:34px;text-align:right;padding-right:9px;font-size:10.5px;color:#4b5563;font-family:'Consolas',monospace;flex-shrink:0;line-height:21px;transition:color .2s}
+.lc{font-family:'Consolas','Courier New',monospace;font-size:12px;line-height:21px;white-space:pre;flex:1;padding-right:36px}
+.sep{height:1px;background:#2a2f3e;margin:3px 0}
+.cl.ha{background:rgba(59,130,246,.15)}.cl.ha .ln{color:#60a5fa}
+.cl.hb{background:rgba(147,51,234,.22)}.cl.hb .ln{color:#c084fc}
+.cl.hs{background:rgba(22,163,74,.18)}.cl.hs .ln{color:#4ade80}
+.cl.he{background:rgba(239,68,68,.15)}.cl.he .ln{color:#f87171}
+.cl.hw{background:rgba(251,191,36,.12)}.cl.hw .ln{color:#fbbf24}
+.cl.hd{opacity:.25}
+/* syntax */
+.kw{color:#c792ea}.fn{color:#82aaff}.tp{color:#ffcb6b}.op{color:#89ddff}.va{color:#eeffff}.cm{color:#546e7a;font-style:italic}.er{color:#ff5370}.st{color:#c3e88d}
+/* annotation */
+.ann{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;padding:1px 6px;border-radius:7px;pointer-events:none;white-space:nowrap}
+.ab{background:#7e22ce;color:#f0abfc}
+.ao{background:#166534;color:#86efac}
+.aw{background:#78350f;color:#fcd34d}
+.ai{background:#1e3a5f;color:#7dd3fc}
+/* state */
+.states{display:flex;gap:16px;max-width:1400px;margin:0 auto 14px}
+.sbox{flex:1;border-radius:7px;padding:10px 13px;border:1px solid;font-family:'Consolas',monospace;font-size:11.5px;line-height:1.85;min-height:72px;transition:all .3s}
+.sn{background:#161b25;border-color:#2a2f3e}
+.ss{background:#0d2518;border-color:#166534}
+.sb{background:#1a0a28;border-color:#7e22ce;box-shadow:0 0 10px rgba(126,34,206,.2)}
+.slabel{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+/* state value colors */
+.sv{color:#94a3b8}.sg{color:#4ade80}.sr{color:#f87171}.sw{color:#fbbf24}.sd{color:#6b7280}
+/* controls */
+.ctrl{display:flex;justify-content:center;align-items:center;gap:14px}
+.btn{padding:8px 20px;border-radius:7px;border:none;cursor:pointer;font-size:12.5px;font-weight:600;transition:background .2s,transform .1s}
+.btn:active{transform:scale(.97)}.btn:disabled{opacity:.35;cursor:not-allowed}
+.bp{background:#2563eb;color:#fff}.bp:hover:not(:disabled){background:#1d4ed8}
+.bs{background:#1e293b;color:#94a3b8;border:1px solid #334155}.bs:hover:not(:disabled){background:#273549}
+.sc{font-size:12px;color:#6b7280;min-width:55px;text-align:center}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>MarchActRally — NewTroopExtra 被错误消耗 BUG</h1>
+  <p>点击「下一步」逐步对比完整函数代码，查看关键行为差异</p>
+</div>
+<div class="indicator" id="ind"></div>
+<div class="desc"><div class="desc-title" id="dt">—</div><div class="desc-hint" id="dh">点击「下一步」开始</div></div>
+<div class="panels">
+  <div class="panel" id="pOld">
+    <div class="phead"><span class="badge bok">旧代码（正确）</span><span style="color:#e0e0e0;font-size:12.5px">OnNewMarchReq</span><span class="pfile">ctl_march.go · 改前</span></div>
+    <div class="pbody" id="bOld"></div>
+  </div>
+  <div class="panel" id="pNew">
+    <div class="phead"><span class="badge bbug">新代码（有 BUG）</span><span style="color:#e0e0e0;font-size:12.5px">OnNewMarchReq + ctl_march_help.go</span><span class="pfile">改后</span></div>
+    <div class="pbody" id="bNew"></div>
+  </div>
+</div>
+<div class="states">
+  <div class="sbox sn" id="sOld"><div class="slabel" style="color:#4ade80">旧代码 · 内存状态</div><div id="sOb">—</div></div>
+  <div class="sbox sn" id="sNew"><div class="slabel" style="color:#e879f9">新代码 · 内存状态</div><div id="sNb">—</div></div>
+</div>
+<div class="ctrl">
+  <button class="btn bs" id="bPrev" disabled>← 上一步</button>
+  <span class="sc" id="sc">0 / 0</span>
+  <button class="btn bp" id="bNext">下一步 →</button>
+</div>
+
+<script>
+// ── helpers ───────────────────────────────────────────────────────────────────
+const kw=s=>`<span class="kw">${s}</span>`;
+const fn=s=>`<span class="fn">${s}</span>`;
+const tp=s=>`<span class="tp">${s}</span>`;
+const op=s=>`<span class="op">${s}</span>`;
+const va=s=>`<span class="va">${s}</span>`;
+const cm=s=>`<span class="cm">${s}</span>`;
+const er=s=>`<span class="er">${s}</span>`;
+
+// ── OLD code lines ─────────────────────────────────────────────────────────────
+// Format: { n: lineNum, id: 'optional', c: 'code html' }
+const OLD = [
+  {n:81, c:`${cm('// OnNewMarchReq 发起行军')}`},
+  {n:82, id:'of', c:`${kw('func')} (${va('wmap')} ${op('*')}${tp('WMap')}) ${fn('OnNewMarchReq')}(${va('ci')} ${op('*')}${tp('chanrpc.CallInfo')}) {`},
+  {n:83, c:`    ${va('req')} ${op(':=')} ${va('ci')}.${va('Req')}.(${op('*')}${tp('cspb.NewMarchReq')})`},
+  {n:84, c:`    ${va('wildMap')} ${op(':=')} ${va('wmap')}.${va('WildMap')}`},
+  {n:85, c:`    ${va('wmap')}.${fn('checkHelpMarch')}(${va('req')})`},
+  {n:86, c:``},
+  {n:87, id:'oc1', c:`    ${cm('// 解析坐标 / 参数')}`},
+  {n:88, c:`    ${va('endCoord')} ${op(':=')} ${tp('geo.Coord')}{${va('X')}: ${op('0')}, ${va('Z')}: ${op('0')}}`},
+  {n:89, c:`    ${kw('if')} ${va('coord')} ${op(':=')} ${va('req')}.${va('EndCoord')}; ${va('coord')} ${op('!=')} ${kw('nil')} {`},
+  {n:90, c:`        ${va('endCoord')}.${va('X')} ${op('=')} ${va('coord')}.${va('X')}`},
+  {n:91, c:`        ${va('endCoord')}.${va('Z')} ${op('=')} ${va('coord')}.${va('Z')}`},
+  {n:92, c:`    }`},
+  {n:93, c:`    ${va('playerID')} ${op(':=')} ${va('req')}.${fn('GetPlayerID')}()`},
+  {n:94, c:`    ${va('action')}   ${op(':=')} ${va('req')}.${fn('GetAction')}()`},
+  {n:95, c:`    ${va('startId')}  ${op(':=')} ${va('req')}.${fn('GetStartID')}()`},
+  {n:96, c:`    ${va('targetId')} ${op(':=')} ${va('req')}.${fn('GetTargetID')}()`},
+  {n:97, c:`    ${va('ack')} ${op(':=')} ${op('&')}${tp('cspb.NewMarchAck')}{${va('Action')}: ${va('action')}}`},
+  {n:98, c:`    ${kw('defer')} ${fn('mapSendToPlayer')}(${va('playerID')}, ${va('ack')})`},
+  {n:99, c:``},
+  {n:100, id:'otu', c:`    ${cm('// 解析目标单位')}`},
+  {n:101, c:`    ${va('targetUnit')}, ${va('ok')} ${op(':=')} ${va('wmap')}.${fn('GetMarchTargetUnit')}(${va('targetId')}, ${va('endCoord')})`},
+  {n:102, c:`    ${kw('if')} ${op('!')}${va('ok')} { ${va('ack')}.${va('ErrCode')} ${op('=')} ${er('ErrCodeEntityNotFound')}; ${kw('return')} }`},
+  {n:103, c:``},
+  {n:104, id:'osu', c:`    ${cm('// 解析出发单位')}`},
+  {n:105, c:`    ${va('startUnit')}, ${va('exist')} ${op(':=')} ${va('wmap')}.${fn('getUnitBuId')}(${va('startId')})`},
+  {n:106, c:`    ${kw('if')} ${op('!')}${va('exist')} {`},
+  {n:107, c:`        ${fn('mapSendToPlayer')}(${va('playerID')}, ${op('&')}${tp('cspb.DelEntitiesNtf')}{...})`},
+  {n:108, c:`        ${va('ack')}.${va('ErrCode')} ${op('=')} ${er('ErrCodeEntityNotFound')}`},
+  {n:109, c:`        ${va('wildMap')}.${va('ObMgr')}.${fn('DelMarchingUnitByID')}(${va('startId')})`},
+  {n:110, c:`        ${kw('return')}`},
+  {n:111, c:`    }`},
+  {n:112, c:``},
+  {n:113, id:'og0', c:`    ${cm('// ★ Rally 守卫：在所有状态变更之前')}`},
+  {n:114, id:'og1', c:`    ${kw('if')} ${va('action')} ${op('==')} ${tp('cspb')}.${va('MarchActRally')} {`},
+  {n:115, id:'og2', c:`        ${va('ack')}.${va('ErrCode')} ${op('=')} ${er('ErrCodeRallyCreateLineupNotInCity')}`},
+  {n:116, id:'og3', c:`        ${kw('return')}  ${cm('// ← 直接返回，下方状态变更代码不会执行')}`},
+  {n:117, c:`    }`},
+  {n:118, c:``},
+  {n:119, id:'os0', c:`    ${cm('// ★ action 不是 Rally，安全地变更状态')}`},
+  {n:120, id:'os1', c:`    ${kw('if')} ${fn('cspb.IsMapUnitPlayerTroop')}(${va('startUnit')}) {`},
+  {n:121, id:'os2', c:`        ${va('pt')}, ${va('_')} ${op(':=')} ${fn('melem.UnitToPlayerTroop')}(${va('startUnit')})`},
+  {n:122, id:'os3', c:`        ${va('pt')}.${va('TargetId')} ${op('=')} ${va('targetId')}`},
+  {n:123, id:'os4', c:`        ${kw('if')} ${va('_')}, ${va('playerCity')}, ${va('err')} ${op(':=')} ${va('wmap')}.${fn('GetPlayerCity')}(${va('playerID')}); ${va('playerCity')} ${op('!=')} ${kw('nil')} {`},
+  {n:124, c:`            ${kw('if')} ${va('err')} ${op('==')} ${kw('nil')} ${op('&&')} ${va('playerCity')}.${va('NewTroopExtra')} ${op('!=')} ${kw('nil')} {`},
+  {n:125, id:'os5', c:`                ${va('pt')}.${va('OriginMarchExtra')} ${op('=')} ${va('playerCity')}.${va('NewTroopExtra')}`},
+  {n:126, id:'os6', c:`                ${va('playerCity')}.${va('NewTroopExtra')} ${op('=')} ${kw('nil')}`},
+  {n:127, c:`            }`},
+  {n:128, c:`        }`},
+  {n:129, c:`    }`},
+  {n:130, c:``},
+  {n:131, id:'ob1', c:`    ${cm('// 通用前置校验')}`},
+  {n:132, c:`    ${kw('if')} ${va('code')} ${op(':=')} ${va('wmap')}.${fn('CheckCanAttack')}(${va('targetUnit')}, ${va('startUnit')}); ${va('code')} ${op('!=')} ${tp('ErrCodeSuccess')} {`},
+  {n:133, c:`        ${va('ack')}.${va('ErrCode')} ${op('=')} ${va('code')}; ${kw('return')}`},
+  {n:134, c:`    }`},
+  {n:135, c:`    ${kw('if')} ${va('startUnit')}.${fn('OwnerInfo')}().${va('ID')} ${op('!=')} ${va('playerID')} {`},
+  {n:136, c:`        ${va('ack')}.${va('ErrCode')} ${op('=')} ${er('ErrCodeEntityIsNotBelongToYou')}; ${kw('return')}`},
+  {n:137, c:`    }`},
+  {n:138, c:`    ${kw('if')} ${va('code')} ${op(':=')} ${va('wmap')}.${va('MapOther')}.${fn('CheckAttack')}(${va('playerID')}, ${va('targetId')}, ${va('action')}); ${va('code')} ${op('!=')} ${tp('ErrCodeSuccess')} {`},
+  {n:139, c:`        ${va('ack')}.${va('ErrCode')} ${op('=')} ${va('code')}; ${kw('return')}`},
+  {n:140, c:`    }`},
+  {n:141, c:`    ${kw('if')} ${va('wmap')}.${fn('CheckDefendRunningTrain')}(${va('startUnit')}) {`},
+  {n:142, c:`        ${va('ack')}.${va('ErrCode')} ${op('=')} ${er('ErrCodeExpTrainRunning')}; ${kw('return')}`},
+  {n:143, c:`    }`},
+  {n:144, c:``},
+  {n:145, id:'oa1', c:`    ${cm('// Action 专项校验')}`},
+  {n:146, c:`    ${kw('if')} ${va('action')} ${op('==')} ${tp('cspb')}.${va('MarchActExpTransport')} {`},
+  {n:147, c:`        ${kw('if')} ${va('pt')}, ${va('ok')} ${op(':=')} ${fn('melem.UnitToPlayerTroop')}(${va('startUnit')}); ${va('ok')} {`},
+  {n:148, c:`            ${kw('if')} ${op('!')}${va('wmap')}.${fn('FindPTroopHaveAsset')}(${fn('gdconf.GetD2ConstCfgIntValue')}(${va('ExpeditionTrainTaskItem')}), ${va('pt')}) {`},
+  {n:149, c:`                ${va('ack')}.${va('ErrCode')} ${op('=')} ${er('ErrCodeExpTrainHasNoFuel')}; ${kw('return')}`},
+  {n:150, c:`            }`},
+  {n:151, c:`        }`},
+  {n:152, c:`    } ${kw('else')} ${kw('if')} ${va('action')} ${op('==')} ${tp('cspb')}.${va('MarchActExpMeltingIce')} {`},
+  {n:153, c:`        ${kw('if')} ${op('!')}${va('wmap')}.${fn('FindPTroopHaveAsset')}(${fn('gdconf.GetD2ConstCfgIntValue')}(${va('IcemapgameMagicCarbonId')}), ${va('startUnit')}) {`},
+  {n:154, c:`            ${va('ack')}.${va('ErrCode')} ${op('=')} ${er('ErrCodeMeltingIceLineupHasNoCarbon')}; ${kw('return')}`},
+  {n:155, c:`        }`},
+  {n:156, c:`    }`},
+  {n:157, c:``},
+  {n:158, id:'ot1', c:`    ${cm('// 目标类型特殊条件（IceContestDoor / 遗迹可见性）')}`},
+  {n:159, c:`    ${kw('if')} ${fn('cspb.IsMapUnitPlayerTroop')}(${va('startUnit')}) {`},
+  {n:160, c:`        ${va('pt')}, ${va('ok')} ${op(':=')} ${fn('melem.UnitToPlayerTroop')}(${va('startUnit')})`},
+  {n:161, c:`        ${kw('if')} ${op('!')}${va('ok')} { ${va('ack')}.${va('ErrCode')} ${op('=')} ${er('ErrCodeHasMagicIronCantUseTeleportDoor')}; ${kw('return')} }`},
+  {n:162, c:`        ${kw('if')} ${fn('cspb.IsMapUnitIceContestDoor')}(${va('targetUnit')}) {`},
+  {n:163, c:`            ${kw('if')} ${op('!')}${va('wmap')}.${fn('PlayerTroopCanUseIceContestDoor')}(${va('pt')}) {`},
+  {n:164, c:`                ${va('ack')}.${va('ErrCode')} ${op('=')} ${er('ErrCodeHasMagicIronCantUseTeleportDoor')}; ${kw('return')}`},
+  {n:165, c:`            }`},
+  {n:166, c:`        }`},
+  {n:167, c:`        ${va('coord')} ${op(':=')} ${va('targetUnit')}.${fn('GetCoord')}()`},
+  {n:168, c:`        ${kw('if')} ${op('!')}${va('wmap')}.${fn('CheckRelicAreaVisible')}(${va('pt')}.${fn('GetOwnerId')}(), ${va('pt')}.${fn('GetID')}(), ${op('&')}${va('coord')}) {`},
+  {n:169, c:`            ${va('ack')}.${va('ErrCode')} ${op('=')} ${er('ErrCodeRelicTroopLimit')}; ${kw('return')}`},
+  {n:170, c:`        }`},
+  {n:171, c:`    }`},
+  {n:172, c:``},
+  {n:173, id:'oj1', c:`    ${cm('// 加入集结专项校验')}`},
+  {n:174, c:`    ${va('realTargetType')} ${op(':=')} ${va('targetUnit')}.${fn('GetType')}()`},
+  {n:175, c:`    ${kw('var')} ${va('category')} ${tp('int32')}`},
+  {n:176, c:`    ${va('isAtkNpc')} ${op(':=')} ${kw('false')};  ${va('realTargetBelong')} ${op(':=')} ${tp('int64')}(${op('0')})`},
+  {n:177, c:`    ${kw('if')} ${va('action')} ${op('==')} ${tp('cspb')}.${va('MarchActJoinRally')} {`},
+  {n:178, c:`        ${kw('if')} ${va('rt')}, ${va('ok')} ${op(':=')} ${fn('melem.UnitToRallyTroop')}(${va('targetUnit')}); ${va('ok')} {`},
+  {n:179, c:`            ${kw('if')} ${va('rallyTarget')}, ${va('ok')} ${op(':=')} ${va('wmap')}.${fn('GetMapUnitByUID')}(${va('rt')}.${fn('GetTargetID')}()); ${va('ok')} {`},
+  {n:180, c:`                ${va('realTargetType')} ${op('=')} ${va('rallyTarget')}.${fn('GetType')}()`},
+  {n:181, c:`                ${va('isAtkNpc')} ${op('=')} ${va('wmap')}.${fn('CheckRealTargetIsNpc')}(${va('rallyTarget')})`},
+  {n:182, c:`                ${va('realTargetBelong')} ${op('=')} ${va('wmap')}.${fn('GetBuildBelongUnionId')}(${va('rallyTarget')})`},
+  {n:183, c:`            }`},
+  {n:184, c:`            ${kw('if')} ${va('err')} ${op(':=')} ${va('wmap')}.${fn('CheckJoinRallyTimeInvalidByPlayer')}(${va('startUnit')}, ${va('targetUnit')}); ${va('err')} ${op('!=')} ${tp('ErrCodeSuccess')} {`},
+  {n:185, c:`                ${va('ack')}.${va('ErrCode')} ${op('=')} ${va('err')}; ${kw('return')}`},
+  {n:186, c:`            }`},
+  {n:187, c:`        }`},
+  {n:188, c:`        ${kw('if')} ${va('wmap')}.${fn('FindPTroopHaveAsset')}(${fn('gdconf.GetD2ConstCfgIntValue')}(${va('IcemapgameMagicCarbonId')}), ${va('startUnit')}) {`},
+  {n:189, c:`            ${va('ack')}.${va('ErrCode')} ${op('=')} ${er('ErrCodeMeltingIceCarbonNotJoinRally')}; ${kw('return')}`},
+  {n:190, c:`        }`},
+  {n:191, c:`        ${kw('if')} ${va('errCode')} ${op(':=')} ${va('wmap')}.${fn('ExpeditionBlackListCheck')}(${va('action')}, ${va('playerID')}, ${va('realTargetType')}); ${va('errCode')} ${op('!=')} ${tp('ErrCodeSuccess')} {`},
+  {n:192, c:`            ${va('ack')}.${va('ErrCode')} ${op('=')} ${va('errCode')}; ${kw('return')}`},
+  {n:193, c:`        }`},
+  {n:194, c:`        ${kw('if')} ${va('errCode')} ${op(':=')} ${va('wmap')}.${fn('marchJoinRallyCheck')}(${va('startUnit')}, ${va('targetUnit')}, ${va('action')}, ${va('realTargetType')}); ${va('errCode')} ${op('!=')} ${tp('ErrCodeSuccess')} {`},
+  {n:195, c:`            ${va('ack')}.${va('ErrCode')} ${op('=')} ${va('errCode')}; ${kw('return')}`},
+  {n:196, c:`        }`},
+  {n:197, c:`    }`},
+  {n:198, c:``},
+  {n:199, id:'on1', c:`    ${cm('// NPC category 提取')}`},
+  {n:200, c:`    ${kw('if')} ${fn('cspb.IsMapUnitNpcTroop')}(${va('targetUnit')}) {`},
+  {n:201, c:`        ${kw('if')} ${va('nt')}, ${va('ok')} ${op(':=')} ${fn('melem.UnitToNpcTroop')}(${va('targetUnit')}); ${op('!')}${va('ok')} {`},
+  {n:202, c:`            ${fn('tlog.Error')}(${op('"OnNewMarchReq targetUnit is not npcTroop"')})`},
+  {n:203, c:`            ${kw('return')}  ${cm('// 旧 BUG: ack.ErrCode 未设置，客户端会收到 success')}`},
+  {n:204, c:`        } ${kw('else')} { ${va('category')} ${op('=')} ${va('nt')}.${va('Category')} }`},
+  {n:205, c:`    }`},
+  {n:206, c:``},
+  {n:207, id:'om1', c:`    ${cm('// 行军交互检查')}`},
+  {n:208, c:`    ${kw('if')} ${va('err')} ${op(':=')} ${va('wmap')}.${fn('CheckMarchCondition')}(${va('StartMarchCheck')}, ${va('startUnit')}, ${va('targetUnit')}, ${va('action')}); ${va('err')} ${op('!=')} ${tp('ErrCodeSuccess')} {`},
+  {n:209, c:`        ${va('ack')}.${va('ErrCode')} ${op('=')} ${va('err')}; ${kw('return')}`},
+  {n:210, c:`    }`},
+  {n:211, c:``},
+  {n:212, id:'ock', c:`    ${cm('// 进入矿点成本校验')}`},
+  {n:213, c:`    ${va('checkCost')} ${op(':=')} ${kw('true')}`},
+  {n:214, c:`    ${kw('if')} ${fn('cspb.IsMapUnitLostMine')}(${va('targetUnit')}) {`},
+  {n:215, c:`        ${va('mine')} ${op(':=')} ${fn('melem.UnitToLostMineMust')}(${va('targetUnit')})`},
+  {n:216, c:`        ${kw('if')} ${va('mine')}.${fn('ExistEntered')}(${va('playerID')}) || ${va('mine')}.${va('RuinsFlag')} { ${va('checkCost')} ${op('=')} ${kw('false')} }`},
+  {n:217, c:`    }`},
+  {n:218, c:``},
+  {n:219, id:'ocp', c:`    ${cm('// 发送到 play 侧做资源预校验')}`},
+  {n:220, c:`    ${va('wmap')}.${fn('CastByPID')}(${va('conf.PLAYMOD')}, ${va('natsdef.Game')}, ${va('playerID')}, ${op('&')}${tp('iproto.M2PNewMarchReq')}{`},
+  {n:221, c:`        ${va('ClientReq')}: ${va('req')},`},
+  {n:222, c:`        ${va('TargetType')}: ${va('targetUnit')}.${fn('GetType')}(), ${va('TargetOwnerID')}: ${va('targetUnit')}.${fn('OwnerInfo')}().${va('ID')},`},
+  {n:223, c:`        ${va('RealTargetType')}: ${va('realTargetType')}, ${va('Category')}: ${va('category')},`},
+  {n:224, c:`        ${va('CheckCost')}: ${va('checkCost')}, ${va('IsAtkNpc')}: ${va('isAtkNpc')},`},
+  {n:225, c:`        ${va('RallyTargetBelong')}: ${va('realTargetBelong')}, ...`},
+  {n:226, c:`    })`},
+  {n:227, c:`}`},
+];
+
+// ── NEW code lines ─────────────────────────────────────────────────────────────
+const NEW = [
+  {n:82, id:'nf', c:`${cm('// OnNewMarchReq 发起行军')}`},
+  {n:83, c:`${kw('func')} (${va('wmap')} ${op('*')}${tp('WMap')}) ${fn('OnNewMarchReq')}(${va('ci')} ${op('*')}${tp('chanrpc.CallInfo')}) {`},
+  {n:84, c:`    ${va('req')} ${op(':=')} ${va('ci')}.${va('Req')}.(${op('*')}${tp('cspb.NewMarchReq')})`},
+  {n:85, c:`    ${va('wmap')}.${fn('checkHelpMarch')}(${va('req')})`},
+  {n:86, c:``},
+  {n:87, c:`    ${va('playerID')} ${op(':=')} ${va('req')}.${fn('GetPlayerID')}()`},
+  {n:88, c:`    ${va('action')}   ${op(':=')} ${va('req')}.${fn('GetAction')}()`},
+  {n:89, c:`    ${va('ack')} ${op(':=')} ${op('&')}${tp('cspb.NewMarchAck')}{${va('Action')}: ${va('action')}}`},
+  {n:90, c:`    ${kw('defer')} ${fn('mapSendToPlayer')}(${va('playerID')}, ${va('ack')})`},
+  {n:91, c:``},
+  {n:92, id:'nr0', c:`    ${cm('// 解析出发/目标单位，并初始化部队行军状态 ← 含副作用！')}`},
+  {n:93, id:'nr1', c:`    ${va('startUnit')}, ${va('targetUnit')}, ${va('code')} ${op(':=')} ${va('wmap')}.${fn('resolveMarchUnits')}(${va('req')})`},
+  {n:94, c:`    ${kw('if')} ${va('code')} ${op('!=')} ${tp('ErrCodeSuccess')} { ${va('ack')}.${va('ErrCode')} ${op('=')} ${va('code')}; ${kw('return')} }`},
+  {n:95, c:``},
+  {n:96, id:'nb1', c:`    ${cm('// 通用前置校验')}`},
+  {n:97, c:`    ${kw('if')} ${va('ack')}.${va('ErrCode')} ${op('=')} ${va('wmap')}.${fn('checkMarchBaseCondition')}(`},
+  {n:98, c:`        ${va('playerID')}, ${va('action')}, ${va('startUnit')}, ${va('targetUnit')},`},
+  {n:99, c:`    ); ${va('ack')}.${va('ErrCode')} ${op('!=')} ${tp('ErrCodeSuccess')} { ${kw('return')} }`},
+  {n:100, c:``},
+  {n:101, id:'na0', c:`    ${cm('// ← action 检查在 resolveMarchUnits 之后，为时已晚！')}`},
+  {n:102, id:'na1', c:`    ${kw('if')} ${va('ack')}.${va('ErrCode')} ${op('=')} ${va('wmap')}.${fn('checkActionCondition')}(${va('startUnit')}, ${va('targetUnit')}, ${va('req')});`},
+  {n:103, id:'na2', c:`    ${va('ack')}.${va('ErrCode')} ${op('!=')} ${tp('ErrCodeSuccess')} { ${kw('return')} }`},
+  {n:104, c:``},
+  {n:105, c:`    ${kw('if')} ${va('ack')}.${va('ErrCode')} ${op('=')} ${va('wmap')}.${fn('checkTargetCondition')}(${va('startUnit')}, ${va('targetUnit')});`},
+  {n:106, c:`    ${va('ack')}.${va('ErrCode')} ${op('!=')} ${tp('ErrCodeSuccess')} { ${kw('return')} }`},
+  {n:107, c:``},
+  {n:108, c:`    ${kw('if')} ${va('ack')}.${va('ErrCode')} ${op('=')} ${va('wmap')}.${fn('CheckMarchCondition')}(${va('StartMarchCheck')}, ${va('startUnit')}, ${va('targetUnit')}, ${va('action')});`},
+  {n:109, c:`    ${va('ack')}.${va('ErrCode')} ${op('!=')} ${tp('ErrCodeSuccess')} { ${kw('return')} }`},
+  {n:110, c:``},
+  {n:111, c:`    ${kw('if')} ${fn('cspb.IsMapUnitNpcTroop')}(${va('targetUnit')}) {`},
+  {n:112, c:`        ${kw('if')} ${va('_')}, ${va('ok')} ${op(':=')} ${fn('melem.UnitToNpcTroop')}(${va('targetUnit')}); ${op('!')}${va('ok')} {`},
+  {n:113, c:`            ${fn('tlog.Errorf')}(...); ${va('ack')}.${va('ErrCode')} ${op('=')} ${er('ErrCodeServerData')}; ${kw('return')}`},
+  {n:114, c:`        }`},
+  {n:115, c:`    }`},
+  {n:116, c:`    ${va('wmap')}.${fn('CastByPID')}(${va('conf.PLAYMOD')}, ${va('natsdef.Game')}, ${va('playerID')}, ${va('wmap')}.${fn('buildM2PNewMarchReq')}(${va('req')}, ${va('targetUnit')}))`},
+  {n:117, c:`}`},
+  // separator
+  {n:null, sep:true},
+  {n:null, c:`${cm('// ─── ctl_march_help.go ────────────────────────────────────────────')}`},
+  {n:null, sep:true},
+  // resolveMarchUnits
+  {n:14, c:`${cm('// resolveMarchUnits 解析行军请求中的出发单位和目标单位，并初始化玩家部队行军状态')}`},
+  {n:15, id:'rr0', c:`${kw('func')} (${va('wmap')} ${op('*')}${tp('WMap')}) ${fn('resolveMarchUnits')}(${va('req')} ${op('*')}${tp('cspb.NewMarchReq')}) (${va('startUnit')}, ${va('targetUnit')} ${tp('munit.IUnit')}, ${va('code')} ${tp('cspb.ErrCode')}) {`},
+  {n:16, c:`    ${va('endCoord')} ${op(':=')} ${tp('geo.Coord')}{}`},
+  {n:17, c:`    ${kw('if')} ${va('coord')} ${op(':=')} ${va('req')}.${va('EndCoord')}; ${va('coord')} ${op('!=')} ${kw('nil')} { ${va('endCoord')}.${va('X')} ${op('=')} ${va('coord')}.${va('X')}; ${va('endCoord')}.${va('Z')} ${op('=')} ${va('coord')}.${va('Z')} }`},
+  {n:18, c:`    ${kw('var')} ${va('ok')} ${tp('bool')}`},
+  {n:19, c:`    ${kw('if')} ${va('targetUnit')}, ${va('ok')} ${op('=')} ${va('wmap')}.${fn('GetMarchTargetUnit')}(${va('req')}.${fn('GetTargetID')}(), ${va('endCoord')}); ${op('!')}${va('ok')} {`},
+  {n:20, c:`        ${kw('return')} ${kw('nil')}, ${kw('nil')}, ${er('ErrCodeEntityNotFound')}`},
+  {n:21, c:`    }`},
+  {n:22, c:`    ${va('startID')} ${op(':=')} ${va('req')}.${fn('GetStartID')}()`},
+  {n:23, c:`    ${kw('if')} ${va('startUnit')}, ${va('ok')} ${op('=')} ${va('wmap')}.${fn('getUnitBuId')}(${va('startID')}); ${op('!')}${va('ok')} {`},
+  {n:24, c:`        ${fn('mapSendToPlayer')}(${va('req')}.${fn('GetPlayerID')}(), ${op('&')}${tp('cspb.DelEntitiesNtf')}{...})`},
+  {n:25, c:`        ${va('wmap')}.${fn('GetObMgr')}().${fn('DelMarchingUnitByID')}(${va('startID')})`},
+  {n:26, c:`        ${kw('return')} ${kw('nil')}, ${kw('nil')}, ${er('ErrCodeEntityNotFound')}`},
+  {n:27, c:`    }`},
+  {n:28, id:'ri1', c:`    ${cm('// ← 紧接着调用 initPlayerTroopMarchState，action 尚未校验！')}`},
+  {n:29, id:'ri2', c:`    ${va('wmap')}.${fn('initPlayerTroopMarchState')}(${va('req')}.${fn('GetPlayerID')}(), ${va('req')}.${fn('GetTargetID')}(), ${va('startUnit')})`},
+  {n:30, c:`    ${kw('return')} ${va('startUnit')}, ${va('targetUnit')}, ${tp('ErrCodeSuccess')}`},
+  {n:31, c:`}`},
+  {n:null, sep:true},
+  // initPlayerTroopMarchState
+  {n:39, c:`${cm('// initPlayerTroopMarchState 初始化玩家部队的行军目标，并转移出发城市的额外奖励信息')}`},
+  {n:40, id:'ni0', c:`${kw('func')} (${va('wmap')} ${op('*')}${tp('WMap')}) ${fn('initPlayerTroopMarchState')}(${va('playerID')}, ${va('targetID')} ${tp('int64')}, ${va('startUnit')} ${tp('munit.IUnit')}) {`},
+  {n:41, c:`    ${va('pt')}, ${va('ok')} ${op(':=')} ${fn('melem.UnitToPlayerTroop')}(${va('startUnit')})`},
+  {n:42, c:`    ${kw('if')} ${op('!')}${va('ok')} { ${kw('return')} }`},
+  {n:43, id:'ni1', c:`    ${va('pt')}.${va('TargetId')} ${op('=')} ${va('targetID')}`},
+  {n:44, c:`    ${kw('if')} ${va('_')}, ${va('playerCity')}, ${va('err')} ${op(':=')} ${va('wmap')}.${fn('GetPlayerCity')}(${va('playerID')}); ${va('playerCity')} ${op('!=')} ${kw('nil')} ${op('&&')} ${va('err')} ${op('==')} ${kw('nil')} {`},
+  {n:45, c:`        ${kw('if')} ${va('playerCity')}.${va('NewTroopExtra')} ${op('!=')} ${kw('nil')} {`},
+  {n:46, id:'ni2', c:`            ${va('pt')}.${va('OriginMarchExtra')} ${op('=')} ${va('playerCity')}.${va('NewTroopExtra')}`},
+  {n:47, id:'ni3', c:`            ${va('playerCity')}.${va('NewTroopExtra')} ${op('=')} ${kw('nil')}  ${cm('// ← 在 action 校验前已清空！这是 BUG 根因')}`},
+  {n:48, c:`        }`},
+  {n:49, c:`    }`},
+  {n:50, c:`}`},
+  {n:null, sep:true},
+  // checkActionCondition + init
+  {n:75, c:`${cm('// marchActionCheckerReg 按 action 注册的前置校验')}`},
+  {n:76, id:'nc0', c:`${kw('var')} ${va('marchActionCheckerReg')} ${op('=')} ${kw('map')}[${tp('cspb.MarchAct')}]${tp('marchActionChecker')}{}`},
+  {n:77, c:``},
+  {n:78, c:`${kw('func')} ${fn('init')}() {`},
+  {n:79, c:`    ${cm('// Rally 始终返回错误 — 对 OnNewMarchReq 而言此路不通')}`},
+  {n:80, id:'nc1', c:`    ${fn('registerMarchActionChecker')}(${tp('cspb')}.${va('MarchActRally')},`},
+  {n:81, id:'nc2', c:`        ${kw('func')}(${va('_')} ${op('*')}${tp('WMap')}, ${va('_')}, ${va('_')} ${tp('munit.IUnit')}, ${va('_')} ${op('*')}${tp('cspb.NewMarchReq')}) ${tp('cspb.ErrCode')} {`},
+  {n:82, id:'nc3', c:`            ${kw('return')} ${er('ErrCodeRallyCreateLineupNotInCity')}`},
+  {n:83, c:`        })`},
+  {n:84, c:`    ${fn('registerMarchActionChecker')}(${tp('cspb')}.${va('MarchActExpTransport')}, ...)`},
+  {n:85, c:`    ${fn('registerMarchActionChecker')}(${tp('cspb')}.${va('MarchActExpMeltingIce')}, ...)`},
+  {n:86, c:`    ${fn('registerMarchActionChecker')}(${tp('cspb')}.${va('MarchActJoinRally')}, ...)`},
+  {n:87, c:`}`},
+  {n:88, c:``},
+  {n:89, id:'nac', c:`${kw('func')} (${va('wmap')} ${op('*')}${tp('WMap')}) ${fn('checkActionCondition')}(${va('startUnit')}, ${va('targetUnit')} ${tp('munit.IUnit')}, ${va('req')} ${op('*')}${tp('cspb.NewMarchReq')}) ${tp('cspb.ErrCode')} {`},
+  {n:90, c:`    ${kw('if')} ${va('checker')}, ${va('ok')} ${op(':=')} ${va('marchActionCheckerReg')}[${va('req')}.${fn('GetAction')}()]; ${va('ok')} {`},
+  {n:91, c:`        ${kw('return')} ${fn('checker')}(${va('wmap')}, ${va('startUnit')}, ${va('targetUnit')}, ${va('req')})`},
+  {n:92, c:`    }`},
+  {n:93, c:`    ${kw('return')} ${tp('ErrCodeSuccess')}`},
+  {n:94, c:`}`},
+];
+
+// ── Steps ──────────────────────────────────────────────────────────────────────
+// hl entry: { ids, cls, ann? }
+// ann: { id, text, cls }
+// state: { cls:'sn|ss|sb', body:'html' }
+const STEPS = [
+  {
+    t:'初始状态',
+    h:'触发条件：playerCity.NewTroopExtra 存有一次性行军奖励，客户端发送 action = MarchActRally',
+    bug:false, oHL:[], nHL:[],
+    os:{cls:'sn', b:`<span class="sv">playerCity.NewTroopExtra</span>  = <span class="sw">{ bonus data }</span>  <span class="sd">// 待使用</span>\n<span class="sv">pt.TargetId</span>              = <span class="sd">0</span>\n<span class="sv">pt.OriginMarchExtra</span>      = <span class="sd">nil</span>`},
+    ns:{cls:'sn', b:`<span class="sv">playerCity.NewTroopExtra</span>  = <span class="sw">{ bonus data }</span>  <span class="sd">// 待使用</span>\n<span class="sv">pt.TargetId</span>              = <span class="sd">0</span>\n<span class="sv">pt.OriginMarchExtra</span>      = <span class="sd">nil</span>`},
+  },
+  {
+    t:'步骤 1：解析出发单位与目标单位',
+    h:'两侧都需要 getUnitBuId / GetMarchTargetUnit，但新代码在同一次调用里夹带了状态变更',
+    bug:false,
+    oHL:[{ids:['otu','osu'],cls:'ha'}],
+    nHL:[{ids:['nr0','nr1'],cls:'ha',ann:{id:'nr1',t:'内含副作用！',c:'aw'}}],
+    os:{cls:'sn', b:`<span class="sv">playerCity.NewTroopExtra</span>  = <span class="sw">{ bonus data }</span>  <span class="sd">// 未动</span>\n<span class="sv">pt.TargetId</span>              = <span class="sd">0</span>\n<span class="sv">pt.OriginMarchExtra</span>      = <span class="sd">nil</span>`},
+    ns:{cls:'sn', b:`<span class="sv">playerCity.NewTroopExtra</span>  = <span class="sw">{ bonus data }</span>  <span class="sd">// 即将进入 initPlayerTroopMarchState...</span>\n<span class="sv">pt.TargetId</span>              = <span class="sd">0</span>\n<span class="sv">pt.OriginMarchExtra</span>      = <span class="sd">nil</span>`},
+  },
+  {
+    t:'步骤 2：新代码 — initPlayerTroopMarchState 执行（BUG 触发）',
+    h:'resolveMarchUnits 内部调用了 initPlayerTroopMarchState，action 未经任何检查，NewTroopExtra 已被清空',
+    bug:true,
+    oHL:[
+      {ids:['og0','og1'],cls:'hs',ann:{id:'og1',t:'守卫在此处，状态未被动',c:'ao'}},
+      {ids:['os0','os1','os2','os3','os4','os5','os6'],cls:'hd'},
+    ],
+    nHL:[
+      {ids:['rr0','ri1','ri2'],cls:'hb',ann:{id:'ri2',t:'← 调用位置',c:'ab'}},
+      {ids:['ni0','ni1','ni2','ni3'],cls:'hb',ann:{id:'ni3',t:'← BUG：此行清空！',c:'ab'}},
+    ],
+    os:{cls:'ss', b:`<span class="sv">playerCity.NewTroopExtra</span>  = <span class="sg">{ bonus data }</span>  <span class="sg">// ✓ 完好，Rally guard 尚未放行</span>\n<span class="sv">pt.TargetId</span>              = <span class="sd">0  // 未修改</span>\n<span class="sv">pt.OriginMarchExtra</span>      = <span class="sd">nil</span>`},
+    ns:{cls:'sb', b:`<span class="sv">playerCity.NewTroopExtra</span>  = <span class="sr">nil</span>  <span class="sr">// ✗ 已被清空！奖励丢失</span>\n<span class="sv">pt.TargetId</span>              = <span class="sr">targetID（错误赋值）</span>\n<span class="sv">pt.OriginMarchExtra</span>      = <span class="sr">{ bonus data }（被错误转移）</span>`},
+  },
+  {
+    t:'步骤 3：旧代码 — MarchActRally 守卫提前拦截',
+    h:'旧代码在任何状态变更之前就 return，NewTroopExtra 全程未被碰触',
+    bug:false,
+    oHL:[
+      {ids:['og0','og1','og2','og3'],cls:'hs',ann:{id:'og1',t:'安全守卫 ✓',c:'ao'}},
+      {ids:['os0','os1','os2','os3','os4','os5','os6'],cls:'hd'},
+    ],
+    nHL:[
+      {ids:['ni3'],cls:'hb',ann:{id:'ni3',t:'损失已发生',c:'ab'}},
+      {ids:['na0','na1','na2'],cls:'hd'},
+    ],
+    os:{cls:'ss', b:`<span class="sv">playerCity.NewTroopExtra</span>  = <span class="sg">{ bonus data }</span>  <span class="sg">// ✓ Rally guard 拦截，从未被动</span>\n<span class="sv">pt.TargetId</span>              = <span class="sg">0  // ✓ 未污染</span>\n<span class="sv">pt.OriginMarchExtra</span>      = <span class="sg">nil  // ✓ 正常</span>`},
+    ns:{cls:'sb', b:`<span class="sv">playerCity.NewTroopExtra</span>  = <span class="sr">nil</span>  <span class="sr">// ✗ 在步骤 2 已被清空</span>\n<span class="sv">pt.TargetId</span>              = <span class="sr">targetID（脏值）</span>\n<span class="sv">pt.OriginMarchExtra</span>      = <span class="sr">{ bonus data }（挂错位置）</span>`},
+  },
+  {
+    t:'步骤 4：旧代码 — action 通过后安全执行状态变更',
+    h:'旧代码只在 Rally guard 放行后才执行 pt.TargetId 赋值和 NewTroopExtra 转移',
+    bug:false,
+    oHL:[
+      {ids:['og0','og1'],cls:'hs'},
+      {ids:['os0','os1','os2','os3','os4','os5','os6'],cls:'hs',ann:{id:'os0',t:'安全时机 ✓',c:'ao'}},
+    ],
+    nHL:[
+      {ids:['ni0','ni1','ni2','ni3'],cls:'hb',ann:{id:'ni0',t:'已在 action 检查前执行',c:'ab'}},
+      {ids:['na0','na1','na2'],cls:'he',ann:{id:'na1',t:'此时为时已晚',c:'ab'}},
+    ],
+    os:{cls:'ss', b:`<span class="sd">（非 Rally action 路径）</span>\n<span class="sv">playerCity.NewTroopExtra</span>  = <span class="sg">nil</span>  <span class="sg">// ✓ 已安全转移</span>\n<span class="sv">pt.TargetId</span>              = <span class="sg">targetID  // ✓ 正确赋值</span>\n<span class="sv">pt.OriginMarchExtra</span>      = <span class="sg">{ bonus data }  // ✓ 正确转移</span>`},
+    ns:{cls:'sb', b:`<span class="sv">playerCity.NewTroopExtra</span>  = <span class="sr">nil</span>  <span class="sr">// ✗ 永久丢失</span>\n<span class="sv">pt.TargetId</span>              = <span class="sr">targetID（脏值，Rally 路径不该设置）</span>\n<span class="sv">pt.OriginMarchExtra</span>      = <span class="sr">{ bonus data }（挂在了即将被丢弃的 Rally 流程上）</span>`},
+  },
+  {
+    t:'步骤 5：checkActionCondition 返回 Rally 错误（为时已晚）',
+    h:'新代码找到 MarchActRally 注册的 checker 并返回错误，但 NewTroopExtra 在步骤 2 已被清空',
+    bug:true,
+    oHL:[
+      {ids:['og1','og2','og3'],cls:'hs',ann:{id:'og1',t:'正确：此处 return ✓',c:'ao'}},
+    ],
+    nHL:[
+      {ids:['nc0','nc1','nc2','nc3'],cls:'hb',ann:{id:'nc2',t:'返回 Rally 错误',c:'ab'}},
+      {ids:['na0','na1','na2'],cls:'he',ann:{id:'na1',t:'错误在此返回，但已回天乏术',c:'ab'}},
+      {ids:['ni3'],cls:'hb'},
+    ],
+    os:{cls:'ss', b:`<span class="sv">playerCity.NewTroopExtra</span>  = <span class="sg">{ bonus data }</span>  <span class="sg">// ✓ 完好保留</span>\n<span class="sv">pt.TargetId</span>              = <span class="sg">0  // ✓ 未污染</span>\n<span class="sv">pt.OriginMarchExtra</span>      = <span class="sg">nil  // ✓ 正常</span>\n\n<span class="sg">→ 下次合法行军仍可使用 NewTroopExtra</span>`},
+    ns:{cls:'sb', b:`<span class="sv">playerCity.NewTroopExtra</span>  = <span class="sr">nil</span>  <span class="sr">// ✗ 永久丢失，无法恢复</span>\n<span class="sv">pt.TargetId</span>              = <span class="sr">targetID（脏值）</span>\n<span class="sv">pt.OriginMarchExtra</span>      = <span class="sr">{ bonus data }（挂错位置，行军未实际发起）</span>\n\n<span class="sr">→ 下次合法行军丢失 NewTroopExtra 奖励</span>`},
+  },
+  {
+    t:'修复方案：将 initPlayerTroopMarchState 移到 checkActionCondition 之后',
+    h:'resolveMarchUnits 只负责查找单位；通过 action 校验后再单独调用 initPlayerTroopMarchState',
+    bug:false,
+    oHL:[
+      {ids:['og0','og1','og2','og3'],cls:'hs'},
+      {ids:['os0','os1','os2','os3','os4','os5','os6'],cls:'hs',ann:{id:'os0',t:'正确时机 ✓',c:'ao'}},
+    ],
+    nHL:[
+      {ids:['nr0','nr1'],cls:'hw',ann:{id:'nr1',t:'移除 initXxx 调用',c:'aw'}},
+      {ids:['na0','na1','na2'],cls:'ha'},
+      {ids:['ni0','ni1','ni2','ni3'],cls:'hw',ann:{id:'ni0',t:'应在 action 校验后调用',c:'aw'}},
+      {ids:['ri1','ri2'],cls:'he',ann:{id:'ri2',t:'← 从这里移走',c:'ab'}},
+    ],
+    os:{cls:'ss', b:`<span class="sg">旧代码行为正确，无需修改</span>\n\n<span class="sv">Rally guard 始终在状态变更之前</span>\n<span class="sg">→ NewTroopExtra 始终安全</span>`},
+    ns:{cls:'sn', b:`<span class="sw">修复步骤：</span>\n<span class="sd">1. resolveMarchUnits 中删除 initPlayerTroopMarchState 调用</span>\n<span class="sd">2. 在 checkActionCondition 通过后插入：</span>\n   <span class="sv">wmap</span>.<span class="kw" style="color:#82aaff">initPlayerTroopMarchState</span>(<span class="sv">playerID</span>, <span class="sv">req.GetTargetID()</span>, <span class="sv">startUnit</span>)`},
+  },
+];
+
+// ── render ─────────────────────────────────────────────────────────────────────
+function buildCode(lines, cid) {
+  const el = document.getElementById(cid);
+  el.innerHTML = '';
+  lines.forEach(l => {
+    if (l.sep) { const d=document.createElement('div'); d.className='sep'; el.appendChild(d); return; }
+    const d = document.createElement('div');
+    d.className = 'cl';
+    if (l.id) d.dataset.id = l.id;
+    d.innerHTML = `<div class="ln">${l.n??''}</div><div class="lc">${l.c}</div>`;
+    el.appendChild(d);
+  });
+}
+
+function buildInd() {
+  const el = document.getElementById('ind');
+  el.innerHTML = '';
+  STEPS.forEach((s,i) => {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    d.title = s.t;
+    d.addEventListener('click', () => go(i));
+    el.appendChild(d);
+  });
+}
+
+function clearHL(cid) {
+  document.querySelectorAll(`#${cid} .cl`).forEach(el => {
+    el.className = 'cl';
+    const a = el.querySelector('.ann'); if(a) a.remove();
+  });
+}
+
+function applyHL(cid, hls) {
+  hls.forEach(hl => {
+    hl.ids.forEach(id => {
+      const el = document.querySelector(`#${cid} [data-id="${id}"]`);
+      if (!el) return;
+      el.classList.remove('ha','hb','hs','he','hw','hd');
+      el.classList.add(hl.cls);
+      if (hl.ann && hl.ann.id === id) {
+        const s = document.createElement('span');
+        s.className = `ann ${hl.ann.c}`;
+        s.textContent = hl.ann.t;
+        el.appendChild(s);
+      }
+    });
+  });
+}
+
+function scrollTo(cid, hls) {
+  const ids = hls.flatMap(h=>h.ids).filter(id=>!hls.find(h=>h.ids.includes(id)&&h.cls==='hd'));
+  if (!ids.length) return;
+  const first = document.querySelector(`#${cid} [data-id="${ids[0]}"]`);
+  if (first) {
+    const body = document.getElementById(cid);
+    const off = first.offsetTop - body.offsetTop - 60;
+    body.scrollTo({top: Math.max(0, off), behavior:'smooth'});
+  }
+}
+
+let cur = -1;
+function go(i) {
+  if (i<0||i>=STEPS.length) return;
+  cur = i;
+  const s = STEPS[i];
+  document.getElementById('dt').textContent = s.t;
+  document.getElementById('dh').textContent = s.h;
+  document.getElementById('pOld').className = 'panel' + (s.bug?' p-ok':'');
+  document.getElementById('pNew').className = 'panel' + (s.bug?' p-bug':'');
+  clearHL('bOld'); applyHL('bOld', s.oHL); scrollTo('bOld', s.oHL);
+  clearHL('bNew'); applyHL('bNew', s.nHL); scrollTo('bNew', s.nHL);
+  document.getElementById('sOld').className = `sbox ${s.os.cls}`;
+  document.getElementById('sOb').innerHTML  = s.os.b;
+  document.getElementById('sNew').className = `sbox ${s.ns.cls}`;
+  document.getElementById('sNb').innerHTML  = s.ns.b;
+  document.querySelectorAll('.dot').forEach((d,idx) => {
+    d.className = 'dot' + (STEPS[idx].bug ? ' b' : '') + (idx===i ? 'active' : idx<i ? 'done' : '');
+  });
+  document.getElementById('bPrev').disabled = (i===0);
+  document.getElementById('bNext').disabled = (i===STEPS.length-1);
+  document.getElementById('bNext').textContent = i===STEPS.length-1 ? '完成 ✓' : '下一步 →';
+  document.getElementById('sc').textContent = `${i+1} / ${STEPS.length}`;
+}
+
+buildCode(OLD,'bOld');
+buildCode(NEW,'bNew');
+buildInd();
+go(0);
+document.getElementById('bNext').addEventListener('click',()=>go(cur+1));
+document.getElementById('bPrev').addEventListener('click',()=>go(cur-1));
+</script>
+</body>
+</html>

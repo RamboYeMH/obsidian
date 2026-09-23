@@ -1,0 +1,26 @@
+登陆jump server 
+1.线上批量发邮件：
+	（1）登陆h5-worker,切换到root(sudo -i)
+	 (2) cd /root/webserv_console 
+	 (3) 执行：python3 main.py 文件名（运营提供文件）
+
+2.线上刷新商品价格表：
+	 （1）cd /root/buylist
+	 （2）上传完整新的商品表文件 .csv 文件
+	 （3）python3 main.py 文件名.csv --curl （查看请求地址）
+	 （4）python3 main.py h5.csv --send   （确定执行）
+	审核服的商品刷新在：/home/ubuntu/buylist
+
+3.线上数据库访问找运维给到。
+
+4.线上grafana监控地址：http://106.53.123.224:3000/?orgId=1&from=now-6h&to=now&timezone=browser        日志和grafana部署在h5-worker主机的
+
+
+5.mem_watch.py脚本守护进程运行，根据grafana曲线变化请求mcp服务器采集pprof文件，归档分析，mcp工程：game-mcp
+
+6.审核服分支：h5_new_tf_review ，每次发版本前一晚测试通知，然后把当前开发的主干直接合并到这个分支，审核服只关注是否影响审核通过！
+
+
+
+
+
