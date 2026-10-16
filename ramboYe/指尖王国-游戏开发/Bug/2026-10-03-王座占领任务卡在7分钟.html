@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>王座占领卡7分钟</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --ink:#1b2230; --muted:#5d6678; --line:#dde1e8;
+  --accent:#2f5d8a; --ok:#1f7a55; --ok-soft:#e3f2ea; --bad:#a83a32; --bad-soft:#f8e6e4; --warn:#9a6a12; --warn-soft:#f7eedb;
+  --serif:"Noto Serif SC","Songti SC",serif; --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#12161d; --surface:#1a2029; --ink:#e4e8ef; --muted:#98a2b3; --line:#2b3340;
+    --accent:#7fa8d4; --ok:#5fc99a; --ok-soft:#173228; --bad:#e8857c; --bad-soft:#3a1d1b; --warn:#e0b45c; --warn-soft:#352a14;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#12161d; --surface:#1a2029; --ink:#e4e8ef; --muted:#98a2b3; --line:#2b3340;
+  --accent:#7fa8d4; --ok:#5fc99a; --ok-soft:#173228; --bad:#e8857c; --bad-soft:#3a1d1b; --warn:#e0b45c; --warn-soft:#352a14;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.7 var(--sans);margin:0;padding-inline:16px;padding-block:32px 56px}
+.wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:10px}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+h1{font:700 30px/1.3 var(--serif);margin:0;text-wrap:balance}
+h2{font:700 19px/1.4 var(--serif);margin:0 0 12px;text-wrap:balance}
+h3{font:600 15px/1.5 var(--sans);margin:16px 0 6px}
+p{margin:0 0 8px;max-width:72ch}
+ul,ol{margin:0;padding-left:1.3em}
+li{margin:3px 0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:13px}
+.meta b{color:var(--ink);font-weight:500}
+code,.mono{font-family:var(--mono);font-size:.86em;overflow-wrap:anywhere}
+.verdict{background:var(--bad-soft);border:1px solid color-mix(in srgb,var(--bad) 35%,transparent);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.verdict .tag{align-self:flex-start;font:600 12px/1 var(--sans);color:var(--bad);border:1px solid var(--bad);border-radius:999px;padding:5px 10px}
+.verdict p{font-size:16px;margin:0}
+section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 22px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.fact{display:flex;flex-direction:column;gap:2px}
+.fact .k{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.fact .v{font:600 18px/1.4 var(--mono);font-variant-numeric:tabular-nums}
+.fact .v small{font:400 12px var(--sans);color:var(--muted);margin-left:4px}
+.tl{list-style:none;padding:0;margin:0;display:flex;flex-direction:column}
+.tl li{display:grid;grid-template-columns:92px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--line);margin:0}
+.tl li:first-child{border-top:0}
+.tl .t{font:600 13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.tl li.bad .t{color:var(--bad)}
+.tl li.ok .t{color:var(--ok)}
+.flow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.lane{border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.lane.good{border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
+.lane.badl{border-color:color-mix(in srgb,var(--bad) 45%,var(--line))}
+.lane .lt{font:600 13px/1.4 var(--sans);margin-bottom:8px}
+.lane.good .lt{color:var(--ok)}
+.lane.badl .lt{color:var(--bad)}
+.steps{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px}
+.steps li{font:13px/1.5 var(--mono);padding:6px 10px;border-radius:6px;background:var(--bg);margin:0;overflow-wrap:anywhere}
+.steps li.arrow{background:none;padding:0 10px;color:var(--muted);font-size:12px}
+.steps li.hit{background:var(--bad-soft);color:var(--bad)}
+.steps li.fine{background:var(--ok-soft);color:var(--ok)}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-top:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:12px;letter-spacing:.04em;border-top:0}
+.pill{display:inline-block;font:600 11px/1 var(--sans);border-radius:999px;padding:4px 8px;white-space:nowrap}
+.pill.bad{color:var(--bad);background:var(--bad-soft)}
+.pill.warn{color:var(--warn);background:var(--warn-soft)}
+.pill.ok{color:var(--ok);background:var(--ok-soft)}
+.note{border-left:3px solid var(--warn);background:var(--warn-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:14px;margin-top:12px}
+.todo{list-style:none;padding:0}
+.todo li{padding-left:24px;position:relative}
+.todo li::before{content:"";position:absolute;left:2px;top:7px;width:12px;height:12px;border:1.5px solid var(--muted);border-radius:3px}
+.log{font:12px/1.6 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin:6px 0 4px;overflow-x:auto;white-space:pre}
+.log .hl{color:var(--bad);font-weight:600}
+.log .ok{color:var(--ok);font-weight:600}
+.cap{font-size:13px;color:var(--muted);margin:2px 0 12px}
+details{margin-top:6px}
+summary{cursor:pointer;font-size:14px;color:var(--accent)}
+@media (max-width:640px){
+  .flow{grid-template-columns:1fr}
+  .tl li{grid-template-columns:1fr;gap:2px}
+  h1{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">线上反馈 · 王座战 · 2026-10-03</div>
+  <h1>王座占领任务进度一直停在 7 分钟</h1>
+  <div class="meta">
+    <span>区服 <b>841</b></span>
+    <span>角色ID <b class="mono">11202719</b></span>
+    <span>昵称 <b>江西景德镇</b></span>
+    <span>平台 <b>抖小</b></span>
+    <span>充值 <b>3313</b></span>
+    <span>任务 <b>占领敌国王座 30 分钟（PqThroneCity）</b></span>
+    <span>地图服 <b>game850</b></span>
+  </div>
+</header>
+
+<div class="verdict">
+  <span class="tag">服务端 Bug · 已用线上日志核实（game850）</span>
+  <p>部队首次到达王座时<b>攻击失败、被召回，但没有从王座的 Attackers 列表移除</b>。40 秒后另一支防守部队退出，触发 <code>kingWarAutoOccupy</code>，<b>把这支正在回城的部队直接拉成了驻防</b>（<code>AddDefender</code>），回城行军却没有停止。它到家走 <code>PTroopRtCity</code>，不会退出王座，于是驻防计时记录里永久留下了它的 ID。之后该玩家每次退出都结算 0 分钟，任务卡在 7/30。</p>
+</div>
+
+<section>
+  <h2>关键数字</h2>
+  <div class="facts">
+    <div class="fact"><span class="k">任务显示进度</span><span class="v">7<small>/ 30 分钟</small></span></div>
+    <div class="fact"><span class="k">卡住前正常结算</span><span class="v">2+0+4+1<small>= 7</small></span></div>
+    <div class="fact"><span class="k">之后零结算的部队退出</span><span class="v">20<small>次</small></span></div>
+    <div class="fact"><span class="k">仅最后一次应结算</span><span class="v">≈239<small>分钟</small></span></div>
+  </div>
+</section>
+
+<section>
+  <h2>结算机制</h2>
+  <p>王座占领时长<b>不是按 tick 累加</b>，而是在部队退出王座时一次性结算：</p>
+  <ul>
+    <li><code>AddDefender</code>：玩家第一支部队进驻时记录 <code>DefenderEnterTime[玩家].EnterTime</code>，之后进驻的部队只追加到 <code>Troops</code>。</li>
+    <li><code>RemoveDefender</code>：从 <code>Troops</code> 中移除；<b>只有 <code>len(Troops)==0</code> 时才返回 EnterTime</b>，否则返回 0。</li>
+    <li><code>handleCrossServerActivityStats</code>：EnterTime &gt; 0 才按 <code>(now-EnterTime)/60000</code> 分钟发 <code>PqThroneCity</code> 活动事件；EnterTime ≤ 0 直接返回。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>出事链路（日志 + 代码核实）</h2>
+  <div class="flow">
+    <div class="lane badl">
+      <div class="lt">① 20:57:59 到达王座，攻击失败</div>
+      <ul class="steps">
+        <li>PTroopArriveThrone → kingwar.Arrive</li>
+        <li class="arrow">↓ 王座被敌盟「归墟」占领</li>
+        <li>arriveAttack：加入 base.Attackers</li>
+        <li class="arrow">↓</li>
+        <li>pTroopArriveThroneAttack → getOrCreateKingWarDefender</li>
+        <li class="arrow">↓ 敌方唯一驻防 7692424334472598780 已不存在，建集结失败</li>
+        <li>marching arrived … handle failed → marchingCheckFail → 召回回城</li>
+        <li class="arrow">↓ KingWarCtx 只在 executeThroneAttack 里设置，这次没执行</li>
+        <li class="hit">giveUpTroopBattle 拿不到 KingWarCtx → 没有 CancelAttack，部队留在 Attackers</li>
+      </ul>
+    </div>
+    <div class="lane badl">
+      <div class="lt">② 20:58:39 被自动拉成驻防，20:59:03 到家</div>
+      <ul class="steps">
+        <li>同盟玩家 11202230 的部队退出 → kingWarAutoOccupy</li>
+        <li class="arrow">↓ GetAndClearAttacker 取到这支回城途中的部队</li>
+        <li>KingWarOccupyPTroop → Arrive(ActDefend) → AddDefender</li>
+        <li class="arrow">↓ 没有停止它的回城行军</li>
+        <li>20:59:03 行军到家 → PTroopRtCity（hurtcount:0，没打仗）</li>
+        <li class="arrow">↓ PTroopRtCity 不调用 kingWarExit</li>
+        <li class="hit">Defenders 和 Troops 中都残留该部队 ID</li>
+      </ul>
+    </div>
+  </div>
+  <div class="note">23:56:10 <code>kingWarCreateRally</code> 发现这支部队不存在，走 <code>handleMissingTroopInRally → kingWarExit0</code>。但部队不在地图上，<code>getTroopOwnerID</code> 返回 0，<code>RemoveDefender(id, playerID:0)</code> 只从 Defenders 删掉了它，<code>DefenderEnterTime[11202719].Troops</code> 里照样残留。</div>
+</section>
+
+<section>
+  <h2>事发时间线（game850 日志，北京时间 = UTC+8）</h2>
+  <ol class="tl">
+    <li class="ok"><span class="t">20:42~20:56</span><span>4 次正常结算 <code>cross-server throne city occupy … duration</code> 分别为 2 / 0 / 4 / 1 分钟，合计 <b>7 分钟</b>，即任务显示的 7/30。</span></li>
+    <li class="bad"><span class="t">20:57:59</span><span>部队 <code>7692424789736365789</code> 到达王座 1001。王座被敌盟占领，部队被加入 Attackers；敌方驻防部队已不存在，建防守集结失败，<code>marching arrived unit … handle failed</code>，部队被召回。</span></li>
+    <li class="bad"><span class="t">20:58:39</span><span>同盟玩家 11202230 的部队退出王座，<code>kingWarAutoOccupy</code> 的 Exit 日志里显示 <code>Attackers:[7692424789736365789]</code>，随即对这支回城途中的部队 <code>AddDefender</code>（EnterTime = 1791032319798）。</span></li>
+    <li class="bad"><span class="t">20:59:03</span><span><code>PTroopRtCity troop 7692424789736365789 return city</code>，<code>hurtcount:0</code>、<code>CurCount == StartCount</code>，说明部队没打仗、没战败，是正常回城到家。玩家说「一过去就自动返回了」，和日志吻合。</span></li>
+    <li class="bad"><span class="t">21:04~00:50</span><span>玩家多次进出王座，每条 <code>RemoveDefender … Troops:[7692424789736365789 …]</code> 都以这支部队打头，Troops 始终清不空，全部零结算。</span></li>
+    <li class="bad"><span class="t">23:56:10</span><span><code>handleMissingTroopInRally</code> 对这支部队调用 <code>kingWarExit0</code>，但 <code>playerID:0</code>，只删了 Defenders，没删 Troops。</span></li>
+    <li class="bad"><span class="t">00:58:25</span><span>最后 5 支部队退出，Troops 只剩残留的那 1 支，照样返回 0。按 EnterTime 20:58:39 算，本应结算 <b>约 239 分钟</b>。</span></li>
+  </ol>
+</section>
+
+<section>
+  <h2>线上日志分析（Kibana · game850）</h2>
+  <h3>查询方式</h3>
+  <ul>
+    <li>索引 <code>game-h5prod-2026.10.03</code>，<code>serverid = game850</code>（王座所在的地图服；玩家原服是 841）。</li>
+    <li>日志时间是 UTC，下面原文保留 UTC，括号里是北京时间（+8）。</li>
+    <li>按部队 ID <code>7692424789736365789</code> 全文检索（10-02~10-04 三天），只命中 game850，共 637 条，时间范围 12:56:55 ~ 16:58:25 UTC。</li>
+  </ul>
+  <h3>按代码位置聚合（含该部队 ID 的日志）</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>src_location（线上版本行号）</th><th>条数</th><th>含义</th></tr></thead>
+    <tbody>
+      <tr><td><code>internal/ctl_king_war.go:3162</code></td><td>293</td><td>王座信息同步，日志里带了防守列表，属于噪音</td></tr>
+      <tr><td><code>model/base.go:162</code></td><td>118</td><td>AddDefender 入口日志（打印整个 defenders 列表，大部分是别人进驻时顺带出现）</td></tr>
+      <tr><td><code>kingwar/logic.go:400</code></td><td>88</td><td>Exit 结果，打印整个 base，属于噪音</td></tr>
+      <tr><td><code>model/base.go:188</code></td><td>88</td><td>RemoveDefender 入口日志（同上，其中 <b>id 为本部队的只有 1 条</b>：23:56:10，playerID:0）</td></tr>
+      <tr><td><code>model/base.go:174</code></td><td>20</td><td>玩家 11202719 后续 AddDefender 时打印的 DefenderEnterTime，Troops 都以本部队打头</td></tr>
+      <tr><td><code>model/base.go:197</code></td><td>20</td><td>玩家 11202719 后续 RemoveDefender 时打印的 DefenderEnterTime，<b>20 次全部零结算</b></td></tr>
+      <tr><td><code>internal/ctl_king_war.go:1397 / 1401</code></td><td>1 / 1</td><td>handleMissingTroopInRally：建集结时找不到该部队，强制退出</td></tr>
+      <tr><td><code>internal/ctl_king_war.go:1660 / 1725</code></td><td>1 / 1</td><td>退出处理（owner: 0）/ 跨服活动统计（enterTime:0）</td></tr>
+      <tr><td><code>internal/ctl_march_ticker.go:149</code></td><td>1</td><td>marching arrived unit … handle failed</td></tr>
+      <tr><td><code>internal/ctl_playertroop.go:995</code></td><td>1</td><td>PTroopRtCity 回城</td></tr>
+      <tr><td><code>mtroop/player_troop.go:148</code></td><td>1</td><td>部队创建</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>① 卡住之前：4 次正常结算，合计 7 分钟</h3>
+  <p class="cap">关键字 <code>cross-server throne city occupy</code> + <code>11202719</code>，当天只有这 4 条，20:56 以后一条都没有。</p>
+<div class="log"><span class="ok">12:42:06.895 (20:42) cross-server throne city occupy: server 841, player 11202719, duration 2 min</span>
+<span class="ok">12:47:22.302 (20:47) cross-server throne city occupy: server 841, player 11202719, duration 0 min</span>
+<span class="ok">12:54:12.854 (20:54) cross-server throne city occupy: server 841, player 11202719, duration 4 min</span>
+<span class="ok">12:56:18.148 (20:56) cross-server throne city occupy: server 841, player 11202719, duration 1 min</span></div>
+  <p class="cap">这几次退出前 Troops 都能清空，比如 12:56:18 那次只剩一支部队，正常返回 EnterTime：</p>
+<div class="log">12:54:45.600 model/base.go:174 AddDefender b.BID:1001 type:1 playerID:11202719 DefenderEnterTime info:&lt;nil&gt;
+<span class="ok">12:56:18.148 model/base.go:197 RemoveDefender b.BID:1001 type:1 playerID:11202719 DefenderEnterTime info:&amp;{Troops:[7692423939332835820] EnterTime:1791032085600}</span></div>
+
+  <h3>② 20:57:59 到达王座，攻击失败，被召回</h3>
+  <p class="cap">同一毫秒内的完整日志。王座被敌盟占领，敌方唯一驻防 7692424334472598780 已不在地图上，建防守集结失败，到达处理返回失败。</p>
+<div class="log">12:57:59.848 internal/ctl_union.go:579        UnionWatch_UnionAttackInfo unionId:7672753981251123409 startID:7692424789736365789  targetID:7672742204448178347
+12:57:59.848 internal/ctl_king_war.go:1322    getOrCreateKingWarDefender: defender 7692382570210332360 not found, creating rally troop
+12:57:59.848 internal/ctl_king_war.go:1397    troop 7692424334472598780 not found when creating king war rally
+12:57:59.848 model/base.go:188                RemoveDefender b.BID:1001 type:1 id:7692424334472598780 playerID:0,b.defenders:[7692424334472598780]
+12:57:59.848 internal/ctl_king_war.go:1660    troop 7692424334472598780 exit throne 1001, owner: 0, old occupy: 7672753981251123409, occupy time: 7753980
+12:57:59.848 internal/ctl_king_war.go:1401    troop 7692424334472598780 forced to exit throne 7672742204448178347 (troop not found), result: ErrCodeSuccess
+<span class="hl">12:57:59.848 internal/ctl_king_war.go:1325    getOrCreateKingWarDefender: failed to create rally, target 7672742204448178347, rally 7692382570210332360, troops [7692424334472598780]</span>
+<span class="hl">12:57:59.848 internal/ctl_march_ticker.go:149 marching arrived unit 7692424789736365789 handle failed</span></div>
+  <p class="cap">调用栈（1325 那条）：<code>pTroopArriveThroneAttack → getOrCreateKingWarDefender</code>。<code>handle failed</code> 后走 <code>marchingCheckFail → recall</code>，部队开始回城。此时它已经在 <code>Attackers</code> 里，召回不会移除它（见下一段）。</p>
+
+  <h3>③ 20:58:39 回城途中被拉成驻防</h3>
+  <p class="cap">同盟玩家 11202230 的部队退出。Exit 日志里的 base 显示 <code>Attackers</code> 里还留着本部队，紧接着 kingWarAutoOccupy 对它 AddDefender。</p>
+<div class="log">12:58:39.798 model/base.go:188          RemoveDefender b.BID:1001 type:1 id:7692424884225647115 playerID:11202230,b.defenders:[7692424884225647114 7692424884225647115 7692424884225647108 7692424884225647110]
+<span class="hl">12:58:39.798 kingwar/logic.go:400       Exit res:ErrCodeSuccess base:&amp;{BID:1001 UID:7672742204448178347 OwnerID:0 State:1 DefendID:7692382570210332360 Defenders:[...] Attackers:[7692424789736365789] OccupyUnionID:7670838992768540910 ...</span>
+12:58:39.798 internal/ctl_king_war.go:1660 troop 7692424884225647115 exit throne 1001, owner: 11202230, old occupy: 0, occupy time: 0
+<span class="hl">12:58:39.798 model/base.go:162          AddDefender b.BID:1001 type:1 id:7692424789736365789 playerID:11202719,b.defenders:[7692424884225647114 7692424884225647108 7692424884225647110]</span>
+<span class="hl">12:58:39.798 model/base.go:174          AddDefender b.BID:1001 type:1 playerID:11202719 DefenderEnterTime info:&lt;nil&gt;      ← EnterTime 记为 1791032319798</span></div>
+
+  <h3>④ 20:59:03 正常回城到家（没有战败）</h3>
+  <p class="cap">hurtcount:0、CurCount == StartCount，说明没打仗。前后没有任何 kingWarExit / RemoveDefender 日志。</p>
+<div class="log"><span class="hl">12:59:03.977 internal/ctl_playertroop.go:995  11202719 redif PTroopRtCity troop 7692424789736365789 return city</span>
+12:59:03.977 internal/ctl_playertroop.go:1068 11202719 redif sync hurtcount:0 soldiers:&amp;{Count:195056 Power:42501159 StartCount:191603 StartPower:41748751 CurCount:191603 CurPower:41748751 HurtCount:0 DeadCount:0 ...
+12:59:04.090 internal/ctl_union.go:625        OnUnionWatchTowerReq union:7672753981251123409, atkUnit:7692424789736365789 is not exist</div>
+
+  <h3>⑤ 21:04 ~ 00:58 每次退出都零结算</h3>
+  <p class="cap">玩家 11202719 在王座 1001 的全部 RemoveDefender（base.go:197，共 20 条）。Troops 始终以本部队打头，EnterTime 一直是 1791032319798（20:58:39），列表始终清不空。</p>
+<div class="log">13:04:01.174 Troops:[7692424789736365789 7692425365261987069]
+13:27:24.432 Troops:[7692424789736365789 7692428333084419010]
+13:39:29.610 Troops:[7692424789736365789 7692435290931486574]
+14:29:25.081 Troops:[7692424789736365789 7692436948788871167 7692445439939263582 7692445478593969403]
+14:29:25.154 Troops:[7692424789736365789 7692445439939263582 7692445478593969403]
+14:29:25.204 Troops:[7692424789736365789 7692445478593969403]
+14:38:36.235 Troops:[7692424789736365789 7692449309704814341 7692449352654487588]
+14:38:36.286 Troops:[7692424789736365789 7692449352654487588]
+14:46:34.779 Troops:[7692424789736365789 7692452479390694981]
+15:55:17.272 Troops:[7692424789736365789 7692460541044639339]
+16:20:39.815 Troops:[7692424789736365789 7692475513300735790 7692475646444723303 7692476595632512953]
+16:26:45.283 Troops:[7692424789736365789 7692475646444723303 7692476595632512953]
+16:28:33.236 Troops:[7692424789736365789 7692476595632512953 7692478871965203878]
+16:28:43.843 Troops:[7692424789736365789 7692478871965203878]
+16:50:41.076 Troops:[7692424789736365789 7692479121073308143]
+16:58:25.174 Troops:[7692424789736365789 7692484897804129272 7692486061740270848 7692486212064126706 7692486259308767155 7692486233538963268]
+16:58:25.175 Troops:[7692424789736365789 7692486061740270848 7692486212064126706 7692486259308767155 7692486233538963268]
+16:58:25.175 Troops:[7692424789736365789 7692486212064126706 7692486259308767155 7692486233538963268]
+16:58:25.176 Troops:[7692424789736365789 7692486259308767155 7692486233538963268]
+<span class="hl">16:58:25.176 Troops:[7692424789736365789 7692486233538963268]      ← 删完只剩残留部队，返回 0；按 20:58:39 算本应约 239 分钟</span></div>
+  <p class="cap">（每条前缀省略：<code>model/base.go:197 RemoveDefender b.BID:1001 type:1 playerID:11202719 DefenderEnterTime info:&amp;{… EnterTime:1791032319798}</code>）</p>
+
+  <h3>⑥ 23:56:10 唯一一次针对本部队的 RemoveDefender：playerID 为 0</h3>
+  <p class="cap">玩家刚在 23:55:17 退出，下一次有人打王座时建防守集结，发现本部队不在地图上，走强制退出。ownerID 取不到，所以只删了 Defenders；之后 00:14 再进驻时，Troops 里还是它。</p>
+<div class="log">15:56:10.256 internal/ctl_king_war.go:1397 troop 7692424789736365789 not found when creating king war rally
+<span class="hl">15:56:10.256 model/base.go:188          RemoveDefender b.BID:1001 type:1 id:7692424789736365789 playerID:0,b.defenders:[7692424789736365789 7692425266477738805 ...]</span>
+15:56:10.256 internal/ctl_king_war.go:1660 troop 7692424789736365789 exit throne 1001, owner: 0, old occupy: 0, occupy time: 0
+15:56:10.256 internal/ctl_king_war.go:1725 handleCrossServerActivityStats troopID:7692424789736365789, throneType:20, enterTime:0
+15:56:10.256 internal/ctl_king_war.go:1401 troop 7692424789736365789 forced to exit throne 7672742204448178347 (troop not found), result: ErrCodeSuccess
+<span class="hl">16:14:51.444 model/base.go:174          AddDefender b.BID:1001 type:1 playerID:11202719 DefenderEnterTime info:&amp;{Troops:[7692424789736365789] EnterTime:1791032319798}</span></div>
+  <p class="cap">注意：20:59~23:56 这段时间里，这支已经回城的部队还一直占着王座的 Defenders 名额（驻守人数上限、GetDefendID 都会算上它）。</p>
+
+  <h3>日志结论对照代码</h3>
+  <ul>
+    <li><code>KingWarCtx</code> 只在 <code>executeThroneAttack</code>（<code>ctl_king_war.go</code>）里设置；本次在它之前的 <code>getOrCreateKingWarDefender</code> 就失败返回了。</li>
+    <li>召回时 <code>giveUpTroopBattle</code>（<code>ctl_march.go</code>）只在 <code>GetKingWarCtx() != nil</code> 时调用 <code>KingWar.CancelAttack</code>，所以部队留在 Attackers。</li>
+    <li><code>kingWarAutoOccupy</code> 对 Attackers 里仍在地图上的部队调用 <code>KingWarOccupyPTroop → Arrive(ActDefend) → AddDefender</code>，不检查行军状态，也不停止行军。</li>
+    <li>回城行军到家走 <code>PTroopRtCity</code>，不调用 <code>giveUpDefend / kingWarExit</code>。</li>
+    <li><code>kingWarExit0</code> 用 <code>getTroopOwnerID</code> 从地图取 owner，部队不在地图上时为 0，<code>RemoveDefender(id, 0)</code> 找不到 <code>DefenderEnterTime[0]</code>。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>召回是系统触发的，不是玩家操作</h2>
+  <p>20:57:59 到达处理失败后，同一个 tick 里由服务端自动召回：</p>
+<div class="log">ctl_march_ticker.go:147  handler.ArrivedHandle(unit, target) != ok
+  → &quot;marching arrived unit … handle failed&quot;            ← 线上 12:57:59.848
+  → marchingCheckFail(unit, err)                       ctl_march_ticker.go:298
+      → GetFailController(PlayerTroop) == nil           ctl_march_event.go:378 RegisterControl(..., recallPlayerTroop, nil)
+      → marchingCheckNormalCtl → recallPlayerTroop       ctl_playertroop.go:599
+          → GiveUpTroopAction
+<span class="hl">              → giveUpTroopBattle：GetKingWarCtx()==nil → 不调 CancelAttack</span>
+              → giveUpDefend：DefendCtx 不是王座 → 不调 kingWarExit
+          → StartMarch(MarchActReturn, 主城)</div>
+  <p class="cap">日志佐证：20:57:59~20:59:03 之间，game850 和 game841 上都没有这支部队的召回请求。同时段玩家的 <code>kingWarRallyDisband … RecallTroop</code> / <code>RETURN lineup</code> 日志都是另一支部队 7692421894928393131 的（所在集结战败被解散）。</p>
+</section>
+
+<section>
+  <h2>上游触发：敌方「不在地图上的驻防」是怎么来的</h2>
+  <p>本玩家 20:57:59 攻击失败，是因为王座上挂着归墟玩家 11329956 的部队 <code>7692424334472598780</code>（下称 X）。它已经不在地图上，却还在 Defenders 里。X 的经过如下：</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>北京时间</th><th>日志</th><th>发生了什么</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">20:56:16</td><td><code>pTroopArriveThroneAttack: unit X attacks defender 7692382570210332360</code></td><td>X 到达王座，攻打我方（天赐凌渊）的防守集结 rt</td></tr>
+      <tr><td class="mono">20:56:18.143~.155</td><td>约 20 条 <code>RemoveDefender</code>（含本玩家结算 1 分钟那次）</td><td>我方驻防部队被逐个移出；每移出一支，<code>kingWarAutoOccupy</code> 就让 X 重新攻一次</td></tr>
+      <tr><td class="mono">20:56:18.155</td><td><code>clearing throne 1001 occupation</code></td><td>我方最后一支驻防退出，占领被清空</td></tr>
+      <tr><td class="mono">20:56:18.156</td><td><code>AddDefender id:X playerID:11329956, defenders:[]</code></td><td>X 自动占领，成为唯一驻防</td></tr>
+      <tr><td class="mono">20:56:18.156</td><td><code>ThroneDefendEnd rt … InBattle:false</code> → <code>kingWarRallyDisband TroopID:X … recall:false</code> → <code>AddDefenderIntoRallyTroop pt:X, rt:7692382570210332360</code></td><td><b>X 被塞进正在解散的旧集结</b>，随集结一起从地图上删掉，但还留在 Defenders 里</td></tr>
+      <tr><td class="mono">20:56:58</td><td><code>atkUnit X is not exist</code></td><td>X 已经不在地图上</td></tr>
+      <tr><td class="mono">20:57:59</td><td><code>troop X not found when creating king war rally</code> → <code>failed to create rally</code></td><td>本玩家攻击失败，触发后面整条链路</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>已用 game850 日志 + 代码坐实（2026-10-07）</b>：关键是 <code>AddDefenderIntoRallyTroop</code> 里的 <code>DelUnit(X)</code> 会<b>同步嵌套</b>触发旧集结解散，解散时把 X <code>AddUnit</code> 回地图，返回后 <code>DelUnit</code> 又把 X 从地图删掉。
+<pre>20:56:18.143~.155  rt 车头 11195874 主城被击飞 → OnP2MCityKickOut → DisbandRallyTroop(rt)，成员逐个召回并 kingWarExit；每退一支同步跑一次 kingWarAutoOccupy（Defenders 还没空 → ActAttack）
+20:56:18.155       最后一支退出 → OccupyStop / clearing throne。<b>但 base.DefendID 没清零</b>（只有 GiveUp/Clear/Finish 才清，model/base.go:75/87/99），仍是 rt 的 ID
+20:56:18.156       kingWarAutoOccupy → KingWarOccupyPTroop(X) → Arrive：Defenders 已空 → ActOccupy → AddDefender(X)
+                   → pTroopArriveThroneOccupy（ctl_king_war.go:1186「编队立即加入战斗」）
+                   → GetDefendID()：Defenders=[X] 非空、DefendID≠0 → 返回旧 rt 的 ID
+                   → GetRallyTroopByID 命中：rt 还在地图上（外层 OnP2MCityKickOut → DisbandRallyTroop 正在逐个召回成员，还没 DelUnit）
+                   → AddDefenderIntoRallyTroop(rt, X)：rt.AddTroop(X) → <b>wmap.DelUnit(X)</b>
+                       DelUnit → BattleUnitDel(X)（ctl_map.go:1678，X 正和 rt 交战）
+                         → giveUpTarget owner:X target:rt → settleBattle → ThroneDefendEnd(rt, true)  [日志 InBattle:false]
+                         → kingWarRallyDisband(rt, recall:false)：遍历 rt 成员，此时只剩 X
+                             X.SetRallyId(0)、删 RallyTroopIDs、<b>AddUnit(X)</b>；X 和占领盟同盟 → 不召回、不 kingWarExit
+                           → DelUnit(rt)
+                       ← 返回后 DeleteUnitObj(X)：<b>X 被从地图删除</b>
+                   → 日志 AddDefenderIntoRallyTroop pt:X, rt:… 打在最后，所以出现在 disband 之后
+结果：X 不在地图、不在任何集结，rt 也没了，但 base.Defenders=[X]、DefenderEnterTime[11329956] 都还在；DefendID 仍指向已删除的 rt</pre>
+所以 20:57:59 本玩家进攻时 <code>getOrCreateKingWarDefender</code> 找不到 rt（not found, creating rally troop），用 Defenders 建集结时又找不到 X，失败。</div>
+  <h3>完整因果链</h3>
+  <ol>
+    <li>敌方部队 X 被吞进旧集结，在王座上成了不在地图上的驻防残留。</li>
+    <li>本玩家攻击时建集结失败，系统召回，部队留在 Attackers。</li>
+    <li>部队在回城途中被 <code>kingWarAutoOccupy</code> 拉成驻防。</li>
+    <li>回城到家后，这支部队永久残留在本玩家的计时记录里。</li>
+    <li>之后每次退出都零结算。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>复现步骤</h2>
+  <h3>一、稳定复现本玩家的问题（推荐）</h3>
+  <p>敌方残留驻防是时序巧合，很难自然造出来。建议在开发服临时加一个 GM，往王座 Defenders 里塞一个不存在的部队 ID（直接 <code>base.AddDefender(假ID, 0)</code>），模拟线上的残留。</p>
+  <p class="cap">前置：跨服王座战处于战斗阶段；联盟 A（敌方）、联盟 B（玩家 P 和 P2 所在联盟）；P 的主城离王座远一点，保证回城行军有足够时间。</p>
+  <ol>
+    <li>联盟 A 的部队占领王座 1001，然后用 GM 把 Defenders 改成只有一个假 ID（OccupyUnionID 仍是 A）。</li>
+    <li>P 派部队 T 攻打王座。预期日志：
+      <ul>
+        <li><code>getOrCreateKingWarDefender: failed to create rally</code></li>
+        <li><code>marching arrived unit T handle failed</code></li>
+        <li>T 自动回城</li>
+        <li>此时 Attackers 里还有 T。</li>
+      </ul></li>
+    <li>在 T 到家之前，P2 派 2 支部队占领空出来的王座，然后召回其中一支。预期日志：<code>RemoveDefender …(P2)</code> 之后紧跟 <code>AddDefender id:T playerID:P</code>，T 在回城途中被拉成了驻防。</li>
+    <li>T 到家，预期日志 <code>PTroopRtCity troop T return city</code>。</li>
+    <li>P 再派一支部队驻防，过几分钟召回。预期日志：
+      <ul>
+        <li><code>RemoveDefender … Troops:[T …]</code></li>
+        <li><code>handleCrossServerActivityStats … enterTime:0</code></li>
+        <li>任务进度不涨，问题复现。</li>
+      </ul></li>
+  </ol>
+  <p><b>用改过的代码验证：</b>第 2 步之后 T 会被 <code>CancelAttack</code> 移出 Attackers，第 3 步就不会再出现 <code>AddDefender id:T</code>。就算漏了，第 4 步到家时 <code>kingWarExitOnReturnCity</code> 也会补退出一次。</p>
+  <h3>二、复现上游残留（敌方部队被吞进解散的集结）</h3>
+  <ol>
+    <li>我方多人驻防王座，并且已经形成防守集结。</li>
+    <li>敌方单支部队攻打这个集结，把我方驻防全部打退，自己自动占领。</li>
+    <li>看这支部队是否被 <code>AddDefenderIntoRallyTroop</code> 塞进旧集结、之后从地图消失。</li>
+  </ol>
+  <p class="cap">这个和时序有关，建议先在 <code>AddDefenderIntoRallyTroop</code> 和 <code>kingWarRallyDisband</code> 里打调用栈和 rt 是否已删除的日志再跑。</p>
+</section>
+
+<section>
+  <h2>缺陷点（日志 + 代码核实）</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>位置</th><th>问题</th><th>结论</th></tr></thead>
+    <tbody>
+      <tr><td><code>ctl_king_war.go</code><br><code>pTroopArriveThroneOccupy</code> / <code>AddDefenderIntoRallyTroop</code> / <code>kingWarRallyDisband</code></td><td>上游：占领清空后 DefendID 不清零，自动占领的敌方部队按旧 DefendID 被塞进旧集结；<code>DelUnit</code> 嵌套触发集结解散并 AddUnit 回来，随后又被删除，最终不在地图但留在 Defenders（已用日志坐实）</td><td><span class="pill warn">上游触发</span></td></tr>
+      <tr><td><code>ctl_king_war.go</code><br><code>PTroopArriveThrone</code></td><td>Arrive 已把部队加进 Attackers，攻击失败后直接返回 false；KingWarCtx 没设置，召回时 <code>giveUpTroopBattle</code> 不会 <code>CancelAttack</code></td><td><span class="pill bad">根因</span></td></tr>
+      <tr><td><code>ctl_king_war.go</code><br><code>kingWarAutoOccupy</code> / <code>KingWarOccupyPTroop</code></td><td>只要部队还在地图上就拉成驻防，不检查它是否正在行军、是否在王座上，也不停止它的行军</td><td><span class="pill bad">根因</span></td></tr>
+      <tr><td><code>ctl_playertroop.go</code><br><code>PTroopRtCity</code></td><td>回城不清理王座驻防记录</td><td><span class="pill bad">残留成因</span></td></tr>
+      <tr><td><code>kingwar/model/base.go</code><br><code>RemoveDefender</code></td><td>Troops 全清才返回 EnterTime；漏删一支部队，就会永久卡住</td><td><span class="pill bad">放大器</span></td></tr>
+      <tr><td><code>ctl_king_war.go</code><br><code>kingWarExit0</code></td><td>部队不在地图上时 ownerID 为 0，只删 Defenders 不删 Troops（本案 23:56:10 实际发生）</td><td><span class="pill warn">残留未清</span></td></tr>
+      <tr><td><code>ctl_king_war.go</code><br><code>handleCrossServerActivityStats</code></td><td>EnterTime ≤ 0 时静默返回，日志没有玩家 ID</td><td><span class="pill warn">可观测性</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">更正：最初转来的分析说「部队战败后走 <code>deadPTroopRtSelfCity</code> 回城」「<code>RemoveDefender</code> 0 次」，这两点和日志不符。部队没战败（hurtcount:0），是攻击失败被召回；23:56:10 有一次 <code>RemoveDefender</code>，只是 playerID 为 0。另外，20:57:59 敌方那支已不存在的驻防部队 <code>7692424334472598780</code> 本身也是同类残留。</div>
+</section>
+
+<section>
+  <h2>代码修复（分支 h5_new_tf_v1052，未提交）</h2>
+  <h3><code>ctl_king_war.go</code> · <code>PTroopArriveThrone</code>（根因）</h3>
+  <p>到达处理失败时调用 <code>wmap.KingWar.CancelAttack(brief)</code>，把部队移出 Attackers，避免回城途中的部队被 <code>kingWarAutoOccupy</code> 拉成驻防。</p>
+  <h3><code>ctl_playertroop.go</code> · <code>PTroopRtCity</code></h3>
+  <p>在 <code>DelUnit</code> 之前调用新增的 <code>kingWarExitOnReturnCity</code>：部队回城时只要还挂在任何王座或哨塔的 Defenders 或计时记录 Troops 里，就补走一次 <code>kingWarExit0</code>，正常结算并打 Warn 日志。不论从哪条路径回城，都会在这里收口。本案中它会在 20:59:03 把这支部队正常退出。</p>
+  <h3><code>kingwar/model/base.go</code></h3>
+  <ul>
+    <li><code>RemoveDefender</code> 加兜底 <code>pruneStaleOccupyTroops</code>：剔除 Troops 中已不在 Defenders 里的部队。它只能处理「Defenders 已删、Troops 还在」的残留，比如本案 23:56:10 之后的状态；部队连 Defenders 都还在时它不起作用，那种情况靠 <code>PTroopRtCity</code> 的补退出。</li>
+    <li><code>AddDefender</code> 同样剔除；全部剔除后重置 EnterTime，避免沿用上一轮遗留的旧时间。</li>
+    <li>新增 <code>HasOccupyTroop</code>。</li>
+  </ul>
+  <h3><code>ctl_king_war.go</code></h3>
+  <p><code>EnterTime ≤ 0</code> 那条日志加上 playerID。</p>
+  <div class="note">已知偏差：如果部队战败后先行军回城，补结算的时间点是到家那一刻，会比实际离开王座多算一段行军时间。验证情况：<code>game/wmap/internal/...</code> 编译通过；kingwar 包没有单元测试；未在线上环境验证。</div>
+</section>
+
+<section>
+  <h2>后续</h2>
+  <ul class="todo">
+    <li>本工单：给 11202719 补 <code>PqThroneCity</code> 进度到 ≥ 30 并补发奖励（数据在活动服 actv1，matchID:15）。</li>
+    <li>影响面：全网扫描 <code>marching arrived unit … handle failed</code> 后部队又出现 <code>AddDefender</code> 的情况，以及 <code>RemoveDefender … playerID:0</code> 的记录，都是潜在受害账号。</li>
+    <li>线上已经残留的数据不会因为这次修复自动恢复，需要一并处理。</li>
+    <li>待定：<code>kingWarAutoOccupy</code> 是否应跳过正在行军、不在王座上的部队（这次没改）。</li>
+    <li>长期：考虑把占领时长改成 tick 累加，不再依赖退出时一次性结算。</li>
+    <li>提测、合入 v1052。</li>
+  </ul>
+</section>
+
+</div>
+</body>
+</html>

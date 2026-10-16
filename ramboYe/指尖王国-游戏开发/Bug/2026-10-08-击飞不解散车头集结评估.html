@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>击飞不解散集结评估</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --ink:#1b2230; --muted:#5d6678; --line:#dde1e8;
+  --accent:#2f5d8a; --ok:#1f7a55; --ok-soft:#e3f2ea; --bad:#a83a32; --bad-soft:#f8e6e4; --warn:#9a6a12; --warn-soft:#f7eedb;
+  --serif:"Noto Serif SC","Songti SC",serif; --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#12161d; --surface:#1a2029; --ink:#e4e8ef; --muted:#98a2b3; --line:#2b3340;
+    --accent:#7fa8d4; --ok:#5fc99a; --ok-soft:#173228; --bad:#e8857c; --bad-soft:#3a1d1b; --warn:#e0b45c; --warn-soft:#352a14;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#12161d; --surface:#1a2029; --ink:#e4e8ef; --muted:#98a2b3; --line:#2b3340;
+  --accent:#7fa8d4; --ok:#5fc99a; --ok-soft:#173228; --bad:#e8857c; --bad-soft:#3a1d1b; --warn:#e0b45c; --warn-soft:#352a14;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.7 var(--sans);margin:0;padding-inline:16px;padding-block:32px 56px}
+.wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:10px}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+h1{font:700 30px/1.3 var(--serif);margin:0;text-wrap:balance}
+h2{font:700 19px/1.4 var(--serif);margin:0 0 12px;text-wrap:balance}
+h3{font:600 15px/1.5 var(--sans);margin:16px 0 6px}
+p{margin:0 0 8px;max-width:72ch}
+ul,ol{margin:0;padding-left:1.3em}
+li{margin:3px 0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:13px}
+.meta b{color:var(--ink);font-weight:500}
+code,.mono{font-family:var(--mono);font-size:.86em;overflow-wrap:anywhere}
+.verdict{background:var(--bad-soft);border:1px solid color-mix(in srgb,var(--bad) 35%,transparent);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.verdict .tag{align-self:flex-start;font:600 12px/1 var(--sans);color:var(--bad);border:1px solid var(--bad);border-radius:999px;padding:5px 10px}
+.verdict p{font-size:16px;margin:0}
+section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 22px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.fact{display:flex;flex-direction:column;gap:2px}
+.fact .k{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.fact .v{font:600 18px/1.4 var(--mono);font-variant-numeric:tabular-nums}
+.fact .v small{font:400 12px var(--sans);color:var(--muted);margin-left:4px}
+.tl{list-style:none;padding:0;margin:0;display:flex;flex-direction:column}
+.tl li{display:grid;grid-template-columns:92px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--line);margin:0}
+.tl li:first-child{border-top:0}
+.tl .t{font:600 13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.tl li.bad .t{color:var(--bad)}
+.tl li.ok .t{color:var(--ok)}
+.flow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.lane{border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.lane.good{border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
+.lane.badl{border-color:color-mix(in srgb,var(--bad) 45%,var(--line))}
+.lane .lt{font:600 13px/1.4 var(--sans);margin-bottom:8px}
+.lane.good .lt{color:var(--ok)}
+.lane.badl .lt{color:var(--bad)}
+.steps{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px}
+.steps li{font:13px/1.5 var(--mono);padding:6px 10px;border-radius:6px;background:var(--bg);margin:0;overflow-wrap:anywhere}
+.steps li.arrow{background:none;padding:0 10px;color:var(--muted);font-size:12px}
+.steps li.hit{background:var(--bad-soft);color:var(--bad)}
+.steps li.fine{background:var(--ok-soft);color:var(--ok)}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-top:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:12px;letter-spacing:.04em;border-top:0}
+.pill{display:inline-block;font:600 11px/1 var(--sans);border-radius:999px;padding:4px 8px;white-space:nowrap}
+.pill.bad{color:var(--bad);background:var(--bad-soft)}
+.pill.warn{color:var(--warn);background:var(--warn-soft)}
+.pill.ok{color:var(--ok);background:var(--ok-soft)}
+.note{border-left:3px solid var(--warn);background:var(--warn-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:14px;margin-top:12px}
+.todo{list-style:none;padding:0}
+.todo li{padding-left:24px;position:relative}
+.todo li::before{content:"";position:absolute;left:2px;top:7px;width:12px;height:12px;border:1.5px solid var(--muted);border-radius:3px}
+.log{font:12px/1.6 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin:6px 0 4px;overflow-x:auto;white-space:pre}
+.log .hl{color:var(--bad);font-weight:600}
+.log .ok{color:var(--ok);font-weight:600}
+.cap{font-size:13px;color:var(--muted);margin:2px 0 12px}
+details{margin-top:6px}
+summary{cursor:pointer;font-size:14px;color:var(--accent)}
+@media (max-width:640px){
+  .flow{grid-template-columns:1fr}
+  .tl li{grid-template-columns:1fr;gap:2px}
+  h1{font-size:24px}
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">方案评估 · 王座战 · 击飞 · 2026-10-08 · 2026-10-12 更新：已实施</div>
+  <h1>主城被击飞时，不解散车头的集结会怎样</h1>
+  <div class="meta">
+    <span>关联问题 <b>王座幽灵驻防</b>（Bug/2026-10-03-王座幽灵驻防成因.html）</span>
+    <span>分支 <b class="mono">h5_new_tf_v1051_remote_fight_light</b></span>
+    <span>Jira <b class="mono">H5-12694</b>（玩家驻防王座时未添加驻防事件）</span>
+    <span>实施分支 <b class="mono">h5_new_tf_v1053_battle_defener</b></span>
+    <span>行号为本地分支</span>
+  </div>
+</header>
+
+<div class="verdict">
+  <span class="tag">最终结论（2026-10-12）</span>
+  <p><b>建筑防守集结（王座、哨塔及其他建筑）：主城被击飞（不跨服）时完全不动；玩家离开地图（跨服、转服、遣返、强制迁城）时，只摘出他自己的部队，集结和战斗继续。</b>主城防守集结、攻击集结保持原逻辑。</p>
+  <p>根因 <code>DefendID</code> 不清零已在 5 个建筑模型里修掉。实施细节见文末「最终方案：改动范围」和「影响范围」。下方原评估保留，过时的地方已标注更正。</p>
+</div>
+
+<section>
+  <h2>速查：各类集结能不能保留</h2>
+  <div class="tablewrap"><table>
+    <tr><th>集结类型</th><th>结论</th><th></th></tr>
+    <tr><td>主城防守集结</td><td>必须解散，否则集结永久残留在地图上</td><td><span class="pill bad">必须解散</span></td></tr>
+    <tr><td>等待中的攻击集结</td><td>建议解散，集结点、花费返还、通知邮件都会乱</td><td><span class="pill bad">建议解散</span></td></tr>
+    <tr><td>跨服返回或转服</td><td>必须解散，玩家已离开地图，有空指针风险</td><td><span class="pill bad">必须解散</span></td></tr>
+    <tr><td>王座或建筑防守集结</td><td>可以保留，只撤车头部队</td><td><span class="pill ok">可保留</span></td></tr>
+  </table></div>
+  <p class="cap" style="margin-top:10px">每一类的详细原因见下方「问题三」。</p>
+</section>
+
+<section>
+  <h2>现状：击飞时到底处理了什么</h2>
+  <p><code>OnP2MCityKickOut</code>（<code>ctl_city.go:692</code>）只做两件事：</p>
+  <ol>
+    <li>解散<b>主城防守集结</b>：<code>city.DelDefender()</code> + <code>DisbandRallyTroop(defender, Finish)</code></li>
+    <li>解散<b>他当车头</b>的所有集结：<code>rt.Owner.ID == req.PlayerID</code> → <code>DisbandRallyTroop(rt, Cancel)</code></li>
+  </ol>
+  <p>他的单支驻防、行军中的部队、加入别人集结的部队，在主城被击飞但玩家仍留在本图（<code>IsCross=false</code>）时<b>本来就不动</b>。之后召回时找不到主城，会走 <code>recallPlayerTroop</code> 的兜底（<code>ctl_playertroop.go:627-637</code>）直接瞬间回城。所以「主城没了、部队还在外面」这种状态，代码已经支持。</p>
+  <p class="cap">本案的 rt 是王座防守集结，车头是最后进驻的玩家（<code>kingWarCreateRally</code> 逆序遍历 Defenders），所以车头一被击飞，整个 rt 就被第 2 步解散，引出了幽灵驻防。</p>
+</section>
+
+<section>
+  <h2>两种「不解散」的做法</h2>
+  <div class="flow">
+    <div class="lane badl">
+      <div class="lt">A. 整个集结原样保留</div>
+      <ul class="steps">
+        <li>车头的部队也留在集结里</li>
+        <li class="arrow">↓</li>
+        <li class="hit">车头已不在王座区域，却还在守王座，违背击飞的规则意图</li>
+        <li class="hit">rt.Owner、CityID 指向一个没有主城的玩家</li>
+        <li class="hit">跨服返回时车头离开地图，集结成了无主集结</li>
+      </ul>
+    </div>
+    <div class="lane good">
+      <div class="lt">B. 只撤车头的部队，其他成员保留</div>
+      <ul class="steps">
+        <li>等同于车头手动召回自己的部队</li>
+        <li class="arrow">↓ 走现成路径</li>
+        <li class="fine">RecallTroop → giveUpDefend（退出王座、结算时长）+ giveUpRally → DelPTroopInRTroop</li>
+        <li class="fine">本案剩 15 支，Defenders 不空，X 继续 ActAttack，不会触发幽灵驻防</li>
+        <li class="hit">车头部队是最后几支时，照样触发</li>
+      </ul>
+    </div>
+  </div>
+  <p class="cap" style="margin-top:12px">下面的分析以 B 为主。A 的问题是 B 的超集。</p>
+</section>
+
+<section>
+  <h2>问题一：堵不住幽灵驻防</h2>
+  <p>车头的部队被撤完后，如果 <code>Defenders</code> 正好空了，后面和线上一模一样：</p>
+  <div class="log">车头最后一支部队退出 → kingWarExit → Defenders 清空 → OccupyStop
+  <span class="hl">DefendID 没清零</span>，仍是 rt 的 ID
+→ kingWarAutoOccupy → X 自动占领 → AddDefender(X)
+→ pTroopArriveThroneOccupy：GetDefendID() 返回旧 rt ID
+  rt 还在地图上：<span class="hl">giveUpRallyOnDefend 只在守主城时删除空集结</span>（ctl_rallytroop.go:731）
+→ AddDefenderIntoRallyTroop(rt, X) → DelUnit(X)
+  → BattleUnitDel → ThroneDefendEnd → kingWarRallyDisband：AddUnit(X)、DelUnit(rt)
+  → DeleteUnitObj(X)  <span class="hl">X 消失，Defenders 里留下幽灵</span></div>
+  <div class="note"><b>更正（2026-10-12）：</b>原推断"玩家交战中手动召回最后几支也会触发"<b>不成立</b>。<code>checkRecallTroop</code>（<code>ctl_march.go:1104-1116</code>）规定部队在防守集结里时不允许召回（<code>ErrCodeRallyDefenseInBattle</code>）。交战中能把部队摘出集结的只有系统路径：击飞、遣返、强制迁城。</div>
+</section>
+
+<section>
+  <h2>问题二：集结里的「车头属性」不会跟着换</h2>
+  <p><code>NewRallyTroop</code>（<code>mtroop/rally_troop.go:60</code>）创建集结时，把这些属性从车头部队拷了一份，之后不会自动更新。目前也<b>没有转移车头的接口</b>。</p>
+  <div class="tablewrap"><table>
+    <tr><th>属性</th><th>来源</th><th>车头撤走后</th><th>影响</th></tr>
+    <tr><td><code>rt.Owner</code></td><td>车头玩家</td><td>仍是被击飞的玩家</td><td><code>PushRallyNtf</code> 推给他；<code>KingWarOccupyRTroop</code> 用 <code>cache.GetPlayerCache(rt.Owner.ID)</code> 取联盟（<code>ctl_king_war.go:1783</code>）；远征地图阵营判断也用它</td></tr>
+    <tr><td><code>rt.CityID</code></td><td>车头主城</td><td>指向已删除的主城</td><td><b>更正：</b>战报只在 <code>rt.IsDefendCity()</code>（守主城）时才按 <code>CityID</code> 找主城（<code>packmail.go:54/233</code>），建筑防守集结不受影响</td></tr>
+    <tr><td><code>BatCtx().PlayerID</code>、<code>CityLv</code></td><td>车头</td><td><b>更正：</b><code>RemoveTroop</code> 会把 PlayerID 设成新的 <code>Troops[0]</code>（<code>rally_troop.go:410-413</code>）</td><td>战斗属性用 <code>GetMaxPowerTroop()</code>、战报展示用 <code>GetMaxPowerMember()</code>，都是实时取战力最高的编队，车头撤走后自动切换</td></tr>
+    <tr><td><code>Skin</code>、<code>BattleBehavior</code></td><td>车头部队</td><td>不变；王座集结在加人时会 <code>CalPSH</code> 刷新 BattleBehavior</td><td>外观仍是原车头的</td></tr>
+    <tr><td><code>GetLeader()</code></td><td><code>Troops[0]</code></td><td>自动变成另一名成员的部队</td><td>和 <code>Owner</code> 不再一致</td></tr>
+  </table></div>
+  <p class="cap" style="margin-top:10px">主城被击飞（不跨服）时玩家还在这张地图上，这些不一致一般不会出错，主要是显示和归属不对。</p>
+</section>
+
+<section>
+  <h2>问题三：按集结类型看，哪些能保留</h2>
+  <div class="tablewrap"><table>
+    <tr><th>集结类型</th><th>不解散的后果</th><th>结论</th></tr>
+    <tr><td>主城防守集结<br><code>city.GetDefender</code></td><td>主城已删，集结没东西可守。成员离开时走 <code>giveUpRallyOnDefendPCity</code>（<code>ctl_rallytroop.go:731</code>），找不到主城只打 Error <code>rally troop … city … cannot found</code>，不会 <code>DelUnit(rt)</code>，集结永久残留</td><td><span class="pill bad">必须解散</span></td></tr>
+    <tr><td>他发起、等待中的攻击集结</td><td>集结点和行军路径按车头主城坐标建立。主城删掉、迁走后，集结停在空地上，赶来的成员仍往旧坐标走。花费返还按 <code>getRallyCost</code> 取 <code>Troops[0]</code> 当车头，车头撤走后会算错人；没有车头时只打 <code>leader is nil</code>。准备时间到了，「人数不足」邮件仍发给原车头</td><td><span class="pill bad">建议解散</span></td></tr>
+    <tr><td>他发起、行军或战斗中的攻击集结</td><td>集结有独立的地图单位和坐标，不依赖车头主城。打完后成员各自回城，车头找不到主城就瞬间回城</td><td><span class="pill warn">可保留，但 Owner 问题同上</span></td></tr>
+    <tr><td>王座、哨塔、建筑的防守集结<br><code>DefendCtx</code> = ThroneCity/ThroneTower</td><td>车头只是最后进驻的那个人，集结和车头主城没有绑定关系。只撤车头部队，其他人继续守，不会把全盟驻防打散</td><td><span class="pill ok">可保留（方案 B）</span></td></tr>
+    <tr><td>跨服返回、转服<br><code>IsCross</code> / <code>IsChangeServer</code></td><td>玩家要离开这张地图。保留集结会变成无主集结，很多地方用 <code>GetMapPlayer(owner)</code> 取车头，可能取到 nil。例如 <code>kingWarRallyDisband</code> 里直接操作 <code>mp.RallyTroopIDs</code>，有空指针风险（未逐处核实）</td><td><span class="pill bad">必须解散</span></td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>问题四：玩法规则</h2>
+  <ul>
+    <li>主城被击飞的本意是把这个玩家赶出王座区域。<b>方案 A</b> 让他的部队继续守王座，等于击飞失去了效果。</li>
+    <li><b>方案 B</b> 只撤他自己的部队，和「单支驻防不动、集结里只撤自己」的现状比较一致，但需要策划确认：被击飞的玩家，他的单支驻防部队要不要也撤？现在是不撤的。</li>
+    <li>车头撤走后，集结的「发起人」显示要不要改成新的车头，也需要策划确认。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>建议（原评估，已被「最终方案」取代）</h2>
+  <div class="tablewrap"><table>
+    <tr><th>优先级</th><th>改动</th><th>作用</th></tr>
+    <tr><td><span class="pill bad">必改</span></td><td><code>kingwar.Exit</code> 里 Defenders 清空、执行 <code>OccupyStop</code> 时把 <code>DefendID</code> 清零</td><td>切断「新占领者关联旧集结」，覆盖击飞、封号、跨服、手动召回所有路径</td></tr>
+    <tr><td><span class="pill bad">必改</span></td><td><code>pTroopArriveThroneOccupy</code> 拉部队进集结前，检查 rt 的 <code>DefendCtx</code> 指向本王座，rt 不在战斗中，rt 车头和当前占领盟同盟</td><td>兜底，防止部队被拉进半解散的集结</td></tr>
+    <tr><td><span class="pill warn">可选</span></td><td><code>OnP2MCityKickOut</code>：主城被击飞（不跨服）且 rt 是王座或建筑防守集结时，只撤车头自己的部队，不解散整个集结</td><td>体验优化：一个人被击飞不会连累全盟驻防。其他类型和跨服场景保持现状</td></tr>
+    <tr><td><span class="pill warn">可选</span></td><td>新增转移车头的函数：同步更新 <code>Owner</code>、<code>CityID</code>、<code>BatCtx.PlayerID</code>、<code>CityLv</code>，并通知客户端</td><td>做可选项 3 时配套，解决问题二的归属不一致</td></tr>
+  </table></div>
+  <p class="cap" style="margin-top:10px">只做可选项、不做必改项的话，本案能避开，但车头部队是最后几支、或者玩家手动召回最后几支时，仍会产生幽灵驻防。</p>
+</section>
+
+<section>
+  <h2>问题五：交战中摘部队的链路（2026-10-12 补充）</h2>
+  <h3>每撤一支驻防，进攻方都会被"重新到达"</h3>
+  <p><code>giveUpDefendOnKingWar</code>（<code>ctl_king_war.go:1538</code>）在 <code>kingWarExit</code> 之后<b>无条件</b>调用 <code>kingWarAutoOccupy</code>：取出 <code>base.Attackers</code>（正在打 rt 的所有进攻部队）、清空，再逐个重走 <code>ArriveCheck</code> / <code>Arrive</code>。<code>ArriveCheck</code> 不通过的进攻部队会被 <code>RecallTroop</code> 强制遣返。冰髓矿、泰坦宝库、联盟战龙巢的放弃驻防也是"退出 + 自动占领"，同一个问题。</p>
+  <h3>不能直接 <code>DelUnit(rt)</code></h3>
+  <p><code>DelUnit</code> → <code>BattleUnitDel</code> 只对进攻方调 <code>battleEnd</code>，不会对 rt 调，所以不会走 <code>ThroneDefendEnd</code>。进攻方在 <code>pTroopBattleEndAlive</code> 里既没行军也没驻防，会被 <code>RecallTroop</code> 遣返（<code>ctl_playertroop.go:1333-1342</code>）：<b>打赢了却回家，建筑没人占</b>。</p>
+  <h3>空集结要走正常战败</h3>
+  <p>空集结的 <code>TroopData.IsDead()</code> 为真（<code>battle/lineup.go:193</code>）。<code>battleTroopDead(rt)</code>（<code>ctl_battle.go:453</code>）先对 rt 调 <code>battleEnd</code> → <code>rTroopBattleEndDead</code> → <code>XxxDefendEnd(rt, false)</code>：先删集结，再让进攻方自动占领；最后才对进攻方调 <code>battleEnd</code>，此时进攻方已在驻防，不会被遣返。</p>
+  <h3>跨服遣返的现有 bug</h3>
+  <p><code>ForceRecall</code> 只处理援助主城，龙巢直接返回失败，其他建筑没有 case，返回 <code>EntityNotFound</code>。部队留在集结里，play 侧仍执行 <code>ResetTroop</code>，编队同时出现在两边。外服玩家的 MapPlayer 被 <code>BaseOther.BackMapAndRun</code> 删除后，战斗结束时 <code>kingWarRallyDisband</code> 执行 <code>delete(mp.RallyTroopIDs, ...)</code> 会空指针 panic。<code>forceRecallAll</code>（强制遣返、新手强制迁城）则会把整个集结连同进攻方一起清掉。</p>
+</section>
+
+<section>
+  <h2>最终方案：改动范围</h2>
+  <div class="tablewrap"><table>
+    <tr><th>改动</th><th>文件</th><th>说明</th></tr>
+    <tr><td><span class="pill bad">根因</span> 最后一个驻防退出时清零 <code>DefendID</code></td><td><code>kingwar/model/base.go</code><br><code>unionwar/munionwar/district.go</code><br><code>mtitan_treasure_house/district.go</code><br><code>mcity/ice_morrow_mine.go</code><br><code>ctl_gvg.go</code> <code>RemoveDefender</code></td><td>王座/哨塔、联盟战、泰坦、冰髓矿、GVG 五种建筑。新占领者不会再拿到旧集结 ID，被拉进残留集结</td></tr>
+    <tr><td><span class="pill bad">兜底</span> 不并入空集结</td><td><code>ctl_king_war.go</code> <code>pTroopArriveThroneOccupy</code><br><code>ctl_titan_treasure_house.go</code><br><code>ctl_ice_morrow.go</code><br><code>ctl_union_war.go</code></td><td>新增 <code>isDefendRallyJoinable</code>；王座额外校验集结守的是同一建筑（<code>canJoinKingWarDefendRally</code>）。阵营中心、火车、要塞本来就允许并入空集结，没动</td></tr>
+    <tr><td><span class="pill warn">新增</span> <code>defendRallyMemberLeave</code></td><td><code>ctl_defend_rally_leave.go</code>（新文件）</td><td>把单支部队摘出建筑防守集结：移出集结 → 只退出驻防不自动占领（4 种会自动占领的建筑登记在 <code>defendExitFuncs</code>，其他走 <code>giveUpDefend</code>）→ 集结空了且在战斗中走 <code>battleTroopDead</code>，不在战斗中直接删 → <code>PTroopRtCity</code> 瞬间回城</td></tr>
+    <tr><td><span class="pill ok">接入</span> 主城被击飞 / 跨服</td><td><code>ctl_city.go</code> <code>kickOutHandleRally</code></td><td>建筑防守集结：主城被击飞（不跨服）不动；跨服、转服时摘出他自己的部队（不论是不是车头）。其他集结保持原逻辑（他当车头的解散）</td></tr>
+    <tr><td><span class="pill ok">接入</span> 普通遣返</td><td><code>ctl_playertroop.go</code> <code>ForceRecall</code></td><td>原来只处理援助主城、龙巢返回失败，现在所有建筑都走 <code>defendRallyMemberLeave</code></td></tr>
+    <tr><td><span class="pill ok">接入</span> 强制遣返 / 新手迁城</td><td><code>ctl_king_war.go</code> <code>forceRecallAll</code></td><td>建筑防守集结只摘自己的部队，不再整个解散、不再清掉进攻方</td></tr>
+  </table></div>
+  <p class="cap" style="margin-top:10px">没改持久化结构体字段，不需要 <code>make deepcopy</code>。改动包编译通过，<code>golangci-lint</code>（.golangci.local.yml）0 问题；相关子包单测通过，wmap 主包无单测。</p>
+</section>
+
+<section>
+  <h2>影响范围</h2>
+  <div class="tablewrap"><table>
+    <tr><th>场景</th><th>改前</th><th>改后</th></tr>
+    <tr><td>主城被击飞（不跨服），他是建筑防守集结的车头</td><td>整个集结解散，交战中防守当场瓦解，进攻方不用打完就赢</td><td>集结不动，他的部队继续驻守，和单支驻防一致；战斗输了时找不到主城，瞬间回城</td></tr>
+    <tr><td>跨服、转服击飞，他在建筑防守集结里</td><td>只处理他当车头的；当成员的部队残留在集结里，王座上会空指针 panic</td><td>只摘他自己的部队，集结和战斗继续</td></tr>
+    <tr><td>跨服王座战普通遣返</td><td>建筑集结里的部队召回失败，编队两边各一份</td><td>正常摘出并回城，兵力同步回 play</td></tr>
+    <tr><td>强制遣返、新手强制迁城</td><td>他所在的建筑集结整个解散，进攻方也被强制清掉</td><td>只摘他自己的部队</td></tr>
+    <tr><td>最后一个驻防退出，新部队占领</td><td>新占领者可能被拉进残留旧集结后消失（幽灵驻防，即 H5-12694 的"未添加驻防事件"）</td><td><code>DefendID</code> 已清零，新占领者生成新 ID，不会进旧集结</td></tr>
+    <tr><td>交战中集结被摘空</td><td>—</td><td>按正常战败处理：先删集结，进攻方再按各建筑规则自动占领</td></tr>
+  </table></div>
+  <div class="note"><b>什么是"交战中把防守集结摘空"：</b>建筑的防守集结正在被敌人攻打，系统把集结里<b>最后一支部队</b>拿走，集结里一个人都不剩。<br>
+例：王座上 A、B、C 驻防，敌方 X 来打，系统把三人临时组成防守集结 rt 与 X 交战。打到一半 A、B 已离开集结，只剩 C；这时 C 跨服、转服、被遣返或强制迁城，系统用 <code>defendRallyMemberLeave</code> 把 C 摘出并瞬间回城，rt 变空但 X 还在打它。<br>
+<b>改前的错误结局：</b>① 新占领者按旧 <code>DefendID</code> 被拉进这个空集结后消失（幽灵驻防，即 H5-12694）；② 直接 <code>DelUnit</code> 空集结的话，X 打赢了却被遣返回城，建筑没人占。<br>
+<b>现在的处理：</b>空集结按"防守方战败"结算（<code>battleTroopDead</code>），和防守部队全部被打死走同一流程：先删集结，再让 X 正常占领。<br>
+<b>触发条件：</b>只在玩家<b>离开地图</b>且他的部队恰好是集结里最后一支时发生。主城被击飞（不跨服）不动建筑防守集结，不会触发；玩家也不能手动召回防守集结里的部队。属罕见情况，但必须在测试服专门验证。</div>
+  <p class="cap" style="margin-top:10px">涉及玩法：王座战（含跨服王座战）、联盟战龙巢、泰坦宝库、冰髓争夺战、GVG、要塞、埋骨之地、阵营中心、远征火车等所有建筑驻防。</p>
+</section>
+
+<section>
+  <h2>待确认 / 未覆盖 / 待测</h2>
+  <ul class="todo">
+    <li><b>联盟战龙巢</b>：<code>ForceRecall</code> 原来明确拒绝（2021 年加的，未写原因），现在按其他建筑一样摘出。需确认联盟战没有"部队锁定"规则。</li>
+    <li><b>策划确认</b>：集结被摘空后战败，集结里已经没人，防守方收不到战败邮件。</li>
+    <li><b>未改</b>：援助别人主城的部队。跨服击飞和普通遣返仍走 <code>cityDefenderRemove</code>，部队会往马上要删的主城行军；<code>forceRecallAll</code> 仍对别人主城执行 <code>forceDisbandCity</code>，会解散那座城的整个防守。</li>
+    <li><b>未改</b>：跨服击飞时他在攻击集结里当成员的部队。主动跨服要求部队都在城里，遣返也已处理，属罕见兜底。</li>
+    <li><b>测试服验证</b>：交战中把防守集结摘空（王座 + 一个会自动占领的建筑）：进攻方应占领而非被遣返，战报正常。</li>
+    <li><b>测试服验证</b>：遣返一个在王座集结里有部队的玩家：不 panic，编队兵力回来正确。</li>
+  </ul>
+</section>
+
+</div>
+</body>
+</html>

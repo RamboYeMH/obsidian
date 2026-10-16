@@ -1,0 +1,289 @@
+<!doctype html>
+<!--
+---
+类型: 模块设计
+模块: BI
+版本: h5_new_tf_v1051_remote_fight_light
+状态: 定稿
+创建日期: 2026-10-08
+tags: [BI, 埋点, 家园, 老玩家回归, 战魂]
+---
+相关: [[指尖王国-BI字典]] [[SSR战魂-BI字段说明]]
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>家园·回归·战魂 BI</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg:#eef1f3; --card:#fff; --ink:#17202a; --muted:#5f6b77; --line:#ccd4dc; --panel:#f7f9fa;
+      --accent:#2674c7; --good:#16856b; --warn:#b7791f; --bad:#c53b3b; --code:#eef2f6;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --bg:#14181c; --card:#1d2328; --ink:#e4e9ee; --muted:#9aa6b2; --line:#34404a; --panel:#232a31;
+        --accent:#6aa9ea; --good:#4cc3a2; --warn:#e3b35c; --bad:#ef7b7b; --code:#2a323a;
+      }
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg:#14181c; --card:#1d2328; --ink:#e4e9ee; --muted:#9aa6b2; --line:#34404a; --panel:#232a31;
+      --accent:#6aa9ea; --good:#4cc3a2; --warn:#e3b35c; --bad:#ef7b7b; --code:#2a323a;
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.65 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+    header { padding:24px 16px 18px; background:var(--card); border-bottom:1px solid var(--line); }
+    header .in, main { width:min(1080px,100%); margin:auto; }
+    h1 { margin:0 0 6px; font-size:clamp(22px,3vw,32px); }
+    header p { margin:0; color:var(--muted); }
+    .toc { margin-top:12px; display:flex; flex-wrap:wrap; gap:8px; }
+    .toc a { font-size:14px; padding:3px 12px; border:1px solid var(--line); border-radius:14px; color:var(--accent); text-decoration:none; background:var(--panel); }
+    main { padding:18px 16px 48px; display:grid; gap:14px; }
+    section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px 18px; min-width:0; scroll-margin-top:12px; }
+    h2 { margin:0 0 10px; font-size:20px; }
+    h3 { margin:18px 0 6px; font-size:16px; }
+    h3:first-of-type { margin-top:6px; }
+    p, li { margin:6px 0; }
+    ul, ol { padding-left:22px; margin:6px 0; }
+    code { background:var(--code); padding:1px 5px; border-radius:4px; font:13px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace; word-break:break-all; }
+    .tldr { border-left:4px solid var(--accent); }
+    .warn { border-left:4px solid var(--warn); }
+    .warn h2 { color:var(--warn); }
+    .table-wrap { overflow-x:auto; }
+    table { border-collapse:collapse; width:100%; min-width:600px; font-size:14px; }
+    th, td { border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top; }
+    th { background:var(--panel); }
+    .muted { color:var(--muted); }
+    .tag { display:inline-block; font-size:12px; padding:0 7px; border-radius:10px; border:1px solid var(--line); color:var(--muted); margin-left:6px; vertical-align:middle; }
+    .tag.bad { color:var(--bad); border-color:var(--bad); }
+    .tag.ok { color:var(--good); border-color:var(--good); }
+    .sev { font-weight:700; white-space:nowrap; }
+    .sev.h { color:var(--bad); } .sev.m { color:var(--warn); } .sev.l { color:var(--muted); }
+  </style>
+</head>
+<body>
+<header>
+  <div class="in">
+    <h1>家园 · 老玩家回归 · 英雄战魂：BI 整理</h1>
+    <p>分支 h5_new_tf_v1051_remote_fight_light · 2026-10-08 · 依据代码实际埋点，并对照钉钉《BI字典》</p>
+    <nav class="toc">
+      <a href="#issues">问题清单</a><a href="#home">家园</a><a href="#return">老玩家回归</a><a href="#warsoul">英雄战魂</a><a href="#common">公共字段</a>
+    </nav>
+  </div>
+</header>
+<main>
+
+  <section class="tldr">
+    <h2>总览</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>模块</th><th>独立 BI 表</th><th>资产流水 reason</th><th>BI字典里有没有</th></tr></thead>
+        <tbody>
+          <tr><td>家园</td><td>5 张：<code>home_land_building_add</code> / <code>_building_del</code> / <code>_sign_reward</code> / <code>_dawn_reward</code> / <code>_groom_reward</code>；装饰拆解借用 <code>reward_id</code></td><td>16 个（610–622 + <code>HomeLandQuest</code>）</td><td><span class="tag bad">完全没有</span></td></tr>
+          <tr><td>老玩家回归</td><td>没有独立表，3 个活动走通用 <code>actv</code> 表（<code>login_restart</code> / <code>newJourney</code> / <code>return_buff</code>）</td><td>5 个（108、368、369、370、624）</td><td><span class="tag ok">actv 三种已收录</span></td></tr>
+          <tr><td>英雄战魂</td><td>1 张：<code>war_soul</code>（升级）</td><td>3 个（623、624、625）</td><td><span class="tag bad">没有</span>（只有星魂 <code>star_soul</code>）</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="warn" id="issues">
+    <h2>问题清单</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>级别</th><th>问题</th><th>位置</th></tr></thead>
+        <tbody>
+          <tr><td class="sev h">高</td><td><b>reason 数字 ID 重复</b>：623 / 624 / 625 各被 3 个 reason 占用；591 / 592 / 593 也各重复一次。按数字 ID 统计的报表会把不同玩法混在一起，其中<b>回归馈礼(624) 和战魂消耗英雄本体(624) 撞号</b>。
+            <ul>
+              <li>623：战魂升级消耗碎片 / 远征寻宝奖励 / 时光剪影领奖</li>
+              <li>624：战魂消耗英雄本体 / 神庙突击奖励 / 回归馈礼领奖</li>
+              <li>625：战魂高级节点解锁 / 神庙伤害奖励 / 英雄荣耀点赞奖励</li>
+              <li>591–593：欢乐弹珠 / 巅峰领地商店</li>
+            </ul></td><td><code>game/bi/def/const.go:1064-1068</code>、<code>:1241-1243</code>、<code>:1254-1259</code>、<code>:1180-1182</code>、<code>:1216-1218</code></td></tr>
+          <tr><td class="sev m">中</td><td><b>家园任务 reason <code>HomeLandQuest</code> 没有登记 BIItem</b>：<code>GetGameMethodID</code> 查不到时返回 0，所以家园任务奖励流水的数字 ID 全是 0。</td><td><code>const.go:546</code>；使用处 <code>mplayer/tiny_play/tiny_homeland.go:225</code></td></tr>
+          <tr><td class="sev m">中</td><td><b>家园 5 张表、战魂 <code>war_soul</code> 都没写进 BI 字典</b>，数据组那边查不到字段定义。</td><td>钉钉《BI字典》</td></tr>
+          <tr><td class="sev m">中</td><td><b>老玩家回归绑定、召回没有行为 BI</b>：<code>return_lost</code> / <code>return_active</code> / <code>return_gift</code> / <code>return_letter</code> 只在发奖时记资产流水，绑定关系、回归身份判定都没有记录，无法分析回归人数和绑定转化。</td><td><code>game/play/internal/ctl_return_binder.go</code>、<code>actv/.../return_*/</code></td></tr>
+          <tr><td class="sev l">低</td><td><b>装饰拆解借用 <code>reward_id</code> 表</b>：<code>reward_list</code> 里放的是<b>建筑 cfgID</b>，而这张表其它地方放的是奖励表 ID，两种 ID 混在一张表里，含义不同。拆解返还的建筑也不会写进 <code>home_land_building_add</code>。</td><td><code>ctl_home_land_decoration.go:61</code>、<code>:155</code></td></tr>
+          <tr><td class="sev l">低</td><td><b>战魂觉醒刻印节点解锁没有独立 BI</b>：普通节点解锁完全没有记录，高级节点只能从 625 的消耗反推，拿不到 <code>node_id</code>。</td><td><code>ctl_war_soul.go</code> <code>OnWarSoulNodeUnlockReq</code></td></tr>
+          <tr><td class="sev l">低</td><td>家园表的字段名风格不统一：用驼峰写法（<code>cfgId</code>、<code>targetPid</code>），其它表多用下划线写法（<code>hero_cfg_id</code>）；<code>rewards</code> 直接塞了 <code>[]*TypIDVal</code> 结构体数组。</td><td><code>mplayer/player_bi.go:2275-2333</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="home">
+    <h2>一、家园</h2>
+    <p class="muted">5 张表的写入函数都在 <code>game/play/internal/mplayer/player_bi.go:2275-2333</code>，表名常量在 <code>game/bi/def/table.go</code>（常量名前缀是 <code>BILogMarchHomeLand*</code>）。每张表除了下面的字段，都带<a href="#common">公共字段</a>。</p>
+
+    <h3>1. <code>home_land_building_add</code><span class="tag">家园建筑进仓库</span></h3>
+    <p>触发：通过资产发放获得家园建筑时（<code>ctl_asset.go:1816</code>），按配置ID写一条。</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>字段</th><th>含义</th><th>类型</th></tr></thead>
+      <tbody>
+        <tr><td><code>cfgId</code></td><td>建筑配置 ID</td><td>int32</td></tr>
+        <tr><td><code>count</code></td><td>增加数量</td><td>int64</td></tr>
+        <tr><td><code>reason</code></td><td>来源 reason_id（例如家园商店购买 <code>home_land_shop_buy</code>）</td><td>string</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>2. <code>home_land_building_del</code><span class="tag">家园建筑出仓库</span></h3>
+    <p>触发：<b>只有</b>家园商店回收建筑时写，每回收 1 个写 1 条（<code>ctl_home_land_build.go:645</code>）。摆放、收回、装饰拆解从仓库移除建筑都不写这张表。</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>字段</th><th>含义</th><th>类型</th></tr></thead>
+      <tbody>
+        <tr><td><code>cfgId</code></td><td>建筑配置 ID</td><td>int32</td></tr>
+        <tr><td><code>count</code></td><td>减少数量（目前固定为 1）</td><td>int32</td></tr>
+        <tr><td><code>reason</code></td><td>目前固定是 <code>home_land_shop_recycle</code></td><td>string</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>3. <code>home_land_sign_reward</code><span class="tag">家园签到领奖</span></h3>
+    <p>触发：玩家手动领取签到奖励（<code>ctl_home_land_sign.go:92</code>），或者签到期结束时把没领的奖励用邮件补发（<code>:207</code>）。每个档位写一条。</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>字段</th><th>含义</th><th>类型</th></tr></thead>
+      <tbody>
+        <tr><td><code>day</code></td><td>签到天数档位（即签到配置 ID）</td><td>int32</td></tr>
+        <tr><td><code>reason</code></td><td><code>homeland_sign_reward</code>（手动领取）/ <code>homeland_sign_mail_reward</code>（邮件补发）</td><td>string</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>4. <code>home_land_dawn_reward</code><span class="tag">晨曦回礼领奖</span></h3>
+    <p>触发：领取晨曦回礼（<code>ctl_home_land.go:475</code>）。</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>字段</th><th>含义</th><th>类型</th></tr></thead>
+      <tbody>
+        <tr><td><code>rewards</code></td><td>奖励列表</td><td><code>[]TypIDVal</code></td></tr>
+        <tr><td><code>reason</code></td><td><code>home_land_dawn_reward</code></td><td>string</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>5. <code>home_land_groom_reward</code><span class="tag">打理奖励</span></h3>
+    <p>触发：打理好友家园时，打理者和被打理者<b>各写一条</b>（<code>ctl_home_land.go:767</code>、<code>:828</code>，以及离线异步路径 <code>:919</code>、<code>:956</code>）。由 <code>role_id</code> 表示这条记录属于谁。</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>字段</th><th>含义</th><th>类型</th></tr></thead>
+      <tbody>
+        <tr><td><code>targetPid</code></td><td>奖励接收者的玩家 ID</td><td>int64</td></tr>
+        <tr><td><code>groomerPid</code></td><td>发起打理的玩家 ID</td><td>int64</td></tr>
+        <tr><td><code>rewards</code></td><td>奖励列表</td><td><code>[]TypIDVal</code></td></tr>
+        <tr><td><code>reason</code></td><td><code>home_land_groom_helper</code>（打理者）/ <code>home_land_groom_target</code>（被打理者）</td><td>string</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>6. 借用表 <code>reward_id</code><span class="tag">装饰拆解</span></h3>
+    <p>触发：拆解装饰物，返还建筑材料（<code>ctl_home_land_decoration.go:61</code>）。字段 <code>reward_list</code> 是 <code>[{RewardID}]</code> 数组，按返还数量展开，<b>里面放的是建筑 cfgID</b>。</p>
+
+    <h3>资产流水 reason</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>reason</th><th>说明</th><th>触发位置</th></tr></thead>
+      <tbody>
+        <tr><td>610</td><td><code>home_land_shop_buy</code></td><td>家园商店购买（每日/每周商店）</td><td><code>commonshop/home_land_daily_shop.go:91</code>、<code>home_land_week_shop.go:92</code></td></tr>
+        <tr><td>611</td><td><code>home_land_shop_recycle</code></td><td>家园商店回收</td><td><code>ctl_home_land_build.go:645</code></td></tr>
+        <tr><td>612</td><td><code>homeland_building_collect</code></td><td>家园建筑产出收取</td><td><code>ctl_home_land_build.go:172</code>、<code>ctl_home_land_cmd.go:215</code></td></tr>
+        <tr><td>613</td><td><code>homeland_treasure_claim</code></td><td>家园秘宝领取</td><td><code>ctl_home_land_treasure.go:103</code></td></tr>
+        <tr><td>614</td><td><code>homeland_sign_reward</code></td><td>家园签到奖励</td><td><code>ctl_home_land_sign.go:92</code></td></tr>
+        <tr><td>615</td><td><code>homeland_building_upgrade</code></td><td>家园建筑升级消耗</td><td><code>ctl_home_land_build.go:802</code>、<code>:834</code></td></tr>
+        <tr><td>616</td><td><code>home_land_dawn_reward</code></td><td>晨曦回礼</td><td><code>ctl_home_land.go:469</code></td></tr>
+        <tr><td>617</td><td><code>home_land_groom_helper</code></td><td>打理奖励（打理者）</td><td><code>ctl_home_land.go:766</code>、<code>:955</code></td></tr>
+        <tr><td>618</td><td><code>home_land_groom_target</code></td><td>打理奖励（被打理者）</td><td><code>ctl_home_land.go:827</code>、<code>:918</code></td></tr>
+        <tr><td>619</td><td><code>homeland_sign_mail_reward</code></td><td>签到奖励邮件补发</td><td><code>ctl_home_land_sign.go:207</code></td></tr>
+        <tr><td>620</td><td><code>homeland_maincity_upgrade_reward</code></td><td>家园主城升级奖励</td><td><code>ctl_home_land_build.go:838</code></td></tr>
+        <tr><td>621</td><td><code>homeland_timber_processing_claim</code></td><td>木材加工厂领取</td><td><code>ctl_home_land_timber.go:53</code></td></tr>
+        <tr><td>622</td><td><code>homeland_unlock_reward</code></td><td>家园解锁奖励</td><td><code>ctl_home_land_helper.go:44</code></td></tr>
+        <tr><td><b>0</b> <span class="tag bad">未登记</span></td><td><code>HomeLandQuest</code></td><td>家园任务</td><td><code>tiny_play/tiny_homeland.go:225</code></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="return">
+    <h2>二、老玩家回归</h2>
+    <p>回归玩法没有独立的 BI 表。下面 3 个活动走通用活动表 <code>actv</code>：由 <code>InitBILogCommon</code>（<code>game/actv/internal/activity/template/base/base.go:130</code>）生成记录，发到 play 模块后由 <code>BILogUserActv</code>（<code>mplayer/player_bi.go:208</code>）写出，<code>Fields</code> 和 <code>Args</code> 平铺成同一层字段。</p>
+
+    <h3><code>actv</code> 表的活动公共字段</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>字段</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td><code>scope</code></td><td>活动范围：<code>server</code> / <code>player</code> / <code>union</code></td></tr>
+        <tr><td><code>actvName</code></td><td>活动名称（中文标题）</td></tr>
+        <tr><td><code>subOperation</code></td><td>具体操作，用来区分是哪个活动（见下表）</td></tr>
+        <tr><td><code>startTs</code></td><td>活动开始时间</td></tr>
+        <tr><td><code>actvID</code></td><td>活动唯一 ID</td></tr>
+        <tr><td><code>cfgID</code></td><td>活动配置 ID</td></tr>
+        <tr><td><code>ownerID</code></td><td>活动所有者</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>各回归活动的专有字段</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>活动</th><th><code>subOperation</code></th><th>专有字段</th><th>触发</th></tr></thead>
+      <tbody>
+        <tr><td>回归活动 - 重启征程（登录）</td><td><code>login_restart</code></td><td><code>loginDays</code>：累计登录天数</td><td>活动期间每日首次登录（<code>login_restart/logic.go:61</code>）</td></tr>
+        <tr><td>回归活动 - 新的旅程</td><td><code>newJourney</code></td><td><code>user_id</code>：原角色 ID<br><code>new_user_id</code>：新角色 ID<br><code>new_server_id</code>：新服务器 ID</td><td>玩家选择去新服（<code>new_journey/ctl.go:68</code>）</td></tr>
+        <tr><td>回归活动 - buff</td><td><code>return_buff</code></td><td><code>buffIDs</code>：发放的 buff ID 列表<br><code>duration</code>：持续时长</td><td>play 模块确认 buff 发放成功后（<code>return_buff/logic.go:54</code>）</td></tr>
+      </tbody>
+    </table></div>
+    <p class="muted">注：BI 字典原来把重启登录的 subOperation 写成 <code>restart_login</code>，和代码里的 <code>login_restart</code> 不一致，xlsx 里已按代码改正。</p>
+
+    <h3>资产流水 reason</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>reason</th><th>说明</th><th>触发位置</th></tr></thead>
+      <tbody>
+        <tr><td>108</td><td><code>activity_login_restart_signin</code></td><td>重启征程签到奖励</td><td><code>login_restart/ctl.go:73</code></td></tr>
+        <tr><td>368</td><td><code>return_letter</code></td><td>流失玩家的回归慰问信</td><td><code>return_letter/ctl.go:46</code></td></tr>
+        <tr><td>369</td><td><code>return_lost_player</code></td><td>老玩家回归绑定活动奖励（回归方）</td><td><code>return_lost/ctl.go:240</code></td></tr>
+        <tr><td>370</td><td><code>return_active_player</code></td><td>活跃玩家召回奖励（召回方）</td><td><code>return_active/ctl.go:130</code>、<code>:162</code>；邮件 <code>logic.go:208</code></td></tr>
+        <tr><td>624 <span class="tag bad">撞号</span></td><td><code>actv_return_gift_reward</code></td><td>回归馈礼领奖</td><td><code>return_gift/ctl.go:133</code></td></tr>
+      </tbody>
+    </table></div>
+    <p class="muted"><code>return_server_recharge_quest</code>（回归服充值任务）发奖用的是通用的 <code>actv_quest</code>，按 reason 区分不出来是回归活动。</p>
+  </section>
+
+  <section id="warsoul">
+    <h2>三、英雄战魂</h2>
+    <p class="muted">详见 [[SSR战魂-BI字段说明]]（<code>模块设计/战魂/SSR战魂-BI字段说明.html</code>）。</p>
+
+    <h3><code>war_soul</code><span class="tag">战魂升级流水</span></h3>
+    <p>触发：每次战魂升级成功（<code>ctl_war_soul.go:360</code>）。<code>related_id</code> 就是本次的 <code>operationID</code>，和 623、624 两条资产流水共用同一个 ID，可以互相关联。</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>字段</th><th>含义</th><th>格式</th></tr></thead>
+      <tbody>
+        <tr><td><code>hero_id</code></td><td>被升级的 SSR 唯一 ID</td><td>字符串</td></tr>
+        <tr><td><code>hero_cfg_id</code></td><td>被升级的 SSR 配置 ID</td><td>字符串</td></tr>
+        <tr><td><code>old_lvl</code> / <code>new_lvl</code></td><td>升级前 / 后的战魂等级</td><td>字符串</td></tr>
+        <tr><td><code>old_exp</code> / <code>new_exp</code></td><td>升级前 / 后当前等级的经验</td><td>字符串</td></tr>
+        <tr><td><code>add_exp</code></td><td>本次投放折算出的战魂经验</td><td>字符串</td></tr>
+        <tr><td><code>frag_detail</code></td><td>消耗的碎片明细</td><td><code>道具ID*数量,...</code>，没有消耗时为 <code>-</code></td></tr>
+        <tr><td><code>hero_detail</code></td><td>消耗的英雄本体明细</td><td><code>uid/cfgID/star星级/q品质,...</code>，没有消耗时为 <code>-</code></td></tr>
+        <tr><td><code>max_star</code></td><td>本次消耗的英雄本体里最高的星级</td><td>字符串，用来筛查高价值消耗</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>资产流水 reason</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>reason</th><th>说明</th><th>触发位置</th></tr></thead>
+      <tbody>
+        <tr><td>623 <span class="tag bad">撞号</span></td><td><code>war_soul_upgrade_cost</code></td><td>升级消耗碎片</td><td><code>ctl_war_soul.go:326</code></td></tr>
+        <tr><td>624 <span class="tag bad">撞号</span></td><td><code>war_soul_upgrade_hero</code></td><td>升级消耗英雄本体</td><td><code>ctl_war_soul.go:333</code></td></tr>
+        <tr><td>625 <span class="tag bad">撞号</span></td><td><code>war_soul_node_unlock_cost</code></td><td>觉醒刻印高级节点解锁消耗</td><td><code>ctl_war_soul.go:409</code></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="common">
+    <h2>公共字段（所有玩家 BI 都带）</h2>
+    <p class="muted">由 <code>newBILog</code>（<code>mplayer/player_bi.go:127</code>）统一填入。</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>分类</th><th>字段</th></tr></thead>
+      <tbody>
+        <tr><td>角色</td><td><code>appid</code> <code>role_id</code> <code>role_name</code> <code>role_level</code> <code>passport_id</code> <code>role_power</code> <code>role_vip_level</code> <code>hero_num</code> <code>stage</code> <code>base_lev</code> <code>base_era</code> <code>guild_id</code> <code>create_role_time</code> <code>role_total_pay</code> <code>role_active_days</code> <code>is_roll_player</code> <code>sdk_account_type</code></td></tr>
+        <tr><td>服务器</td><td><code>server_id</code> <code>cur_server_id</code> <code>cur_server_type</code> <code>server_name</code></td></tr>
+        <tr><td>设备</td><td><code>#system_language</code> <code>#ip</code> <code>#os</code> <code>#os_version</code> <code>#manufacturer</code> <code>#device_id</code> <code>#device_model</code> <code>#screen_height</code> <code>#screen_width</code> <code>#app_version</code> 等</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!doctype html>
+<!--
+---
+类型: 模块设计
+模块: 指尖助手
+版本: h5_new_tf_v1054_assistant
+状态: 进行中
+创建日期: 2026-10-14
+tags: [指尖助手, 错误码, 协议]
+---
+关联: [[指尖助手服务端设计与实现]] [[指尖助手功能架构]] [[指尖助手_配置表]]
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>指尖助手错误码</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg:#eef1f3; --card:#fff; --ink:#17202a; --muted:#5f6b77; --line:#ccd4dc; --panel:#f7f9fa;
+      --accent:#2674c7; --good:#16856b; --warn:#b7791f; --bad:#c53b3b; --code:#eef2f6;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --bg:#14181c; --card:#1d2328; --ink:#e4e9ee; --muted:#9aa6b2; --line:#34404a; --panel:#232a31;
+        --accent:#6aa9ea; --good:#4cc3a2; --warn:#e3b35c; --bad:#ef7b7b; --code:#2a323a;
+      }
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg:#14181c; --card:#1d2328; --ink:#e4e9ee; --muted:#9aa6b2; --line:#34404a; --panel:#232a31;
+      --accent:#6aa9ea; --good:#4cc3a2; --warn:#e3b35c; --bad:#ef7b7b; --code:#2a323a;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.65 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+    header { padding:24px 16px 18px; background:var(--card); border-bottom:1px solid var(--line); }
+    header .in, main { width:min(1180px, 100%); margin:0 auto; }
+    main { padding:16px; }
+    h1 { margin:0 0 6px; font-size:24px; }
+    h2 { margin:28px 0 10px; font-size:19px; }
+    .meta { color:var(--muted); font-size:13px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px 16px; margin:12px 0; }
+    .tw { overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:8px; }
+    table { border-collapse:collapse; width:100%; min-width:760px; font-size:14px; }
+    th, td { text-align:left; vertical-align:top; padding:8px 10px; border-bottom:1px solid var(--line); }
+    th { background:var(--panel); font-weight:600; white-space:nowrap; }
+    tr:last-child td { border-bottom:0; }
+    td.num { font-variant-numeric:tabular-nums; white-space:nowrap; font-weight:600; }
+    code { background:var(--code); padding:1px 5px; border-radius:4px; font:13px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace; }
+    td code.id { white-space:nowrap; }
+    .loc { color:var(--muted); font-size:12.5px; }
+    .tag { display:inline-block; font-size:12px; padding:0 7px; border-radius:10px; border:1px solid currentColor; margin:1px 4px 1px 0; white-space:nowrap; }
+    .ack { color:var(--accent); } .skip { color:var(--warn); } .fail { color:var(--bad); } .new { color:var(--good); }
+    ul { margin:6px 0; padding-left:20px; }
+  </style>
+</head>
+<body>
+<header><div class="in">
+  <h1>指尖助手错误码</h1>
+  <div class="meta">分支 h5_new_tf_v1054_assistant · 2026-10-14 创建，2026-10-16 更新 · 定义见 protocol <code>pb/cspb/def.proto</code>，号段 11780–11799</div>
+</div></header>
+<main>
+
+<div class="card">
+  <b>错误码出现在三个位置</b>
+  <ul>
+    <li><span class="tag ack">Ack</span>请求直接失败：各 <code>Assistant*Ack.ErrCode</code>（面板/保存设置/开始/取消/结果），处理在 <code>game/play/internal/ctl_assistant.go</code></li>
+    <li><span class="tag skip">任务/步骤原因</span>面板 <code>AssistantTaskInfo.Reason</code>（子事件为何不可选）与 <code>AssistantStepInfo.Reason</code>（步骤为何跳过/停止）</li>
+    <li><span class="tag fail">步骤失败</span>步骤执行中失败、超时、取消，写入 <code>AssistantStepInfo.Reason</code>，状态为 Failed / Cancelled</li>
+  </ul>
+  代码行号基于当前工作区（含未提交改动）；文件均在 <code>game/play/internal/</code> 下。完整设计见 <code>指尖助手服务端设计与实现.md</code>。
+</div>
+
+<h2>一、指尖助手专用错误码（11780–11799）</h2>
+<div class="tw"><table>
+<thead><tr><th>值</th><th>枚举名</th><th>含义</th><th>位置</th><th>触发场景</th><th>代码位置</th></tr></thead>
+<tbody>
+<tr><td class="num">11780</td><td><code class="id">ErrCodeAssistantNotOpen</code></td><td>功能未解锁</td><td><span class="tag ack">Ack</span></td><td>主城入口未解锁（<code>gdconf.Fingertipassistant</code>，配置 key <code>FingertipAssistant</code>）时打开面板、保存设置、开始速办</td><td class="loc">ctl_assistant.go:44, 62<br>assistant/engine.go:126</td></tr>
+<tr><td class="num">11781</td><td><code class="id">ErrCodeAssistantBusy</code></td><td>已有正在执行的速办批次</td><td><span class="tag ack">Ack</span></td><td>开始速办时已有 Running / Waiting / Cancelling 的批次</td><td class="loc">assistant/engine.go:129</td></tr>
+<tr><td class="num">11782</td><td><code class="id">ErrCodeAssistantNoTask</code></td><td>没有可执行的任务</td><td><span class="tag ack">Ack</span></td><td>勾选的子事件中当前没有一个可执行</td><td class="loc">assistant/engine.go:136</td></tr>
+<tr><td class="num">11783</td><td><code class="id">ErrCodeAssistantNeedLineup</code></td><td>勾选了讨伐/BOSS情报但未选派遣编队</td><td><span class="tag ack">Ack</span></td><td>可执行任务中包含情报站讨伐或 BOSS，且设置里 <code>RadarLineupIDs</code> 为空</td><td class="loc">assistant/engine.go:143</td></tr>
+<tr><td class="num">11784</td><td><code class="id">ErrCodeAssistantPriceChanged</code></td><td>报价已变化，需要重新确认</td><td><span class="tag ack">Ack</span></td><td>服务端报价中任一道具数量高于客户端 <code>expectCost</code> 中的同一道具，同时在 <code>needCost</code> 返回新报价（消耗为策划配置的道具）</td><td class="loc">assistant/engine.go:147</td></tr>
+<tr><td class="num">11785</td><td><code class="id">ErrCodeAssistantBatchNotFound</code></td><td>批次不存在</td><td><span class="tag ack">Ack</span></td><td>取消：BatchId 不匹配或批次已结束；查看/确认结果：未确认结果和执行记录里都没有这个 BatchId</td><td class="loc">assistant/engine.go:465<br>ctl_assistant.go:135</td></tr>
+<tr><td class="num">11786</td><td><code class="id">ErrCodeAssistantTaskDisabled</code></td><td>子事件未开启或配置不存在</td><td><span class="tag skip">任务/步骤原因</span><span class="tag fail">步骤失败</span></td><td>配置未启用；SubType 没有注册规则（如配置启用了服务端未实现的子事件）；广告配置 <code>AdvPostCfg</code> 缺失；世界之敌副本配置不存在；唤醒时规则不存在则步骤失败</td><td class="loc">assistant/engine.go:83, 87, 253, 413<br>ctl_assistant_host.go:192, 594</td></tr>
+<tr><td class="num">11787</td><td><code class="id">ErrCodeAssistantTaskLocked</code></td><td>子事件开启条件不满足</td><td><span class="tag skip">任务/步骤原因</span></td><td>配置 <code>UnlockCondition</code> 不满足（面板与执行前都会重新校验）；试炼之塔未解锁；属性塔未达解锁层；情报站数据不存在；巅峰竞技场 <code>Unlock_TopArena</code> 未解锁；主线塔防未开启；世界之敌副本未解锁</td><td class="loc">assistant/engine.go:90, 296<br>ctl_assistant_host.go:265, 272, 304, 335, 401, 528, 548, 597, 645</td></tr>
+<tr><td class="num">11788</td><td><code class="id">ErrCodeAssistantNothingToDo</code></td><td>当前没有可领取/可执行的内容</td><td><span class="tag skip">任务/步骤原因</span></td><td>挂机、城墙、捐献、免费抽卡、宠物技能、试炼、情报站当前都无内容；竞技场免费次数用完；体力扫荡今日次数用完；金币/龙纹石副本今日次数用完；情报已不在进行中</td><td class="loc">assistant/rule_claim.go:90, 117, 136, 150, 197<br>rule_extra.go:23, 32, 53 · rule_trial.go:39 · rule_radar.go:178 · rule_dungeon.go:38<br>ctl_assistant_host.go:223, 411, 531, 606, 791, 941, 984</td></tr>
+<tr><td class="num">11789</td><td><code class="id">ErrCodeAssistantNeedAdCard</code></td><td>需要免广告权益</td><td><span class="tag skip">任务/步骤原因</span></td><td>广告奖励子事件，玩家没有激活的免广告月卡（<code>MonthCardTypeAdv</code>）</td><td class="loc">ctl_assistant_host.go:188</td></tr>
+<tr><td class="num">11790</td><td><code class="id">ErrCodeAssistantNoIdleLineup</code></td><td>所选编队均不可用</td><td><span class="tag skip">任务/步骤原因</span></td><td>情报站讨伐/BOSS：所选编队都在城内但不可派遣（无英雄、委托中等），按 <code>Retry_Interval</code> 重试仍不行。所选编队被其他玩法占用（不在城内）时不报此错，而是等它们回城后继续派</td><td class="loc">assistant/rule_radar.go:498</td></tr>
+<tr><td class="num">11791</td><td><code class="id">ErrCodeAssistantWrongMap</code></td><td>当前所在地图不能执行</td><td><span class="tag skip">任务/步骤原因</span></td><td>玩家在试炼副本中；情报站要求在世界地图或远征地图（终止性原因）；玩家正在巅峰竞技场副本里</td><td class="loc">ctl_assistant_host.go:308, 408, 648<br>assistant/rule_radar.go:341</td></tr>
+<tr><td class="num">11792</td><td><code class="id">ErrCodeAssistantAttemptsExceeded</code></td><td>单条情报/单层多次尝试仍失败</td><td><span class="tag fail">步骤失败</span></td><td>情报怪打输次数用尽；试炼之塔同一层重试次数用尽</td><td class="loc">assistant/rule_radar.go:293<br>assistant/rule_trial.go:92</td></tr>
+<tr><td class="num">11793</td><td><code class="id">ErrCodeAssistantTimeout</code></td><td>执行超时</td><td><span class="tag fail">步骤失败</span></td><td>① 主事件执行时长限制到点（<code>FingertipAssistantGroupCfg.TimeLimit</code>，竞技场为规则自带 3 分钟）：当前步骤及同组未开始步骤失败，继续下一个主事件；② 批次总超时：中止批次；③ 资源副本/竞技场单场战斗 60 秒未回或战斗服务异常</td><td class="loc">assistant/engine.go:249, 310, 391, 407<br>rule_dungeon.go:69 · rule_arena.go:56</td></tr>
+<tr><td class="num">11794</td><td><code class="id">ErrCodeAssistantCancelled</code></td><td>已取消</td><td><span class="tag fail">步骤失败</span></td><td>玩家取消或批次中止后，未执行的步骤状态为 Cancelled；试炼、资源副本、竞技场挑战中取消</td><td class="loc">assistant/engine.go:245, 353, 479, 507<br>rule_trial.go:100, 115 · rule_dungeon.go:78, 86 · rule_arena.go:73, 81</td></tr>
+<tr><td class="num">11795</td><td><code class="id">ErrCodeAssistantNotOpenToday</code></td><td>今日未开放</td><td><span class="tag skip">任务/步骤原因</span></td><td>属性试炼塔今天不开放</td><td class="loc">ctl_assistant_host.go:317</td></tr>
+<tr><td class="num">11796</td><td><code class="id">ErrCodeAssistantJumpFightLocked</code></td><td>跳过战斗未解锁</td><td><span class="tag skip">任务/步骤原因</span></td><td>勇者塔层数未达 <code>TrialTowerJumpFightingUnlocking</code>，不允许代打（否则等于白送跳过功能）。巅峰竞技场不受跳过战斗积分要求限制</td><td class="loc">ctl_assistant_host.go:314</td></tr>
+<tr><td class="num">11797</td><td><code class="id">ErrCodeAssistantCityBeAttack</code></td><td>城堡正在被攻击</td><td><span class="tag skip">任务/步骤原因</span></td><td>情报站执行时城堡被攻击（<code>City.BeAttack</code>），终止性原因</td><td class="loc">ctl_assistant_host.go:654<br>assistant/rule_radar.go:342</td></tr>
+<tr><td class="num">11798</td><td><code class="id">ErrCodeAssistantNoActionPoint</code></td><td>行动力不足且没有可自动使用的道具</td><td><span class="tag skip">任务/步骤原因</span></td><td>宝藏/营救直接完成或行军检查时行动力不足，且未授权自动用道具、道具不足或超出授权数量，终止性原因。行军的行动力检查在 play 阶段2，异步回传；出现后本阶段不再派遣</td><td class="loc">ctl_assistant_host.go:797, 800<br>ctl_lineup.go:1640 · assistant/rule_radar.go:340</td></tr>
+<tr><td class="num">11799</td><td><code class="id">ErrCodeAssistantResultUnconfirmed</code> <span class="tag new">本次新增</span></td><td>上一轮结算结果尚未确认</td><td><span class="tag ack">Ack</span></td><td>上一轮批次结束后，玩家必须通过 <code>AssistantResultReq{confirm:true}</code> 确认结果，确认之前不能开启下一轮</td><td class="loc">assistant/engine.go:132</td></tr>
+</tbody>
+</table></div>
+
+<h2>二、透传的原玩法错误码</h2>
+<p class="meta">指尖助手通过 IHost 调用原有玩法，以下错误码直接透传到任务/步骤原因中。</p>
+<div class="tw"><table>
+<thead><tr><th>值</th><th>枚举名</th><th>含义</th><th>子事件</th><th>场景</th><th>代码位置</th></tr></thead>
+<tbody>
+<tr><td class="num">2</td><td><code class="id">ErrCodeServerData</code></td><td>服务器数据错误</td><td>通用</td><td>步骤处于等待状态但规则不是事件规则；行军失败事件没带错误码时的默认值；征兵解锁配置缺失</td><td class="loc">assistant/engine.go:420 · rule_radar.go:227<br>ctl_slgcamp.go:233</td></tr>
+<tr><td class="num">25</td><td><code class="id">ErrCodeUnavailable</code></td><td>功能未开放</td><td>1001 / 1002 资源副本</td><td>世界之敌副本配置不存在，或<b>历史最高伤害未达到快速扫荡所需伤害 <code>Requirements</code>（当前 100 万）</b></td><td class="loc">ctl_world_enemy.go:1100, 1104</td></tr>
+<tr><td class="num">3813 / 3814 等</td><td><code class="id">ErrCodeAssetCount*</code></td><td>资源不足</td><td>1021 / 1031 等</td><td>军营材料一个兵都不够；体力扫荡体力不足（原玩法 <code>CheckDecAssets</code> 的资源不足错误码）</td><td class="loc">ctl_assistant_host.go:555~572<br>ctl_tiny_tower_single.go:515</td></tr>
+<tr><td class="num">7050</td><td><code class="id">ErrCodeLineupIndexErr</code></td><td>部队下标错误</td><td>1001 / 1002 资源副本</td><td>世界之敌编队为空</td><td class="loc">ctl_world_enemy.go:1130</td></tr>
+<tr><td class="num">7053</td><td><code class="id">ErrCodeLineupNotFound</code></td><td>部队未找到</td><td>情报站</td><td>派遣时编队不存在</td><td class="loc">ctl_assistant_host.go:818</td></tr>
+<tr><td class="num">7060</td><td><code class="id">ErrCodeSlgCampNotUnlock</code></td><td>军营未解锁</td><td>1021 军营招兵</td><td>征兵功能未解锁（科技等级）</td><td class="loc">ctl_slgcamp.go:236</td></tr>
+<tr><td class="num">7061</td><td><code class="id">ErrCodeSlgCampWrongStatus</code></td><td>军营状态错误</td><td>1021 军营招兵</td><td>正在生产中，不能再次征兵</td><td class="loc">ctl_assistant_host.go:561</td></tr>
+<tr><td class="num">7066</td><td><code class="id">ErrCodeSlgCampWrongMaxCount</code></td><td>最大可入数量为0</td><td>1021 军营招兵</td><td>材料足够但单次上限为 0</td><td class="loc">ctl_assistant_host.go:569</td></tr>
+<tr><td class="num">8029</td><td><code class="id">ErrCodeCrossChatCDLimit</code></td><td>（原玩法复用）</td><td>1001 / 1002 资源副本</td><td>世界之敌 Boss 关卡配置缺失</td><td class="loc">ctl_world_enemy.go:1115</td></tr>
+<tr><td class="num">9016</td><td><code class="id">ErrCodePlayerNotInUnion</code></td><td>玩家未在联盟内</td><td>201 联盟捐献</td><td>不在联盟</td><td class="loc">ctl_assistant_host.go:209</td></tr>
+<tr><td class="num">9242</td><td><code class="id">ErrCodeUnionTreasureunInsufficient</code></td><td>次数不足</td><td>1001 / 1002 资源副本</td><td>世界之敌今日次数为 0（助手面板上会归为 NothingToDo）</td><td class="loc">ctl_world_enemy.go:1109, 1136</td></tr>
+<tr><td class="num">9252</td><td><code class="id">ErrCodeTopArenaCannotBattleSettlement</code></td><td>结算期间不能战斗</td><td>1011 巅峰竞技场</td><td>竞技场未开放或处于每日结算时段</td><td class="loc">ctl_assistant_host.go:404</td></tr>
+<tr><td class="num">19207</td><td><code class="id">ErrCodeArenaChallengers</code></td><td>挑战对手信息异常</td><td>1011 巅峰竞技场</td><td>刷新后仍没有可挑战的对手</td><td class="loc">ctl_assistant_host.go:459</td></tr>
+<tr><td class="num">25600</td><td><code class="id">ErrCodeTrialTowerHeroNotEnough</code></td><td>对应属性的英雄数量不够</td><td>503 属性试炼</td><td>属性塔挑战</td><td class="loc">ctl_assistant_host.go:324</td></tr>
+<tr><td class="num">25601</td><td><code class="id">ErrCodeTrialTowerNotOpen</code></td><td>试炼未解锁</td><td>502 / 503</td><td>试炼层配置不存在 / 试炼未开放</td><td class="loc">ctl_assistant_host.go:332, 366</td></tr>
+<tr><td class="num">25602</td><td><code class="id">ErrCodeTrialTowerAlreadyFinish</code></td><td>已挑战过</td><td>502 / 503</td><td>已到达当前最高层，没有下一层</td><td class="loc">ctl_assistant_host.go:328</td></tr>
+<tr><td class="num">25603</td><td><code class="id">ErrCodeTrialTowerDailyNumLimit</code></td><td>今日挑战次数限制</td><td>502 / 503</td><td>试炼之塔今日次数用尽</td><td class="loc">ctl_assistant_host.go:320</td></tr>
+<tr><td class="num">25604</td><td><code class="id">ErrCodeTrialTowerDailyRewardGot</code></td><td>每日奖励已经领取</td><td>501 勇者日奖</td><td>今日已领</td><td class="loc">ctl_trial_tower.go:172</td></tr>
+<tr><td class="num">50016</td><td><code class="id">ErrCodeTowerChapter</code></td><td>塔防章节配置错误</td><td>1031 体力扫荡</td><td>当前最高章节配置缺失</td><td class="loc">ctl_tiny_tower_single.go:515</td></tr>
+<tr><td class="num">50018</td><td><code class="id">ErrCodeSweepTimes</code></td><td>扫荡次数不足</td><td>1031 体力扫荡</td><td>今日普通扫荡次数用完（面板归为 NothingToDo）</td><td class="loc">ctl_tiny_tower_single.go:527</td></tr>
+<tr><td class="num">50021</td><td><code class="id">ErrCodeAdvSource</code></td><td>广告源不存在</td><td>1031 体力扫荡</td><td><code>AdvPostCfg(RawTowerSweep)</code> 缺失</td><td class="loc">ctl_tiny_tower_single.go:523</td></tr>
+<tr><td class="num">51020</td><td><code class="id">ErrCodeRadarCannotAttackInExpetionEnd</code></td><td>远征结束前夕不让开情报站</td><td>情报站</td><td>远征末期执行情报站，终止性原因</td><td class="loc">ctl_assistant_host.go:651<br>assistant/rule_radar.go:343</td></tr>
+</tbody>
+</table></div>
+<p class="meta">另外，开始速办预扣道具失败时，<code>Precharge</code> 中 <code>CheckDecAssets</code> 返回的资源不足错误码会直接放到 <code>AssistantStartAck.ErrCode</code>（assistant/engine.go:159）。</p>
+
+</main>
+</body>
+</html>

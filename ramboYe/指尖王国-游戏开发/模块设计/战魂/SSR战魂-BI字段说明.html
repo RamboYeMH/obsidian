@@ -1,0 +1,149 @@
+<!doctype html>
+<!--
+---
+类型: 模块设计
+模块: SSR战魂
+版本: h5_new_tf_v1051_remote_fight_light
+状态: 定稿
+创建日期: 2026-10-08
+tags: [战魂, BI, 埋点, 资产流水]
+---
+相关: [[《指尖王国》SSR战魂系统策划案新版]] [[SSR战魂-配表说明]]
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SSR战魂 BI 字段</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg:#eef1f3; --card:#fff; --ink:#17202a; --muted:#5f6b77; --line:#ccd4dc; --panel:#f7f9fa;
+      --accent:#2674c7; --good:#16856b; --warn:#b7791f; --bad:#c53b3b; --code:#eef2f6;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --bg:#14181c; --card:#1d2328; --ink:#e4e9ee; --muted:#9aa6b2; --line:#34404a; --panel:#232a31;
+        --accent:#6aa9ea; --good:#4cc3a2; --warn:#e3b35c; --bad:#ef7b7b; --code:#2a323a;
+      }
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg:#14181c; --card:#1d2328; --ink:#e4e9ee; --muted:#9aa6b2; --line:#34404a; --panel:#232a31;
+      --accent:#6aa9ea; --good:#4cc3a2; --warn:#e3b35c; --bad:#ef7b7b; --code:#2a323a;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.65 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+    header { padding:24px 16px 18px; background:var(--card); border-bottom:1px solid var(--line); }
+    header .in, main { width:min(1040px,100%); margin:auto; }
+    h1 { margin:0 0 6px; font-size:clamp(22px,3vw,32px); }
+    header p { margin:0; color:var(--muted); }
+    main { padding:18px 16px 48px; display:grid; gap:14px; }
+    section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px 18px; min-width:0; }
+    h2 { margin:0 0 10px; font-size:19px; }
+    h3 { margin:16px 0 6px; font-size:16px; }
+    p, li { margin:6px 0; }
+    ul, ol { padding-left:22px; margin:6px 0; }
+    code { background:var(--code); padding:1px 5px; border-radius:4px; font:13px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace; word-break:break-all; }
+    .tldr { border-left:4px solid var(--accent); }
+    .tldr strong { color:var(--accent); }
+    .table-wrap { overflow-x:auto; }
+    table { border-collapse:collapse; width:100%; min-width:560px; font-size:14px; }
+    th, td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+    th { background:var(--panel); }
+    .warn { border-left:4px solid var(--warn); }
+    .warn h2 { color:var(--warn); }
+    .muted { color:var(--muted); }
+    .tag { display:inline-block; font-size:12px; padding:0 7px; border-radius:10px; border:1px solid var(--line); color:var(--muted); margin-left:6px; }
+    .tag.del { color:var(--bad); border-color:var(--bad); }
+  </style>
+</head>
+<body>
+<header>
+  <div class="in">
+    <h1>SSR战魂：BI 埋点与字段</h1>
+    <p>分支 h5_new_tf_v1051_remote_fight_light · 2026-10-08 · 代码位置 <code>game/play/internal/ctl_war_soul.go</code>、<code>mplayer/player_bi.go</code>、<code>game/bi/def</code></p>
+  </div>
+</header>
+<main>
+  <section class="tldr">
+    <h2>结论</h2>
+    <ul>
+      <li>战魂有 <strong>2 张独立 BI 表</strong>：<code>war_soul_upgrade</code>（战魂升级成功写一条）、<code>war_soul_node</code>（觉醒刻印节点解锁成功写一条）。</li>
+      <li>资产流水里有 <strong>3 个战魂 reason</strong>：628 升级消耗碎片、629 升级消耗英雄本体、630 解锁高级节点消耗。</li>
+      <li>独立表的 <code>related_id</code> 与资产流水的事件 ID 都是同一个 <code>operationID</code>，可以用它把同一次升级的流水关联起来。</li>
+      <li><strong>觉醒刻印节点解锁</strong>单独写入 <code>war_soul_node</code> 表，见文末。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>一、独立 BI 表 <code>war_soul_upgrade</code><span class="tag">战魂升级流水</span></h2>
+    <ul>
+      <li>表名常量：<code>def.BILogFileWarSoulUpgrade = "war_soul_upgrade"</code>（<code>game/bi/def/table.go:58</code>）</li>
+      <li>写入函数：<code>(*Player).BILogWarSoulLevel</code>（<code>game/play/internal/mplayer/player_bi.go:1377</code>）</li>
+      <li>触发位置：<code>OnWarSoulUpgradeReq</code> 扣除材料、加经验之后（<code>game/play/internal/ctl_war_soul.go:360</code>）</li>
+    </ul>
+
+    <h3>战魂专有字段</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>字段</th><th>含义</th><th>格式 / 说明</th></tr></thead>
+        <tbody>
+          <tr><td><code>hero_id</code></td><td>被升级的 SSR 英雄唯一 ID</td><td>字符串</td></tr>
+          <tr><td><code>hero_cfg_id</code></td><td>被升级的 SSR 配置 ID</td><td>字符串</td></tr>
+          <tr><td><code>old_lvl</code></td><td>升级前的战魂等级</td><td>字符串</td></tr>
+          <tr><td><code>new_lvl</code></td><td>升级后的战魂等级</td><td>字符串</td></tr>
+          <tr><td><code>old_exp</code></td><td>升级前当前等级的经验</td><td>字符串</td></tr>
+          <tr><td><code>new_exp</code></td><td>升级后当前等级的经验</td><td>字符串</td></tr>
+          <tr><td><code>add_exp</code></td><td>本次投放折算出的战魂经验</td><td>字符串</td></tr>
+          <tr><td><code>frag_detail</code></td><td>消耗的碎片明细</td><td><code>道具ID*数量,...</code>，没有消耗时为 <code>-</code>（<code>ctl_war_soul_material.go:319</code>）</td></tr>
+          <tr><td><code>hero_detail</code></td><td>消耗的英雄本体明细</td><td><code>uid/cfgID/star星级/q品质,...</code>，没有消耗时为 <code>-</code>；在删除英雄前记录快照（<code>ctl_war_soul_material.go:307</code>）</td></tr>
+          <tr><td><code>max_star</code></td><td>本次消耗的英雄本体里最高的星级</td><td>字符串，用来筛查高价值消耗；对应的预警门槛是 <code>WarSoul_Risk_Star_Threshold</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>公共字段<span class="tag">所有 BI 都有</span></h3>
+    <p class="muted">由 <code>newBILog</code>（<code>player_bi.go:127</code>）统一填入：</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>分类</th><th>字段</th></tr></thead>
+        <tbody>
+          <tr><td>角色</td><td><code>appid</code> <code>role_id</code> <code>role_name</code> <code>role_level</code> <code>passport_id</code> <code>role_power</code> <code>role_vip_level</code> <code>hero_num</code> <code>stage</code> <code>base_lev</code> <code>base_era</code> <code>guild_id</code> <code>create_role_time</code> <code>role_total_pay</code> <code>role_active_days</code> <code>is_roll_player</code> <code>sdk_account_type</code></td></tr>
+          <tr><td>服务器</td><td><code>server_id</code> <code>cur_server_id</code> <code>cur_server_type</code> <code>server_name</code></td></tr>
+          <tr><td>设备</td><td><code>#system_language</code> <code>#ip</code> <code>#os</code> <code>#os_version</code> <code>#manufacturer</code> <code>#device_id</code> <code>#device_model</code> <code>#screen_height</code> <code>#screen_width</code> <code>#app_version</code> 等</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>二、资产流水 reason<span class="tag">game/bi/def/const.go:475-477 / 1064-1068</span></h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>reason</th><th>说明</th><th>触发位置</th></tr></thead>
+        <tbody>
+          <tr><td>628</td><td><code>war_soul_upgrade_cost</code></td><td>战魂升级消耗碎片</td><td><code>ctl_war_soul.go:326</code></td></tr>
+          <tr><td>629</td><td><code>war_soul_upgrade_hero</code></td><td>战魂升级消耗英雄本体（英雄删除及返还）</td><td><code>ctl_war_soul.go:333</code></td></tr>
+          <tr><td>630</td><td><code>war_soul_node_unlock_cost</code></td><td>解锁觉醒刻印高级节点的消耗</td><td><code>ctl_war_soul.go:409</code></td></tr>
+          <tr class="muted"><td>626</td><td><code>war_soul_node_reward</code><span class="tag del">已废弃</span></td><td>原阵营进度奖励，新版策划案已删除</td><td>ID 保留不再使用</td></tr>
+          <tr class="muted"><td>627</td><td><code>war_soul_skin_reward</code><span class="tag del">已废弃</span></td><td>原领主档案皮肤，新版策划案已删除</td><td>ID 保留不再使用</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section>
+    <h2>觉醒刻印节点解锁（独立表 war_soul_node）</h2>
+    <p>写入函数：<code>(*Player).BILogWarSoulNodeUnlock</code>（<code>mplayer/player_bi.go</code>）；触发位置：<code>OnWarSoulNodeUnlockReq</code> 解锁成功后。普通节点、高级节点都记。</p>
+    <ul>
+      <li><code>related_id</code>：本次解锁的 operationID，高级节点与资产流水 630 的事件 ID 相同。</li>
+      <li><code>hero_id</code> / <code>hero_cfg_id</code>：SSR 英雄唯一 ID / 配置 ID。</li>
+      <li><code>node_id</code>：解锁的节点 ID。</li>
+      <li><code>war_soul_lvl</code>：解锁时的战魂等级。</li>
+    </ul>
+    <p>表名常量：<code>def.BILogFileWarSoulNode = "war_soul_node"</code>（<code>game/bi/def/table.go</code>）。同时修复了升级流水 <code>old_lvl</code> 之前没写入的问题。</p>
+  </section>
+</main>
+</body>
+</html>

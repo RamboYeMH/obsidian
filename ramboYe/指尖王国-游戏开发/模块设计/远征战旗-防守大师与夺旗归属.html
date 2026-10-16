@@ -1,0 +1,186 @@
+<!doctype html>
+<!--
+---
+类型: 模块设计
+模块: 远征战旗
+版本: h5_new_tf_v1051_remote_fight_light
+状态: 定稿
+创建日期: 2026-09-27
+tags: [远征, 战旗, 防守大师, 夺旗, 读条]
+---
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>远征战旗防守大师</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg:#eef1f3; --card:#fff; --ink:#17202a; --muted:#5f6b77; --line:#ccd4dc; --panel:#f7f9fa;
+      --accent:#2674c7; --good:#16856b; --warn:#b7791f; --bad:#c53b3b; --code:#eef2f6;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --bg:#14181c; --card:#1d2328; --ink:#e4e9ee; --muted:#9aa6b2; --line:#34404a; --panel:#232a31;
+        --accent:#6aa9ea; --good:#4cc3a2; --warn:#e3b35c; --bad:#ef7b7b; --code:#2a323a;
+      }
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg:#14181c; --card:#1d2328; --ink:#e4e9ee; --muted:#9aa6b2; --line:#34404a; --panel:#232a31;
+      --accent:#6aa9ea; --good:#4cc3a2; --warn:#e3b35c; --bad:#ef7b7b; --code:#2a323a;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.65 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+    header { padding:24px 16px 18px; background:var(--card); border-bottom:1px solid var(--line); }
+    header .in, main { width:min(1040px,100%); margin:auto; }
+    h1 { margin:0 0 6px; font-size:clamp(22px,3vw,32px); }
+    header p { margin:0; color:var(--muted); }
+    main { padding:18px 16px 48px; display:grid; gap:14px; }
+    section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px 18px; min-width:0; }
+    h2 { margin:0 0 10px; font-size:19px; }
+    h3 { margin:16px 0 6px; font-size:16px; }
+    p, li { margin:6px 0; }
+    ul, ol { padding-left:22px; margin:6px 0; }
+    code { background:var(--code); padding:1px 5px; border-radius:4px; font:13px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace; word-break:break-all; }
+    .tldr { border-left:4px solid var(--accent); }
+    .tldr strong { color:var(--accent); }
+    .table-wrap { overflow-x:auto; }
+    table { border-collapse:collapse; width:100%; min-width:560px; font-size:14px; }
+    th, td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+    th { background:var(--panel); }
+    .flow { display:grid; gap:8px; }
+    .step { display:grid; grid-template-columns:34px 1fr; gap:10px; align-items:start; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
+    .num { width:28px; height:28px; border-radius:50%; background:var(--accent); color:var(--card); display:grid; place-items:center; font-weight:700; font-size:14px; }
+    .step b { display:block; }
+    .step small { color:var(--muted); }
+    .branch { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .box { border:1px solid var(--line); border-radius:8px; padding:10px 12px; background:var(--panel); }
+    .box.kill { border-left:4px solid var(--bad); }
+    .box.move { border-left:4px solid var(--good); }
+    .warn { border-left:4px solid var(--warn); }
+    .warn h3 { color:var(--warn); }
+    .tag { display:inline-block; font-size:12px; padding:0 7px; border-radius:10px; border:1px solid var(--line); color:var(--muted); margin-left:6px; }
+    @media (max-width:680px) { .branch { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+<header>
+  <div class="in">
+    <h1>远征战旗：防守大师与夺旗归属</h1>
+    <p>分支 h5_new_tf_v1051_remote_fight_light · 2026-09-27 · 代码位置 <code>game/wmap/internal/ctl_area.go</code>、<code>mcity/battle_area.go</code></p>
+  </div>
+</header>
+<main>
+
+<section class="tldr">
+  <h2>结论</h2>
+  <p>防守大师是<strong>自己离开</strong>的（行军、换位置或离开战旗范围），<strong>不是被打死</strong>，这时按战力决定归属。服务器在范围内<strong>另外几个有资格的阵营</strong>里比较，谁的部队战力最高，旗就给谁。所谓有资格，就是在夺旗阵营列表里的阵营，加上正向阵营（进度条目前归属的阵营）。<strong>当前持旗的阵营这一轮不参加比较。</strong>范围内一个候选都没有时，旗回到正向阵营。</p>
+  <p>防守大师<strong>被打死</strong>时，走的是另一套规则：最后一回合伤害最高的部队所在阵营优先拿旗（见第 3 节）。</p>
+</section>
+
+<section>
+  <h2>整体流程（每秒一次）</h2>
+  <p><code>TimerTypeAreaProgressCheck</code> 对每个领地建筑调用 <code>tickAreaProgress</code>（<code>ctl_area.go:1032</code>）：</p>
+  <div class="flow">
+    <div class="step"><div class="num">1</div><div><b>CheckBfdOccupyAndCF</b><small>战旗已被完整占领时清空夺旗阵营列表</small></div></div>
+    <div class="step"><div class="num">2</div><div><b>captureFlagCampsCheck</b><small>有夺旗阵营时，查询战旗半径内的玩家部队，供本次 tick 复用</small></div></div>
+    <div class="step"><div class="num">3</div><div><b>resetAreaProgressCampWhenNoDefender</b><small>范围内没有有效加速玩家时，读条阵营回到归属阵营</small></div></div>
+    <div class="step"><div class="num">4</div><div><b>refreshAreaDefenderMaster</b><small>判断是否重选防守大师，并决定下一个读条阵营（本文重点）</small></div></div>
+    <div class="step"><div class="num">5</div><div><b>calculateAreaBuildProgress</b><small>推进读条进度。没有防守大师时读条速度为 0</small></div></div>
+  </div>
+</section>
+
+<section>
+  <h2>1. 什么时候重选防守大师</h2>
+  <p><code>shouldRefreshAreaDefenderMaster</code>（<code>ctl_area.go:1210</code>）满足下面任意一条就重选：</p>
+  <ul>
+    <li>当前没有防守大师，也就是 <code>DefenderMasterTroopId == 0</code>；</li>
+    <li>部队已经不存在，或者已经死亡；</li>
+    <li><strong>坐标和定桩时记下的 <code>DefenderMasterTroopPosition</code> 不一样了</strong>，所以只要"动了"就会触发；</li>
+    <li>部队的阵营和当前读条阵营 <code>ProgressCampId</code> 对不上；</li>
+    <li>部队已经离开战旗范围（<code>isAreaBuildDefenderOutOfRange</code>）。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>2. 选出每个阵营的候选部队</h2>
+  <p><code>getDefenderMasters</code>（<code>ctl_area.go:1271</code>）先找出战旗半径内的玩家部队，半径取 <code>ExpeditionCampFlagRadius[1]</code>。部队要同时满足下面几条才能当候选：</p>
+  <ul>
+    <li>城堡等级达到 <code>ExpeditionMapunitareaLv</code>；</li>
+    <li>状态是<strong>驻扎（Camp）或采集（Gathering）</strong>，行军中的部队不算；</li>
+    <li>不在建筑的阻挡半径以内。</li>
+  </ul>
+  <p>每个阵营只保留 <strong>MaxPower 最高的那支</strong>部队。</p>
+</section>
+
+<section>
+  <h2>3. 决定旗归哪个阵营</h2>
+  <div class="branch">
+    <div class="box kill">
+      <h3>被打死 <span class="tag">tryKillerCampCaptureFlag · ctl_area.go:1862</span></h3>
+      <ul>
+        <li>找出最后一回合伤害最高的部队（<code>GetLastRoundMaxDamage</code>），它的阵营就是击杀方。</li>
+        <li>击杀方阵营和战旗接壤时，设为 <code>PriorityCampId</code>，同时加进夺旗阵营。</li>
+        <li>这一轮只清掉防守大师，下一轮 tick 再开始重选。</li>
+      </ul>
+    </div>
+    <div class="box move">
+      <h3>其他情况 <span class="tag">nextAreaProgressCamp · ctl_area.go:1166</span></h3>
+      <ol>
+        <li>没有任何夺旗阵营（<code>IsCtf()==false</code>）时，直接回到正向阵营。</li>
+        <li>候选里有击杀优先阵营时，<strong>直接给它</strong>，然后清掉这个优先标记。</li>
+        <li>否则跳过<strong>当前读条阵营</strong>。剩下的阵营里，只有在 <code>CaptureFlagCamps</code> 里、或者就是正向阵营的才能参加比较，<strong>取候选部队战力最高的那个</strong>。</li>
+        <li>一个候选都没有时，回到正向阵营 <code>PositiveCampId</code>。</li>
+      </ol>
+    </div>
+  </div>
+  <p>阵营确定后，<code>applyAreaProgressCamp</code> 会切换读条阵营，换了阵营才会重新开始读条（<code>robbedAreaBuild</code> → <code>startProgress</code>）。最后从该阵营的候选里挑战力最高的部队，定为新的防守大师（<code>setAreaDefenderMaster</code>）。</p>
+</section>
+
+<section>
+  <h2>两个夺旗阵营时的具体情况</h2>
+  <p>假设 A 和 B 都在夺旗阵营列表里，D 是正向阵营：</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>当前情况</th><th>结果</th></tr></thead>
+    <tbody>
+      <tr><td>A 持旗，A 的防守大师动了</td><td>A 这轮被跳过。B 和 D 里谁在范围内有合格部队、战力更高，就给谁</td></tr>
+      <tr><td>同上，但范围内 B 和 D 都没有合格部队</td><td>回到 D。D 如果也没有合格部队，就不会有防守大师，读条速度为 0</td></tr>
+      <tr><td>D 持旗，D 的防守大师动了</td><td>比较 A 和 B 的最高战力，高的一方拿旗；两方都不在，就留在 D</td></tr>
+      <tr><td>某个阵营刚杀掉防守大师</td><td>这个阵营优先拿旗，前提是和战旗接壤，并且下一轮它在范围内有合格部队</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>夺旗阵营的来源</h2>
+  <p>三种来源都要求阵营和战旗接壤（<code>checkAreaborder</code>）：</p>
+  <ul>
+    <li>玩家点击夺旗（<code>player_open</code>）；</li>
+    <li>在战旗范围内对防守大师发起行军（<code>tryAddCaptureFlagCampOnMarchToDefenderMaster</code>，<code>ctl_area.go:1649</code>）；</li>
+    <li>击杀防守大师（<code>kill_master</code>）。</li>
+  </ul>
+  <p>这个列表只在战旗被完整占领时才清空（<code>CheckBfdOccupyAndCF</code>），夺旗方离开后不会自动移除。</p>
+</section>
+
+<section class="warn">
+  <h2>需要注意的地方</h2>
+  <h3>同一个阵营的另一支部队接不了班</h3>
+  <p>A 的防守大师一走，A 这一轮不参加比较，就算 A 在范围内还有别的驻扎部队也一样。所以当 B 和 D 都不在范围内时，会出现一次多余的切换：</p>
+  <ol>
+    <li>第一轮先切到 D。D 没有部队，所以没有防守大师。</li>
+    <li>第二轮发现没有防守大师，再次重选。这次跳过的是 D，于是又切回 A。</li>
+    <li>每次切换都会调用 <code>robbedAreaBuild</code>，其中 <code>areaBuildStateEnd</code> 会结算并清空驻防占领记录，<code>startProgress</code> 会重置 <code>DefenderMap</code> 和 <code>LastCalculateTime</code>。</li>
+  </ol>
+  <p>如果策划的本意是"同阵营其他部队可以直接接替"，这里跟设计不一致。</p>
+  <h3>战力相同时结果不固定</h3>
+  <p><code>nextAreaProgressCamp</code> 遍历的是 map，而且判断用的是 <code>&lt;</code>，等于的时候后遍历到的会覆盖前面的。两个阵营的最高战力完全相等时，谁拿旗是随机的。</p>
+</section>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>王座幽灵驻防成因</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --ink:#1b2230; --muted:#5d6678; --line:#dde1e8;
+  --accent:#2f5d8a; --ok:#1f7a55; --ok-soft:#e3f2ea; --bad:#a83a32; --bad-soft:#f8e6e4; --warn:#9a6a12; --warn-soft:#f7eedb;
+  --serif:"Noto Serif SC","Songti SC",serif; --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#12161d; --surface:#1a2029; --ink:#e4e8ef; --muted:#98a2b3; --line:#2b3340;
+    --accent:#7fa8d4; --ok:#5fc99a; --ok-soft:#173228; --bad:#e8857c; --bad-soft:#3a1d1b; --warn:#e0b45c; --warn-soft:#352a14;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#12161d; --surface:#1a2029; --ink:#e4e8ef; --muted:#98a2b3; --line:#2b3340;
+  --accent:#7fa8d4; --ok:#5fc99a; --ok-soft:#173228; --bad:#e8857c; --bad-soft:#3a1d1b; --warn:#e0b45c; --warn-soft:#352a14;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.7 var(--sans);margin:0;padding-inline:16px;padding-block:32px 56px}
+.wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:10px}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+h1{font:700 30px/1.3 var(--serif);margin:0;text-wrap:balance}
+h2{font:700 19px/1.4 var(--serif);margin:0 0 12px;text-wrap:balance}
+h3{font:600 15px/1.5 var(--sans);margin:16px 0 6px}
+p{margin:0 0 8px;max-width:72ch}
+ul,ol{margin:0;padding-left:1.3em}
+li{margin:3px 0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:13px}
+.meta b{color:var(--ink);font-weight:500}
+code,.mono{font-family:var(--mono);font-size:.86em;overflow-wrap:anywhere}
+.verdict{background:var(--bad-soft);border:1px solid color-mix(in srgb,var(--bad) 35%,transparent);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.verdict .tag{align-self:flex-start;font:600 12px/1 var(--sans);color:var(--bad);border:1px solid var(--bad);border-radius:999px;padding:5px 10px}
+.verdict p{font-size:16px;margin:0}
+section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 22px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.fact{display:flex;flex-direction:column;gap:2px}
+.fact .k{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.fact .v{font:600 18px/1.4 var(--mono);font-variant-numeric:tabular-nums}
+.fact .v small{font:400 12px var(--sans);color:var(--muted);margin-left:4px}
+.tl{list-style:none;padding:0;margin:0;display:flex;flex-direction:column}
+.tl li{display:grid;grid-template-columns:92px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--line);margin:0}
+.tl li:first-child{border-top:0}
+.tl .t{font:600 13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.tl li.bad .t{color:var(--bad)}
+.tl li.ok .t{color:var(--ok)}
+.flow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.lane{border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.lane.good{border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
+.lane.badl{border-color:color-mix(in srgb,var(--bad) 45%,var(--line))}
+.lane .lt{font:600 13px/1.4 var(--sans);margin-bottom:8px}
+.lane.good .lt{color:var(--ok)}
+.lane.badl .lt{color:var(--bad)}
+.steps{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px}
+.steps li{font:13px/1.5 var(--mono);padding:6px 10px;border-radius:6px;background:var(--bg);margin:0;overflow-wrap:anywhere}
+.steps li.arrow{background:none;padding:0 10px;color:var(--muted);font-size:12px}
+.steps li.hit{background:var(--bad-soft);color:var(--bad)}
+.steps li.fine{background:var(--ok-soft);color:var(--ok)}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-top:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:12px;letter-spacing:.04em;border-top:0}
+.pill{display:inline-block;font:600 11px/1 var(--sans);border-radius:999px;padding:4px 8px;white-space:nowrap}
+.pill.bad{color:var(--bad);background:var(--bad-soft)}
+.pill.warn{color:var(--warn);background:var(--warn-soft)}
+.pill.ok{color:var(--ok);background:var(--ok-soft)}
+.note{border-left:3px solid var(--warn);background:var(--warn-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:14px;margin-top:12px}
+.todo{list-style:none;padding:0}
+.todo li{padding-left:24px;position:relative}
+.todo li::before{content:"";position:absolute;left:2px;top:7px;width:12px;height:12px;border:1.5px solid var(--muted);border-radius:3px}
+.log{font:12px/1.6 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin:6px 0 4px;overflow-x:auto;white-space:pre}
+.log .hl{color:var(--bad);font-weight:600}
+.log .ok{color:var(--ok);font-weight:600}
+.cap{font-size:13px;color:var(--muted);margin:2px 0 12px}
+details{margin-top:6px}
+summary{cursor:pointer;font-size:14px;color:var(--accent)}
+@media (max-width:640px){
+  .flow{grid-template-columns:1fr}
+  .tl li{grid-template-columns:1fr;gap:2px}
+  h1{font-size:24px}
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">线上问题 · 王座战 · 2026-10-03 · game850</div>
+  <h1>王座上的「幽灵驻防」是怎么来的</h1>
+  <div class="meta">
+    <span>幽灵部队 X <b class="mono">7692424334472598780</b>（归墟 · 玩家 11329956）</span>
+    <span>旧防守集结 rt <b class="mono">7692382570210332360</b>（车头 11195874 · 天赐凌渊）</span>
+    <span>王座 <b>1001</b></span>
+  </div>
+</header>
+
+<div class="verdict">
+  <span class="tag">结论（日志 + 代码核实）</span>
+  <p>防守集结 rt 的车头 11195874 主城在王座焦土范围内，被敌方打败后<b>击飞</b>。击飞流程 <code>OnP2MCityKickOut</code> 会解散他当车头的所有集结，其中就有正在和 X 交战的王座防守集结 rt。</p>
+  <p>解散时成员逐个退出，每退一支都会同步触发 <code>kingWarAutoOccupy</code>。最后一支退出后，X 自动占领王座。但 <code>base.DefendID</code> 还是 rt 的 ID，所以 X 被塞进了正在解散、还没从地图删除的 rt。塞入时的 <code>DelUnit(X)</code> 又嵌套触发 rt 的战斗结算和二次解散：X 先被放回地图，返回后又被删掉。</p>
+  <p>最后 X 不在地图上，也不在任何集结里，但 <code>Defenders</code> 和 <code>DefenderEnterTime</code> 里还留着它，成了「幽灵驻防」。</p>
+  <p><b>不需要 GM</b>：线上就是正常玩法自然触发的。整个过程发生在<b>同一帧、同一个调用栈</b>里，耗时 13ms。</p>
+</div>
+
+<section>
+  <h2>先回答：是不是同一帧？</h2>
+  <p>是。从 <code>.143</code> 到 <code>.156</code>，全部是 game850 地图协程处理<b>一条消息</b> <code>P2MCityKickOutReq</code> 时的同步调用，中间没有 tick，也没有让出执行。13ms 只是这段代码的执行耗时。</p>
+  <p>所以前面说的「每退一支，X 就再攻一次」，并不是又打了一场新战斗。它是在同一个调用栈里同步调用了 <code>kingWarAutoOccupy → KingWarOccupyPTroop(X) → Arrive → pTroopArriveThroneAttack</code>。日志里的 <code>JoinBattlePassive SKIP … already has CurTarget</code> 说明 X 本来就在打 rt，这次调用什么都没改变，只是又把 X 加回了 <code>Attackers</code>。</p>
+  <p class="cap">佐证：<code>OnP2MCityKickOut</code> 的日志 <code>11195874 OnP2MCityKickOut …</code>（<code>ctl_city.go</code>，线上 :748）打在函数末尾，出现在 <code>.157</code>，正好包住整段连锁。</p>
+</section>
+
+<section>
+  <h2>完整调用栈（20:56:18 · game850）</h2>
+  <div class="log">前置：<span class="hl">.097</span>  11331902 的集结打败了 11195874 的主城（PCityDefendEnd win:false）
+       → ctl_city.go:367 CheckThroneKickOut（主城在焦土范围内，<b>败一次就击飞</b>）
+       → Cast M2PCityKickOut → game841 play.OnM2PCityKickOut
+       → Cast2Map P2MCityKickOutReq → 回到 game850
+
+<span class="hl">.143</span> OnP2MCityKickOut(11195874)                                   ctl_city.go:692
+ └ for rtid in mp.RallyTroopIDs，筛出 rt.Owner == 11195874
+    └ DisbandRallyTroop(rt, RallyDelTypeCancel)                    ctl_rallytroop.go:443
+       ├ DisbandRallyTroopDelWatch(rt)        → 日志 UnionWatch_DelUnionAttackInfoWithBeOccupy atkID:rt
+       └ for pt in rt.CopyRallyTroops()  <span class="hl">← 快照，共 20 支</span>
+          ├ DelPTroopInRTroop(rt, pt)
+          └ RecallTroop(pt) → GiveUpTroopAction → giveUpDefend
+             └ giveUpDefendOnKingWar(pt)                           ctl_king_war.go:1540
+                ├ kingWarExit(pt) → RemoveDefender / Exit          日志 RemoveDefender … / exit throne
+                └ kingWarAutoOccupy → GetAndClearAttacker = [X]
+                   └ KingWarOccupyPTroop(X) → Arrive
+                      ├ 前 19 次：Defenders 非空 → ActAttack → pTroopArriveThroneAttack（同步，无新战斗）
+                      └ <span class="hl">第 20 次（.155）</span>：最后一支退出 → OccupyStop / clearing throne
+                         <span class="hl">但 DefendID 没清零，仍是 rt 的 ID</span>（只有 GiveUp/Clear/Finish 会清）
+                         → Defenders 已空 → ActOccupy → AddDefender(X)      <span class="hl">.156 defenders:[]</span>
+                         → pTroopArriveThroneOccupy(X)                       ctl_king_war.go:1162
+                            └「编队立即加入战斗」：GetDefendID() → 旧 rt ID
+                               GetRallyTroopByID 命中（rt 还在地图上，外层解散还没走到 DelUnit）
+                               └ AddDefenderIntoRallyTroop(rt, X)             ctl_rallytroop.go:827
+                                  ├ rt.AddTroop(X)
+                                  └ <span class="hl">wmap.DelUnit(X)</span>                          ctl_map.go:1670
+                                     ├ BattleUnitDel(X)  ← X 正在和 rt 交战
+                                     │  └ giveUpTarget X→rt → settleBattle → ThroneDefendEnd(rt, true)
+                                     │     └ kingWarRallyDisband(rt, recall:false)   ctl_king_war.go:1581
+                                     │        ├ rt 成员只剩 X → SetRallyId(0)、删 RallyTroopIDs
+                                     │        ├ <span class="ok">AddUnit(X)</span>  ← 放回地图；X 和占领盟同盟 → 不召回、不 kingWarExit
+                                     │        └ DelUnit(rt)
+                                     └ <span class="hl">DeleteUnitObj(X)</span>  ← 嵌套返回后，X 又被删出地图
+                                  └ 日志 AddDefenderIntoRallyTroop pt:X, rt:…（打在最后，所以排在 disband 后面）
+       ├ GiveUpTroopAction(rt) / SendRallyEndNtf
+       └ DelUnit(rt)（已删，空操作）
+<span class="hl">.157</span> 日志 11195874 OnP2MCityKickOut …</div>
+</section>
+
+<section>
+  <h2>最终状态</h2>
+  <div class="tablewrap"><table>
+    <tr><th>数据</th><th>值</th><th>是否正确</th></tr>
+    <tr><td>地图上的 X</td><td>不存在（20:56:58 <code>atkUnit X is not exist</code>）</td><td><span class="pill bad">丢失</span></td></tr>
+    <tr><td>X 的集结关系</td><td>RallyId=0，不在任何集结里</td><td><span class="pill bad">丢失</span></td></tr>
+    <tr><td><code>base.Defenders</code></td><td><code>[X]</code></td><td><span class="pill bad">残留</span></td></tr>
+    <tr><td><code>DefenderEnterTime[11329956]</code></td><td><code>Troops:[X]</code></td><td><span class="pill bad">残留</span></td></tr>
+    <tr><td><code>base.DefendID</code></td><td>旧 rt 的 ID，但 rt 已删除</td><td><span class="pill bad">悬空</span></td></tr>
+    <tr><td><code>OccupyUnionID</code></td><td>归墟</td><td><span class="pill warn">归墟占着王座，但没有真实驻防</span></td></tr>
+  </table></div>
+  <p class="cap" style="margin-top:10px">20:57:59，11202719 的部队攻打王座：<code>getOrCreateKingWarDefender</code> 找不到 rt（not found, creating rally troop），用 Defenders 建集结时又找不到 X（<code>troop X not found when creating king war rally</code>），建集结失败。部队被召回后留在 Attackers，后面就是「占领任务卡在 7 分钟」那条链路，见 <code>Bug/2026-10-03-王座占领任务卡在7分钟.html</code>。</p>
+</section>
+
+<section>
+  <h2>缺陷点</h2>
+  <div class="tablewrap"><table>
+    <tr><th>位置</th><th>问题</th><th></th></tr>
+    <tr><td><code>kingwar/logic.go Exit</code> → <code>model/base.go OccupyStop</code></td><td>Defenders 清空、占领清掉时 <b>不清 <code>DefendID</code></b>。新占领者用 <code>GetDefendID()</code> 拿到的是旧集结的 ID。</td><td><span class="pill bad">根因</span></td></tr>
+    <tr><td><code>ctl_king_war.go pTroopArriveThroneOccupy</code></td><td>「编队立即加入战斗」只检查 rt 在不在地图上，不检查它是否正在解散或结算，也不检查它是否还属于当前占领盟。</td><td><span class="pill bad">根因</span></td></tr>
+    <tr><td><code>ctl_rallytroop.go AddDefenderIntoRallyTroop</code></td><td><code>DelUnit(pt)</code> 会同步触发对手集结的战斗结算和解散。解散时把 pt <code>AddUnit</code> 回地图，返回后又被删掉，部队凭空消失。</td><td><span class="pill warn">放大器</span></td></tr>
+    <tr><td><code>ctl_rallytroop.go DisbandRallyTroop</code></td><td>逐个召回成员时，rt 仍在地图上而且还在战斗中。每召回一支都会同步跑 <code>kingWarAutoOccupy</code>，让外部逻辑在「半解散」状态下操作 rt。</td><td><span class="pill warn">触发条件</span></td></tr>
+  </table></div>
+  <h3>修复方向（未改代码）</h3>
+  <ul>
+    <li><code>Exit</code> 里 Defenders 清空、执行 <code>OccupyStop</code> 时，把 <code>DefendID</code> 一并清零。这是最小改动，能直接切断「新占领者关联旧集结」。</li>
+    <li><code>pTroopArriveThroneOccupy</code> 拉入集结前做校验：rt 的 <code>DefendCtx</code> 指向本王座、rt 不在战斗中、rt 车头和当前占领盟同盟；不满足就不拉。</li>
+    <li>兜底：<code>getOrCreateKingWarDefender</code> 建集结失败时，把找不到的部队从 Defenders 和 DefenderEnterTime 一起清掉（现在 <code>kingWarExit0</code> 取不到 owner，只能删 Defenders）。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>如何复现（不需要 GM）</h2>
+  <p>线上就是自然触发的。关键是同时满足三个条件：</p>
+  <ol>
+    <li>防守集结的<b>车头</b>主城在王座焦土范围内（<code>CheckInThroneRange</code>）。</li>
+    <li>这个集结正在和一支敌方部队交战。</li>
+    <li>这时车头主城被打败、被击飞。</li>
+  </ol>
+  <p>车头怎么定：<code>kingWarCreateRally</code> 逆序遍历 Defenders，<b>最后一个进驻的部队的主人</b>就是车头（线上是 11195874，他的部队进驻得最晚）。</p>
+
+  <h3>准备</h3>
+  <ul>
+    <li>王座战处于战斗阶段。本服世界地图的王座战也可以，<code>CheckThroneKickOut</code> 不区分跨服。</li>
+    <li>联盟 A（防守方）：玩家 <b>L</b>（车头），主城迁到王座焦土范围内，城防尽量弱；玩家 <b>M</b>，任意。</li>
+    <li>联盟 B（进攻方）：玩家 <b>X</b>，派一支单部队攻打王座，兵力要够打几回合，不能秒死；玩家 <b>B2</b>，有能打赢 L 主城的部队或集结。</li>
+  </ul>
+
+  <h3>步骤</h3>
+  <ol>
+    <li>联盟 A 占领王座 1001：M 先派 1～2 支部队驻防，<b>L 最后</b>再派 1 支驻防，保证 L 的部队排在 Defenders 末尾。</li>
+    <li>X 派单支部队攻打王座。预期日志：
+      <div class="log">getOrCreateKingWarDefender: defender &lt;DefendID&gt; not found, creating rally troop
+pTroopArriveThroneAttack: unit X attacks defender &lt;rt&gt;
+L settarget &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;joinpassive &lt;rt&gt; atk:X        ← 前缀是 L，确认 L 是车头</div>
+    </li>
+    <li><b>在 X 和 rt 交战期间</b>，B2 攻打 L 的主城并获胜。预期日志：
+      <div class="log">L redif PCityDefendEnd troop city win:false
+（→ M2PCityKickOut → play → P2MCityKickOutReq 回到地图）
+UnionWatch_DelUnionAttackInfoWithBeOccupy … atkID:&lt;rt&gt;
+RemoveDefender … （rt 成员逐个退出，每条后面跟一条 pTroopArriveThroneAttack: unit X …）
+clearing throne 1001 occupation
+<span class="hl">AddDefender … id:X … b.defenders:[]</span>
+ThroneDefendEnd rt:&lt;rt&gt; InBattle :false
+<span class="hl">kingWarRallyDisband TroopID:X … recall:false</span>
+<span class="hl">AddDefenderIntoRallyTroop pt:X, rt:&lt;rt&gt;</span>
+L OnP2MCityKickOut …</div>
+      这时客户端上 X 从地图上消失（没有回城行军），但王座显示被联盟 B 占领。
+    </li>
+    <li>验证残留：联盟 A 任一玩家再派部队攻打王座。预期日志：
+      <div class="log">troop X not found when creating king war rally
+getOrCreateKingWarDefender: failed to create rally …
+marching arrived unit … handle failed</div>
+      复现成功。再接上 <code>Bug/2026-10-03-王座占领任务卡在7分钟.html</code> 里的步骤，就能复现占领时长零结算。
+    </li>
+  </ol>
+
+  <h3>其他会走同一路径的触发方式</h3>
+  <p>凡是在<b>防守集结和敌方交战时，把它整个解散</b>的路径都可能触发：</p>
+  <ul>
+    <li>车头主城被击飞：<code>OnP2MCityKickOut</code>，本案。</li>
+    <li>车头跨服返回或转服：<code>P2MCityKickOutReq{IsCross / IsChangeServer}</code> 走的也是 <code>OnP2MCityKickOut</code>。</li>
+    <li>车头被封号：<code>OnP2MBandPlayer</code> 同样会解散他发起的集结。</li>
+  </ul>
+  <p class="cap">时间窗：步骤 3 必须落在 X 和 rt 交战期间。线上 X 20:56:16 开打，20:56:18 车头主城被破，相隔 2 秒。本地测试时，让 X 的兵力能撑几回合，B2 提前在 L 主城旁边埋伏，就比较容易对上时间。</p>
+</section>
+
+<section>
+  <h2>线上日志依据（Kibana · game-h5prod-2026.10.03 · game850）</h2>
+  <div class="log">12:56:16.017 getOrCreateKingWarDefender: defender 7692382570210332360 not found, creating rally troop
+12:56:16.018 pTroopArriveThroneAttack: unit X attacks defender rt
+12:56:17.005 11195874 settarget &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;joinpassive rt atk:X                    ← 车头 11195874
+12:56:18.097 rTroopBattleEnd: rally troop 7692424532041095681 is dead, player owner 11195874
+12:56:18.097 11195874 redif PCityDefendEnd troop city win:false          ← 主城被 11331902 打破
+12:56:18.143 UnionWatch_DelUnionAttackInfoWithBeOccupy … atkID:7692382570210332360
+12:56:18.143 RemoveDefender … id:7692424484793685423 playerID:11195874   ← 车头的 5 支先退
+12:56:18.143 pTroopArriveThroneAttack: unit X attacks defender rt         ← 每退一支同步一次
+   …… 共 20 支，到 .155 ……
+12:56:18.155 RemoveDefender … id:7692419068839902075 … b.defenders:[7692419068839902075]
+12:56:18.155 clearing throne 1001 occupation
+<span class="hl">12:56:18.156 AddDefender … id:7692424334472598780 playerID:11329956,b.defenders:[]</span>
+12:56:18.156 giveUpTarget entry owner:X target:rt …
+12:56:18.156 settleBattle owner rt … target X …
+12:56:18.156 ThroneDefendEnd rt:7692382570210332360 InBattle :false
+<span class="hl">12:56:18.156 kingWarRallyDisband TroopID:X owner:11329956 … recall:false</span>
+<span class="hl">12:56:18.156 AddDefenderIntoRallyTroop pt:X, rt:7692382570210332360</span>
+12:56:18.157 11195874 OnP2MCityKickOut playerID:11195874 sID:850 …       ← 处理函数末尾日志
+12:56:58     OnUnionWatchTowerReq … atkUnit:X is not exist
+12:57:59     troop X not found when creating king war rally</div>
+  <p class="cap">时间为 UTC，北京时间 +8。<code>src_location</code> 行号来自线上版本，和本地分支 h5_new_tf_v1051_remote_fight_light 有偏差，本页引用的是本地行号。</p>
+</section>
+
+</div>
+</body>
+</html>

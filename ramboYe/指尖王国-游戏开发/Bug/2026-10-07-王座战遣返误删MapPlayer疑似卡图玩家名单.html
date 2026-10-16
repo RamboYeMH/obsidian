@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>王座战卡图玩家名单</title>
+<style>
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --ink:#1b2230; --muted:#5d6678; --line:#dde1e8;
+  --accent:#2f5d8a; --bad:#a83a32; --bad-soft:#f8e6e4; --warn:#9a6a12; --warn-soft:#f7eedb;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){color-scheme:dark;
+    --bg:#12161d; --surface:#1a2029; --ink:#e4e8ef; --muted:#98a2b3; --line:#2b3340;
+    --accent:#7fa8d4; --bad:#e8857c; --bad-soft:#3a1d1b; --warn:#e0b45c; --warn-soft:#352a14;}
+}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#12161d; --surface:#1a2029; --ink:#e4e8ef; --muted:#98a2b3; --line:#2b3340;
+  --accent:#7fa8d4; --bad:#e8857c; --bad-soft:#3a1d1b; --warn:#e0b45c; --warn-soft:#352a14;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.7 var(--sans);margin:0;padding:32px 16px 56px}
+.wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+h1{font:700 26px/1.3 var(--sans);margin:0}
+h2{font:700 18px/1.4 var(--sans);margin:0 0 10px}
+p{margin:0 0 8px;max-width:75ch}
+.meta{color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:4px 18px}
+.mono,code{font-family:var(--mono);font-size:.88em;overflow-wrap:anywhere}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+.verdict{background:var(--bad-soft);border:1px solid color-mix(in srgb,var(--bad) 35%,transparent);border-radius:10px;padding:16px 20px}
+.note{background:var(--warn-soft);border-radius:8px;padding:10px 14px;font-size:14px}
+.stats{display:flex;gap:28px;flex-wrap:wrap;margin-top:6px}
+.stats div b{display:block;font:700 26px/1.2 var(--mono)}
+.stats div span{color:var(--muted);font-size:13px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--muted);font-weight:500;font-size:13px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.dim{color:var(--muted)}
+tr.hl td{background:var(--warn-soft)}
+textarea{width:100%;min-height:90px;font:13px/1.5 var(--mono);background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:8px}
+button{font:500 13px var(--sans);padding:6px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;margin-top:8px}
+</style>
+</head>
+<body><div class="wrap">
+<header>
+<h1>王座战遣返误删 MapPlayer：疑似卡图玩家名单</h1>
+<div class="meta"><span>类型 <b>Bug</b></span><span>版本 <b>线上 h5prod</b></span><span>状态 <b>待处理</b></span><span>创建 <b>2026-10-07</b></span><span>来源 <b>指尖815-11749455 反馈跨服后无法迁城</b></span></div>
+</header>
+
+<section class="verdict">
+<p><b>现象：</b>玩家参加跨服王座战后回不了本服、无法迁城，重登无效。本服 play 的 MapInfo 仍指向王座战所在服，但该服地图上的 MapPlayer 已被删除，玩家处于"两边都没有主城"的状态。</p>
+<p><b>根因：</b><code>game/wmap/internal/ctl_king_war.go:3273</code> <code>KingWarDeportBackForce</code>（H5-12233，c75168d42d 引入）把"外服玩家但本图无主城"一律当作残留直接 <code>DelMapPlayer</code>，既不进遣返队列也不通知原服。玩家离线期间主城被击飞时正好命中此分支。</p>
+</section>
+
+<section class="card">
+<h2>概况</h2>
+<div class="stats">
+<div><b>106</b><span>10-04 06:00 UTC 清理日志总数</span></div>
+<div><b>42</b><span>主城为本届王座战新建（疑似卡图）</span></div>
+<div><b>25</b><span>涉及王座战地图服</span></div>
+</div>
+<p class="note" style="margin-top:14px">筛选口径：日志 <code>KingWarDeportBackForce clean residual mapplayer</code>（索引 game-h5prod-2026.10.04）中 <code>cityID</code> 以 <code>7692</code> 开头，即主城约在 2026-10-03 本届王座战期间创建；其余 64 条 cityID 较旧，判断为真正的历史残留。<b>该口径为近似判断，未逐个核实玩家当前 MapInfo。</b>已核实：11749455（下表高亮）。</p>
+</section>
+
+<section class="card">
+<h2>名单（按原服排序）</h2>
+<div class="tbl"><table>
+<thead><tr><th class="n">#</th><th>玩家ID</th><th class="n">原服</th><th class="n">卡在的服</th><th>被清理的主城ID</th></tr></thead>
+<tbody>
+<tr><td class="n">1</td><td class="mono">10936855</td><td class="n">690</td><td class="n">691</td><td class="mono dim">7692324029755820172</td></tr>
+<tr><td class="n">2</td><td class="mono">8994642</td><td class="n">692</td><td class="n">694</td><td class="mono dim">7692491005202630644</td></tr>
+<tr><td class="n">3</td><td class="mono">9412819</td><td class="n">692</td><td class="n">698</td><td class="mono dim">7692376389704125543</td></tr>
+<tr><td class="n">4</td><td class="mono">9462765</td><td class="n">692</td><td class="n">694</td><td class="mono dim">7692380143504753951</td></tr>
+<tr><td class="n">5</td><td class="mono">10769402</td><td class="n">692</td><td class="n">698</td><td class="mono dim">7692499646676732387</td></tr>
+<tr><td class="n">6</td><td class="mono">9318960</td><td class="n">698</td><td class="n">694</td><td class="mono dim">7692371802678203180</td></tr>
+<tr><td class="n">7</td><td class="mono">11998029</td><td class="n">698</td><td class="n">692</td><td class="mono dim">7692609005133737143</td></tr>
+<tr><td class="n">8</td><td class="mono">9509626</td><td class="n">707</td><td class="n">783</td><td class="mono dim">7692541483982642883</td></tr>
+<tr><td class="n">9</td><td class="mono">12452914</td><td class="n">707</td><td class="n">783</td><td class="mono dim">7692460850266654529</td></tr>
+<tr><td class="n">10</td><td class="mono">9266851</td><td class="n">710</td><td class="n">797</td><td class="mono dim">7692336674167936088</td></tr>
+<tr><td class="n">11</td><td class="mono">9279202</td><td class="n">711</td><td class="n">784</td><td class="mono dim">7692319056211089531</td></tr>
+<tr><td class="n">12</td><td class="mono">10303361</td><td class="n">785</td><td class="n">789</td><td class="mono dim">7692343743683630049</td></tr>
+<tr><td class="n">13</td><td class="mono">10318922</td><td class="n">786</td><td class="n">845</td><td class="mono dim">7692647616939835936</td></tr>
+<tr><td class="n">14</td><td class="mono">10395774</td><td class="n">792</td><td class="n">785</td><td class="mono dim">7692344173179374828</td></tr>
+<tr><td class="n">15</td><td class="mono">10405320</td><td class="n">792</td><td class="n">785</td><td class="mono dim">7692425240687521650</td></tr>
+<tr><td class="n">16</td><td class="mono">10993294</td><td class="n">793</td><td class="n">787</td><td class="mono dim">7692332624013845071</td></tr>
+<tr><td class="n">17</td><td class="mono">10485129</td><td class="n">797</td><td class="n">710</td><td class="mono dim">7692413197583505189</td></tr>
+<tr><td class="n">18</td><td class="mono">10492040</td><td class="n">797</td><td class="n">710</td><td class="mono dim">7692651834556501078</td></tr>
+<tr><td class="n">19</td><td class="mono">10492837</td><td class="n">797</td><td class="n">710</td><td class="mono dim">7692457994092098296</td></tr>
+<tr><td class="n">20</td><td class="mono">10523711</td><td class="n">799</td><td class="n">787</td><td class="mono dim">7692455687716902987</td></tr>
+<tr><td class="n">21</td><td class="mono">10528038</td><td class="n">799</td><td class="n">787</td><td class="mono dim">7692389832978331378</td></tr>
+<tr><td class="n">22</td><td class="mono">11597662</td><td class="n">799</td><td class="n">787</td><td class="mono dim">7692469800979525673</td></tr>
+<tr><td class="n">23</td><td class="mono">10618024</td><td class="n">805</td><td class="n">791</td><td class="mono dim">7692502601645846471</td></tr>
+<tr><td class="n">24</td><td class="mono">10675370</td><td class="n">809</td><td class="n">796</td><td class="mono dim">7692465089403233299</td></tr>
+<tr><td class="n">25</td><td class="mono">10732290</td><td class="n">813</td><td class="n">786</td><td class="mono dim">7692435793428131175</td></tr>
+<tr><td class="n">26</td><td class="mono">10744505</td><td class="n">813</td><td class="n">786</td><td class="mono dim">7692378172141765690</td></tr>
+<tr><td class="n">27</td><td class="mono">10756409</td><td class="n">814</td><td class="n">795</td><td class="mono dim">7692334518094375156</td></tr>
+<tr class="hl"><td class="n">28</td><td class="mono"><b>11749455</b></td><td class="n">815</td><td class="n">831</td><td class="mono dim">7692335462995588263</td></tr>
+<tr><td class="n">29</td><td class="mono">10838678</td><td class="n">819</td><td class="n">713</td><td class="mono dim">7692357444612629389</td></tr>
+<tr><td class="n">30</td><td class="mono">10990172</td><td class="n">821</td><td class="n">837</td><td class="mono dim">7692433920836315421</td></tr>
+<tr><td class="n">31</td><td class="mono">10905937</td><td class="n">823</td><td class="n">826</td><td class="mono dim">7692324008317783177</td></tr>
+<tr><td class="n">32</td><td class="mono">10934745</td><td class="n">824</td><td class="n">800</td><td class="mono dim">7692469663543330263</td></tr>
+<tr><td class="n">33</td><td class="mono">10990519</td><td class="n">827</td><td class="n">786</td><td class="mono dim">7692585580412889690</td></tr>
+<tr><td class="n">34</td><td class="mono">11040674</td><td class="n">830</td><td class="n">837</td><td class="mono dim">7692398878197791718</td></tr>
+<tr><td class="n">35</td><td class="mono">11044144</td><td class="n">830</td><td class="n">837</td><td class="mono dim">7692350847578491136</td></tr>
+<tr><td class="n">36</td><td class="mono">11076787</td><td class="n">830</td><td class="n">821</td><td class="mono dim">7692363655160455961</td></tr>
+<tr><td class="n">37</td><td class="mono">11124058</td><td class="n">836</td><td class="n">842</td><td class="mono dim">7692415010093353053</td></tr>
+<tr><td class="n">38</td><td class="mono">11242494</td><td class="n">844</td><td class="n">843</td><td class="mono dim">7692409907672250721</td></tr>
+<tr><td class="n">39</td><td class="mono">11251947</td><td class="n">845</td><td class="n">786</td><td class="mono dim">7692329402788198841</td></tr>
+<tr><td class="n">40</td><td class="mono">11307453</td><td class="n">848</td><td class="n">851</td><td class="mono dim">7692542811146491276</td></tr>
+<tr><td class="n">41</td><td class="mono">11341690</td><td class="n">851</td><td class="n">843</td><td class="mono dim">7692414417390819980</td></tr>
+<tr><td class="n">42</td><td class="mono">11344813</td><td class="n">851</td><td class="n">843</td><td class="mono dim">7692458964791653553</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="card">
+<h2>ID 列表（便于批量处理）</h2>
+<textarea id="ids" readonly>10936855,8994642,9412819,9462765,10769402,9318960,11998029,9509626,12452914,9266851,9279202,10303361,10318922,10395774,10405320,10993294,10485129,10492040,10492837,10523711,10528038,11597662,10618024,10675370,10732290,10744505,10756409,11749455,10838678,10990172,10905937,10934745,10990519,11040674,11044144,11076787,11124058,11242494,11251947,11307453,11341690,11344813</textarea>
+<button onclick="(function(b){var t=document.getElementById('ids');t.select();try{navigator.clipboard.writeText(t.value)}catch(e){document.execCommand('copy')}b.textContent='已复制';setTimeout(function(){b.textContent='复制'},1500)})(this)">复制</button>
+</section>
+
+<section class="card">
+<h2>处理建议</h2>
+<ol>
+<li><b>修复数据：</b>在各玩家原服对其执行 <code>ChangeMapForce(p, Game, conf.ServerID, WMAPMOD)</code> 拉回本服（新建主城，王座战服侧已无数据，KickOut 走 city==nil 分支无副作用）。建议新增按 pid 批量的一次性 GM，避免用 <code>unionMemberMapBackByName</code> 误伤正在远征的联盟成员。处理前先确认玩家 MapInfo 确实仍指向"卡在的服"。</li>
+<li><b>修复代码：</b><code>KingWarDeportBackForce</code> 对无主城外服玩家不要直接删除，同样加入 <code>DeportList</code>；play 侧 <code>OnW2PDeportPlayerReq</code> 已有 <code>inWorldMapOfServer</code> 守卫，不在该图的玩家只会清残留，不会被误拉回（H5-12233 场景仍安全）。需另核实 <code>OnP2MDeportPlayerReq</code>（ctl_king_war.go:3449）对无主城玩家能否正常发出 <code>P2MDeportOnForceRecallOverReq</code>。</li>
+</ol>
+</section>
+</div></body></html>

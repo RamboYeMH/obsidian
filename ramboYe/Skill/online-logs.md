@@ -11,13 +11,13 @@ tags:
 
 # Skill: online-logs
 
-| 项 | 值 |
-|---|---|
-| 名称 | `online-logs` |
+| 项   | 值                                                       |
+| --- | ------------------------------------------------------- |
+| 名称  | `online-logs`                                           |
 | 源文件 | `/home/cc/slgh5/gs/.claude/skills/online-logs/SKILL.md` |
-| 作用域 | 项目 gs |
-| 行数 | 206 |
-| 用途 | 通过 Kibana/ES HTTP API 查线上 h5prod 游戏服日志排查玩家问题 |
+| 作用域 | 项目 gs                                                   |
+| 行数  | 206                                                     |
+| 用途  | 通过 Kibana/ES HTTP API 查线上 h5prod 游戏服日志排查玩家问题            |
 
 **触发条件（description 字段，决定什么时候自动加载）**
 

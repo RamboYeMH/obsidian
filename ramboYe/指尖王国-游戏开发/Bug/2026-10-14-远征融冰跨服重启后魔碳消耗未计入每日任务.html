@@ -1,0 +1,141 @@
+<title>融冰魔碳任务未计数排查</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f5f7f9; --surface:#ffffff; --ink:#18212b; --muted:#5b6876; --line:#dbe2e8;
+  --accent:#2a6a96; --accent-soft:#e3eef6; --crit:#b23a30; --crit-soft:#f8e6e3;
+  --ok:#2f7a4f; --code-bg:#eef2f5;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#11171d; --surface:#18212a; --ink:#e4eaf0; --muted:#97a5b3; --line:#2a3743;
+    --accent:#7db5dd; --accent-soft:#1c3142; --crit:#ef8a7f; --crit-soft:#3a201d;
+    --ok:#7cc79a; --code-bg:#1d2832;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#11171d; --surface:#18212a; --ink:#e4eaf0; --muted:#97a5b3; --line:#2a3743;
+  --accent:#7db5dd; --accent-soft:#1c3142; --crit:#ef8a7f; --crit-soft:#3a201d;
+  --ok:#7cc79a; --code-bg:#1d2832;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.75;padding-inline:16px;padding-block:40px 64px}
+.wrap{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+header{display:flex;flex-direction:column;gap:14px}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--accent);font-weight:500}
+h1{font-size:28px;line-height:1.35;margin:0;text-wrap:balance;font-weight:700}
+h2{font-size:19px;margin:0 0 14px;text-wrap:balance;font-weight:700}
+p{margin:0}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.meta div{background:var(--surface);padding:10px 14px;display:flex;flex-direction:column}
+.meta dt{font-size:12px;color:var(--muted)}
+.meta dd{margin:0;font-weight:500;font-variant-numeric:tabular-nums}
+.verdict{background:var(--crit-soft);border-left:3px solid var(--crit);padding:14px 18px;border-radius:0 6px 6px 0}
+.verdict strong{color:var(--crit)}
+code,.mono{font-family:var(--mono);font-size:.86em}
+code{background:var(--code-bg);padding:1px 5px;border-radius:3px;word-break:break-word}
+section{display:flex;flex-direction:column}
+.timeline{list-style:none;margin:0;padding:0;border-left:2px solid var(--line);display:flex;flex-direction:column}
+.timeline li{position:relative;padding:8px 0 8px 22px;display:grid;grid-template-columns:76px 1fr;gap:12px;align-items:baseline}
+.timeline li::before{content:"";position:absolute;left:-6px;top:17px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--accent)}
+.timeline li.crit::before{background:var(--crit);border-color:var(--crit)}
+.timeline li.miss::before{border-color:var(--muted);border-style:dashed}
+.timeline time{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.timeline li.crit time,.timeline li.crit span{color:var(--crit);font-weight:500}
+.timeline li.miss span{color:var(--muted)}
+.chain{display:flex;flex-direction:column;gap:10px;margin:0;padding-left:20px}
+.chain li::marker{color:var(--accent);font-weight:700}
+.note{color:var(--muted);font-size:14px;margin-top:12px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;min-width:480px;background:var(--surface)}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.04em;background:var(--code-bg)}
+tr:last-child td{border-bottom:none}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:500}
+.fixes{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
+.fixes li{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 16px}
+.fixes b{display:block;margin-bottom:2px}
+.code-block{background:var(--code-bg);border-radius:6px;padding:12px 14px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.6;white-space:pre;margin-top:12px}
+footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:480px){
+  h1{font-size:23px}
+  .timeline li{grid-template-columns:1fr;gap:0}
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">线上问题排查 · 远征融冰</div>
+    <h1>北京时间 10:59 融冰消耗的魔碳，没计入远征每日任务</h1>
+    <dl class="meta">
+      <div><dt>区服</dt><dd>496</dd></div>
+      <div><dt>角色</dt><dd>6531012 · 唉唉唉</dd></div>
+      <div><dt>远征图</dt><dd>cross1009</dd></div>
+      <div><dt>发生日期</dt><dd>2026-10-14</dd></div>
+    </dl>
+    <p class="verdict"><strong>是服务器 bug。</strong>融冰部队在路上时 cross1009 重启了，部队上记录的魔碳消耗在重启时丢失。到达后服务器按 0 魔碳结算，于是每日任务没计数，魔碳消耗奖励也没发，已扣的魔碳也没退。</p>
+  </header>
+
+  <section>
+    <h2>时间线（北京时间）</h2>
+    <ol class="timeline">
+      <li><time>10:59:42</time><span>融冰部队出发，game496 扣除魔碳</span></li>
+      <li class="crit"><time>11:00:55</time><span>cross1009 收到 SIGTERM 重启（<code>server closing down</code>）</span></li>
+      <li><time>11:01:03</time><span>cross1009 重新加载地图和部队，到 11:01:13 结束</span></li>
+      <li><time>11:01:09</time><span>玩家下线</span></li>
+      <li><time>11:01:13</time><span>融冰部队到达（<code>PTroopMeltingIceArrive</code>），融冰进度正常增加</span></li>
+      <li class="miss"><time>—</time><span>没有魔碳消耗奖励，没有 <code>M2PSuccessMeltingIce</code>，每日任务没推进</span></li>
+    </ol>
+    <p class="note">旁证：这个玩家其他几次正常的到达后面，都会跟一条 <code>AddExpCampTrainPlayerContribute</code>（魔碳奖励里的贡献道具自动使用），这一次没有。</p>
+  </section>
+
+  <section>
+    <h2>原因</h2>
+    <ol class="chain">
+      <li>每日任务的“消耗魔碳”不在出发扣费时计数，要等融冰部队<b>到达</b>后，由 <code>playerTroopMeltingIceCb</code> 结算。</li>
+      <li>结算时用 <code>calcMagicCarbonCost</code> 算魔碳消耗，数据来自 <code>troop.BatCtx().GetCosts()</code>。</li>
+      <li><code>BatCtx</code> 不落库（<code>battleCtx *BatCtx `bson:"-"`</code>）。重启加载部队时，<code>InitBattle</code> 会新建一个空的 BatCtx，消耗记录 <code>Costs</code> 就丢了。</li>
+      <li>融冰次数 <code>OriginMarchExtra</code> 是落库的，所以融冰进度还在。但魔碳消耗算成 0 后，<code>paidUse = 0</code>，这次融冰全部被当成免费次数。</li>
+      <li><code>effectiveCarbon = 0</code>，<code>grantCarbonReward</code> 没调用，<code>M2PSuccessMeltingIce</code> 没发出，任务 <code>EventBfMeltingIceCarbonConsume</code> 也就没计数。</li>
+    </ol>
+    <div class="code-block">// game/wmap/internal/ctl_battlefield_melting_ice.go
+totalCarbon := calcMagicCarbonCost(troop, troopId) // 重启后 Costs 为空 → 0
+...
+if effectiveCarbon > 0 {                           // 不满足
+    wmap.grantCarbonReward(playerID, effectiveCarbon) // 内含 M2PSuccessMeltingIce
+}</div>
+  </section>
+
+  <section>
+    <h2>玩家损失（估算）</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>项目</th><th>数量</th><th>依据</th></tr></thead>
+        <tbody>
+          <tr><td>本次融冰次数</td><td class="num">36 次</td><td>融冰赛季榜积分 500 → 860，每次融冰加 10 格</td></tr>
+          <tr><td>已扣魔碳</td><td class="num">4650 或 5400</td><td>每天免费 5 次，每次付费 150 魔碳。当天免费次数没用时付费 31 次，已用完时付费 36 次</td></tr>
+          <tr><td>每日任务魔碳计数</td><td class="num">同上</td><td>没有推进</td></tr>
+          <tr><td>魔碳消耗奖励</td><td class="num">约 31 份</td><td>每 150 魔碳 1 份，奖励 ID 3117000</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">精确扣费数要查 game496 在 10:59:42 那条 BI <code>user_asset</code> 日志，reason 是 <code>melting_ice_action_cost</code>。</p>
+  </section>
+
+  <section>
+    <h2>修复建议</h2>
+    <ul class="fixes">
+      <li><b>把付费魔碳量存进落库字段</b>不要只放在 <code>BatCtx.Costs</code> 里。可以在 <code>PlayerTroop</code> 上加 <code>MeltingIceCarbon</code>，或者放进 <code>OriginMarchExtra</code>，到达和退费时都从这里读。</li>
+      <li><b>一起修退费逻辑</b><code>refundExcessMeltingIce</code> 和 <code>emptyCostReturnExtra</code> 也依赖这份消耗数据。重启后同样会退错：本该退魔碳，结果退成了免费次数。</li>
+      <li><b>排查其他受影响玩家</b>10:59~11:01 之间出发、重启后才到达的融冰部队都可能受影响。可以用 cross1009 在 11:01:03 之后的 <code>PTroopMeltingIceArrive</code> 日志，对照 game496 的扣费记录筛出名单，再补发魔碳、奖励和任务进度。</li>
+    </ul>
+  </section>
+
+  <footer>数据来源：线上 Kibana（h5prod）game496 / cross1009 日志，以及 gs 分支 h5_new_tf_v1053 的代码。</footer>
+</div>

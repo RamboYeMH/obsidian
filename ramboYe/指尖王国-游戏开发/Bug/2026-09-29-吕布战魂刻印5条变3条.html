@@ -1,0 +1,183 @@
+<title>吕布刻印排查</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --ink:#1b2230; --muted:#5d6678; --line:#dde1e8;
+  --accent:#2f5d8a; --ok:#1f7a55; --ok-soft:#e3f2ea; --warn:#9a6a12; --warn-soft:#f7eedb;
+  --node-on:#2f5d8a; --node-on-ink:#ffffff; --node-avail:#ffffff; --node-avail-line:#9aa8bd; --node-lock:#eceef2; --node-lock-ink:#a3aab7;
+  --serif:"Noto Serif SC","Songti SC",serif; --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#12161d; --surface:#1a2029; --ink:#e4e8ef; --muted:#98a2b3; --line:#2b3340;
+    --accent:#7fa8d4; --ok:#5fc99a; --ok-soft:#173228; --warn:#e0b45c; --warn-soft:#352a14;
+    --node-on:#5b8cc0; --node-on-ink:#0f141b; --node-avail:#1a2029; --node-avail-line:#5b6780; --node-lock:#20262f; --node-lock-ink:#566072;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#12161d; --surface:#1a2029; --ink:#e4e8ef; --muted:#98a2b3; --line:#2b3340;
+  --accent:#7fa8d4; --ok:#5fc99a; --ok-soft:#173228; --warn:#e0b45c; --warn-soft:#352a14;
+  --node-on:#5b8cc0; --node-on-ink:#0f141b; --node-avail:#1a2029; --node-avail-line:#5b6780; --node-lock:#20262f; --node-lock-ink:#566072;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.7 var(--sans);padding-inline:16px;padding-block:32px 56px}
+.wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:10px}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+h1{font:700 30px/1.3 var(--serif);margin:0;text-wrap:balance}
+h2{font:700 19px/1.4 var(--serif);margin:0 0 12px;text-wrap:balance}
+p{margin:0;max-width:68ch}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:13px}
+.meta b{color:var(--ink);font-weight:500}
+code,.mono{font-family:var(--mono);font-size:.88em}
+.verdict{background:var(--ok-soft);border:1px solid color-mix(in srgb,var(--ok) 35%,transparent);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.verdict .tag{align-self:flex-start;font:600 12px/1 var(--sans);color:var(--ok);border:1px solid var(--ok);border-radius:999px;padding:5px 10px}
+.verdict p{font-size:16px}
+section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 22px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+.fact{display:flex;flex-direction:column;gap:2px}
+.fact .k{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.fact .v{font:600 18px/1.4 var(--mono);font-variant-numeric:tabular-nums}
+.fact .v small{font:400 12px var(--sans);color:var(--muted);margin-left:4px}
+.grid-legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--muted);margin:4px 0 14px}
+.grid-legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:3px;display:inline-block}
+.nodes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;max-width:520px}
+.nodes .hdr{font:600 11px/1 var(--mono);color:var(--muted);text-align:center;padding-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.n{font:600 12px/1 var(--mono);text-align:center;padding:8px 0;border-radius:5px;font-variant-numeric:tabular-nums}
+.n.on{background:var(--node-on);color:var(--node-on-ink)}
+.n.avail{background:var(--node-avail);border:1px dashed var(--node-avail-line);color:var(--muted)}
+.n.lock{background:var(--node-lock);color:var(--node-lock-ink)}
+.n.normal{box-shadow:inset 0 -3px 0 color-mix(in srgb,var(--warn) 70%,transparent)}
+.note{font-size:13px;color:var(--muted);margin-top:12px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:500;color:var(--muted);font-size:12px;letter-spacing:.04em}
+td.t{font-family:var(--mono);font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+td .ids{font-family:var(--mono);font-size:13px}
+tr:last-child td{border-bottom:none}
+ul.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+ul.checks li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start}
+.mark{font:600 11px/1 var(--sans);border-radius:4px;padding:4px 6px;margin-top:3px;white-space:nowrap}
+.mark.x{background:var(--ok-soft);color:var(--ok)}
+.mark.q{background:var(--warn-soft);color:var(--warn)}
+.attrs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.attr{border:1px solid var(--line);border-radius:6px;padding:6px 10px;display:flex;flex-direction:column;gap:0;min-width:110px}
+.attr .id{font:600 14px var(--mono)}
+.attr .scope{font-size:12px;color:var(--muted)}
+ol.next{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:8px}
+.reply{border-left:3px solid var(--accent);padding:10px 14px;background:color-mix(in srgb,var(--accent) 8%,var(--surface));border-radius:0 6px 6px 0;margin-top:14px}
+footer{font-size:12px;color:var(--muted)}
+@media (max-width:480px){h1{font-size:25px} section{padding:16px}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">H5 线上反馈 · 英雄战魂 · 觉醒刻印</div>
+    <h1>吕布更新后刻印从 5 条变成 3 条</h1>
+    <div class="meta">
+      <span>区服 <b>35</b></span>
+      <span>角色 ID <b class="mono">2716842</b></span>
+      <span>昵称 <b>瑶瑶</b></span>
+      <span>排查日期 <b>2026-09-29</b></span>
+    </div>
+  </header>
+
+  <div class="verdict">
+    <span class="tag">服务端数据完整</span>
+    <p>吕布的觉醒刻印一个都没丢。线上库和 Kibana 日志都显示已解锁 18 个节点，两边完全一致，服务端没有删除或回退节点的记录，属性照常生效。"5 条变 3 条"大概率是客户端刻印界面的显示问题。</p>
+  </div>
+
+  <section>
+    <h2>吕布当前战魂数据</h2>
+    <div class="facts">
+      <div class="fact"><span class="k">英雄唯一 ID</span><span class="v" style="font-size:14px">7665604299346853951</span></div>
+      <div class="fact"><span class="k">配置 ID / 节点组</span><span class="v">1010064 <small>组 2</small></span></div>
+      <div class="fact"><span class="k">战魂等级</span><span class="v">460 <small>上限 1200</small></span></div>
+      <div class="fact"><span class="k">已解锁节点</span><span class="v">18 <small>个</small></span></div>
+      <div class="fact"><span class="k">战魂生效</span><span class="v" style="color:var(--ok)">是 <small>共生英雄 1010018</small></span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>节点组 2 解锁情况（2001–2050）</h2>
+    <div class="grid-legend">
+      <span><i class="sw" style="background:var(--node-on)"></i>已解锁</span>
+      <span><i class="sw" style="border:1px dashed var(--node-avail-line);background:var(--node-avail)"></i>等级已够，未解锁（高级节点，需消耗结晶）</span>
+      <span><i class="sw" style="background:var(--node-lock)"></i>等级不足</span>
+      <span><i class="sw" style="background:var(--surface);box-shadow:inset 0 -3px 0 color-mix(in srgb,var(--warn) 70%,transparent);border:1px solid var(--line)"></i>普通节点（hero_att）</span>
+    </div>
+    <div class="nodes" id="nodes">
+      <div class="hdr">61042 英雄</div><div class="hdr">51106 阵营</div><div class="hdr">51035 阵营</div><div class="hdr">66002 阵营</div><div class="hdr">66006 阵营</div>
+    </div>
+    <p class="note">每行 5 个节点，需求等级每个 +10。第 1 列是普通节点（加给吕布自己的 61042），后 4 列是高级节点（加给阵营的 4 种属性）。玩家的高级节点只解锁到 2010，之后只点了普通节点，这和日志里的操作记录一致。</p>
+  </section>
+
+  <section>
+    <h2>Kibana 操作记录（game35，北京时间）</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>时间</th><th>战魂等级</th><th>解锁节点</th></tr></thead>
+        <tbody>
+          <tr><td class="t">09-28 02:27–02:33</td><td>1 → 50</td><td class="ids">2001 · 2002 · 2003 · 2004 · 2005</td></tr>
+          <tr><td class="t">09-28 12:41</td><td>50 → 100</td><td class="ids">2006 · 2007 · 2008 · 2009 · 2010</td></tr>
+          <tr><td class="t">09-28 14:17</td><td>100 → 210</td><td class="ids">2011 · 2016 · 2021</td></tr>
+          <tr><td class="t">09-28 15:40</td><td>210 → 302</td><td class="ids">2026</td></tr>
+          <tr><td class="t">09-28 15:52</td><td>302 → 360</td><td class="ids">2031</td></tr>
+          <tr><td class="t">09-28 23:05</td><td>360 → 444</td><td class="ids">2036 · 2041</td></tr>
+          <tr><td class="t">09-28 23:12</td><td>444 → 460</td><td class="ids">2046</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">日志位置：<code>ctl_war_soul.go</code> 的 upgrade（:300 / :347）和 node unlock（:400 / :412）。每次解锁都有 begin 和 done，全部成功。09-29 这个玩家在 game35 上没有战魂相关日志。09-23 那条 <code>warSoul online data fixed</code> 是 1051 上线时的旧数据修复，发生在他养吕布之前。</p>
+  </section>
+
+  <section>
+    <h2>排除项</h2>
+    <ul class="checks">
+      <li><span class="mark x">已排除</span><div><b>服务端删除节点</b>：代码里只有 <code>UnlockNode</code> 往 <code>UnlockedNode</code> 里加节点，没有任何地方删除或重置它。</div></li>
+      <li><span class="mark x">已排除</span><div><b>配置变更</b>：gdconfig 里 1051 和 1052 分支的 <code>WarSoulCampNodeCfg</code> 节点组 2 完全一致，节点 ID 和 <code>node_type</code> 都没变。</div></li>
+      <li><span class="mark x">已排除</span><div><b>1052 分支今天的几次提交</b>（H5-12648 / 12669 / 12670）：只改了 <code>nodePower</code> 战力展示的算法，没有碰节点列表的下发。<code>WarSoul.Pack</code> 仍然把全部已解锁节点下发给客户端。</div></li>
+      <li><span class="mark q">待确认</span><div><b>客户端显示</b>：吕布的节点一共带 5 种属性，正好对应"5 条"。
+        <div class="attrs">
+          <div class="attr"><span class="id">61042</span><span class="scope">英雄属性</span></div>
+          <div class="attr"><span class="id">51106</span><span class="scope">阵营属性</span></div>
+          <div class="attr"><span class="id">51035</span><span class="scope">阵营属性</span></div>
+          <div class="attr"><span class="id">66002</span><span class="scope">阵营属性</span></div>
+          <div class="attr"><span class="id">66006</span><span class="scope">阵营属性</span></div>
+        </div>
+        更新后只显示 3 条，可能是客户端按某种条件过滤了（比如只显示战力大于 0 的属性）。这一点服务端没法确认，需要客户端查一下。</div></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>后续</h2>
+    <ol class="next">
+      <li>找客服要玩家更新前后的刻印界面截图，确认"条"指的是属性行、徽章还是节点。</li>
+      <li>把本页的节点数据转给客户端，让他们对照刻印界面的显示逻辑查。</li>
+    </ol>
+    <div class="reply"><b>客服回复口径：</b>玩家的刻印数据完整，没有丢失，属性照常生效。显示异常已经转给技术排查。</div>
+  </section>
+
+  <footer>数据来源：h5prod game35 MongoDB <code>player.heromgr.heros</code>；Kibana 索引 game-h5prod-2026.09.23 / 09.27 / 09.28 / 09.29；gdconfig 1051、1052 分支 <code>WarSoulCampNodeCfg.tsv</code>。</footer>
+</div>
+
+<script>
+(function(){
+  var unlocked={2001:1,2002:1,2003:1,2004:1,2005:1,2006:1,2007:1,2008:1,2009:1,2010:1,2011:1,2016:1,2021:1,2026:1,2031:1,2036:1,2041:1,2046:1};
+  var level=460, box=document.getElementById('nodes');
+  for(var id=2001;id<=2050;id++){
+    var need=(id-2000)*10, normal=(id-2001)%5===0;
+    var el=document.createElement('div');
+    el.className='n '+(unlocked[id]?'on':(need<=level?'avail':'lock'))+(normal?' normal':'');
+    el.textContent=id;
+    el.title='节点 '+id+' · 需求等级 '+need+(normal?' · 普通':' · 高级');
+    box.appendChild(el);
+  }
+})();
+</script>

@@ -1,0 +1,208 @@
+<meta charset="utf-8">
+<title>H5-12779 天赋分析</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f5f7f7;
+  --surface:#ffffff;
+  --ink:#16201f;
+  --muted:#5b6b69;
+  --line:#d9e1e0;
+  --accent:#1f6f78;
+  --accent-soft:#e3f0f1;
+  --warn:#a35d00;
+  --warn-soft:#fbf0de;
+  --ok:#2e7d4f;
+  --bar-a:#1f6f78;
+  --bar-b:#c98a2b;
+  --code-bg:#eef2f2;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#111716;
+    --surface:#18201f;
+    --ink:#e4ecea;
+    --muted:#93a4a1;
+    --line:#2b3735;
+    --accent:#5fb8c2;
+    --accent-soft:#1c3033;
+    --warn:#e3a54a;
+    --warn-soft:#2e2414;
+    --ok:#6cc391;
+    --bar-a:#5fb8c2;
+    --bar-b:#e3a54a;
+    --code-bg:#202a29;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#111716;
+  --surface:#18201f;
+  --ink:#e4ecea;
+  --muted:#93a4a1;
+  --line:#2b3735;
+  --accent:#5fb8c2;
+  --accent-soft:#1c3033;
+  --warn:#e3a54a;
+  --warn-soft:#2e2414;
+  --ok:#6cc391;
+  --bar-a:#5fb8c2;
+  --bar-b:#e3a54a;
+  --code-bg:#202a29;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  font-size:15px;line-height:1.75;
+  padding-inline:16px;padding-block:32px 64px;
+}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:36px}
+h1,h2{font-family:"Noto Serif SC","Songti SC",serif;text-wrap:balance;margin:0}
+h1{font-size:28px;line-height:1.35}
+h2{font-size:20px;display:flex;align-items:baseline;gap:10px}
+h2 .tag{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px;color:var(--muted);font-weight:400;letter-spacing:.04em}
+p{margin:0;max-width:68ch}
+section{display:flex;flex-direction:column;gap:14px}
+code,.mono{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:.86em}
+code{background:var(--code-bg);padding:1px 5px;border-radius:4px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--muted);font-size:13px}
+.meta b{color:var(--ink);font-weight:500}
+.key{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--accent);letter-spacing:.06em;text-transform:uppercase}
+header{display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line);padding-bottom:22px}
+.verdict{
+  background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;
+  padding:18px 20px;display:flex;flex-direction:column;gap:8px
+}
+.verdict .label{font-size:12px;letter-spacing:.12em;color:var(--accent);font-weight:700}
+.verdict p{font-size:16px}
+.verdict strong{color:var(--accent)}
+.table-box{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:500;color:var(--muted);font-size:12.5px;letter-spacing:.04em;background:var(--code-bg)}
+tr:last-child td{border-bottom:none}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.diff{color:var(--warn);font-weight:500}
+ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px;max-width:70ch}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 12px;font-size:14px}
+.chip .mono{color:var(--muted);margin-right:6px}
+.bars{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:16px}
+.bar-row{display:grid;grid-template-columns:92px 1fr 64px;align-items:center;gap:12px;font-size:14px}
+.track{height:14px;background:var(--code-bg);border-radius:3px;overflow:hidden}
+.fill{height:100%;border-radius:3px}
+.bar-row .v{font-variant-numeric:tabular-nums;text-align:right;font-weight:500}
+.bars .cap{font-size:12.5px;color:var(--muted)}
+.note{background:var(--warn-soft);border-left:3px solid var(--warn);padding:12px 16px;border-radius:0 6px 6px 0;font-size:14px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.card h3{margin:0;font-size:15px;font-weight:700}
+.card p{font-size:14px;color:var(--muted)}
+footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:480px){h1{font-size:23px}.bar-row{grid-template-columns:72px 1fr 56px}}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="key">H5-12779 · 故障 · P2</span>
+  <h1>【1052】【线上】【塔防】无限塔防无法获得大巧不工和自在极意天赋</h1>
+  <div class="meta">
+    <span>报告人 <b>zhangxiaoyang</b></span>
+    <span>提单 <b>2026-10-12</b></span>
+    <span>分析分支 <b class="mono">h5_new_tf_v1053</b></span>
+  </div>
+</header>
+
+<div class="verdict">
+  <span class="label">结论</span>
+  <p>同一卡组下，强化召唤（3109）在无限塔防<strong>能出，但概率只有普通塔防的约 1/10</strong>，并且升级加成更低，很难升满 5 级，自在极意因此几乎拿不到。条件判定代码没有问题，原因是<strong>配置差异</strong>。建议转策划调整配置，服务端代码不需要改。</p>
+</div>
+
+<section>
+  <h2>两个终极天赋的获取条件 <span class="tag">TDTalantCfg · unlimited_condition</span></h2>
+  <div class="table-box"><table>
+    <thead><tr><th>终极天赋</th><th>合成材料</th><th>无限模式条件</th></tr></thead>
+    <tbody>
+      <tr><td>3113 大巧不工</td><td>3102 迅捷 + 3104 远视</td><td>还没拥有 3113，3102 到 5 级，3104 到 5 级</td></tr>
+      <tr><td>3114 自在极意</td><td>3103 快速施法 + 3109 强化召唤</td><td>还没拥有 3114，3103 到 5 级，3109 到 5 级</td></tr>
+    </tbody>
+  </table></div>
+  <p>两个天赋都在无限子池 <code>2104201</code> 里，权重 1 亿。材料天赋满级后，下一次刷天赋基本必出。所以关键在于<strong>材料天赋能不能刷满 5 级</strong>。</p>
+</section>
+
+<section>
+  <h2>强化召唤（3109）的出现条件 <span class="tag">[3101039, 3106001]</span></h2>
+  <ul>
+    <li><code>3101039</code>：3109 当前等级 &lt; 5。</li>
+    <li><code>3106001</code>：战斗阵型（Fighting）里上阵下面<strong>任意一个</strong>英雄，几星都行。只放在备用区不算。</li>
+  </ul>
+  <div class="chips">
+    <span class="chip"><span class="mono">13</span>格罗</span>
+    <span class="chip"><span class="mono">14</span>宝拉</span>
+    <span class="chip"><span class="mono">15</span>克里斯</span>
+    <span class="chip"><span class="mono">20</span>艾丽卡</span>
+    <span class="chip"><span class="mono">23</span>哈迪斯</span>
+    <span class="chip"><span class="mono">32</span>华莉丝</span>
+    <span class="chip"><span class="mono">36</span>爱尔威</span>
+    <span class="chip"><span class="mono">49</span>柏妮丝</span>
+    <span class="chip"><span class="mono">54</span>苏阿黛</span>
+  </div>
+  <p>普通塔防的对应条件 <code>3006001</code> 用的是同一批英雄 ID，两边都走 <code>OnPointLevelHero</code>、查同一张 <code>TDCombatUnitCfg</code>，判定结果一致。条件在每次刷天赋时实时判定，中途把英雄下阵，3109 就不会再进候选。</p>
+</section>
+
+<section>
+  <h2>普通塔防 vs 无限塔防的配置差异</h2>
+  <div class="table-box"><table>
+    <thead><tr><th>项目</th><th>普通塔防</th><th>无限塔防</th></tr></thead>
+    <tbody>
+      <tr><td>刷三选一的频率</td><td>每一关都刷（16592 个普通关都配了池子）</td><td class="diff">只有 Boss 关刷，每 5 关一次（4000 个普通关的池子全为空）</td></tr>
+      <tr><td>外层池抽到 3101~3110 子池</td><td class="num">101 / 102：40%，106：36%</td><td class="num diff">2201201 / 2201205：25%，2202201：约 0</td></tr>
+      <tr><td>3109 所在子池</td><td><code>10004</code>：只有 3101~3110</td><td class="diff"><code>2104201</code>：多了 3116 / 3117 / 3119 / 3120，被稀释</td></tr>
+      <tr><td>3109 权重 / 每级加成</td><td class="num">25 / 每级 +100%（系数 10000）</td><td class="num diff">25 / 每级 +25%（系数 2500）</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>出现概率估算 <span class="tag">开局 0 级 · 英雄条件满足</span></h2>
+  <div class="bars" role="img" aria-label="每关出现 3109 的概率：普通塔防约 3.3%，无限塔防约 0.24%">
+    <div class="bar-row"><span>普通塔防</span><div class="track"><div class="fill" style="width:100%;background:var(--bar-a)"></div></div><span class="v">3.3%</span></div>
+    <div class="bar-row"><span>无限塔防</span><div class="track"><div class="fill" style="width:7.3%;background:var(--bar-b)"></div></div><span class="v">0.24%</span></div>
+    <span class="cap">每关出现 3109 的概率，条长按同一比例绘制</span>
+  </div>
+  <div class="table-box"><table>
+    <thead><tr><th></th><th>每次刷新出现 3109</th><th>折算到每关</th><th>前 100 关至少出现一次</th></tr></thead>
+    <tbody>
+      <tr><td>普通塔防</td><td class="num">(0.40 + 0.40 + 0.36) × 25/875 ≈ 3.3%</td><td class="num">3.3%</td><td class="num">约 96%</td></tr>
+      <tr><td>无限塔防</td><td class="num">(0.25 + 0.25 + ≈0) × 25/1075 ≈ 1.2%</td><td class="num">约 0.24%</td><td class="num diff">约 21%</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">这是乐观估计：两边其他天赋每升 1 级权重都 +100%，玩家点得越多，3109 占比越低。无限里 3109 自己每级只 +25%，追不上别的天赋，刷满 5 级比普通塔防难得多。另外，大巧不工（3102 + 3104）没有英雄条件，但同样受"只有 Boss 关刷"影响，两个材料满级至少需要 10 次三选一，也就是约 50 关以上。</p>
+</section>
+
+<section>
+  <h2>已排除的可能</h2>
+  <ul>
+    <li>天赋池：3113 / 3114 都在 <code>2104201</code>，所有无限关卡的外层池（<code>22012xx</code>）都包含它。</li>
+    <li>条件写法：和能正常获得的 3111 / 3112 / 3115 结构一致。</li>
+    <li>代码：<code>checkTalentCondition</code>（<code>ctl_tiny_tower_talent.go:357</code>）无限读 <code>UnlimitedCondition</code>，条件判定取的塔正确，没有针对这两个天赋的特殊分支。</li>
+    <li>分支：三张天赋相关的表在 1052 和 1053 之间没有相关差异。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>建议</h2>
+  <div class="cols">
+    <div class="card"><h3>转策划调配置</h3><p>提高 <code>2104201</code> 中 3109 的权重，或把系数 2500 改为 10000，与普通塔防对齐。</p></div>
+    <div class="card"><h3>评估子池稀释</h3><p>3116~3120 加入子池后，压低了原有材料天赋的出现率。</p></div>
+    <div class="card"><h3>评估刷新频率</h3><p>如果希望无限里能稳定合出终极天赋，可以提高刷天赋的频率，或给 Boss 关增加刷新次数。</p></div>
+    <div class="card"><h3>跟测试确认复现</h3><p>打到第几关、每次三选一选了什么、阵容里有没有上面 9 个英雄之一。</p></div>
+  </div>
+</section>
+
+<footer>依据：gdconfig <span class="mono">tsv/TDTalantCfg.tsv</span>、<span class="mono">ConditionCfg.tsv</span>、<span class="mono">TDTalantPoolCfg.tsv</span>、<span class="mono">TDStageCfg.tsv</span>、<span class="mono">TDUnlimitedStageCfg.tsv</span>，以及 gs <span class="mono">game/play/internal/ctl_tiny_tower_talent.go</span>、<span class="mono">condition_check.go</span>。概率为按配置估算的值，未用线上数据验证。</footer>
+</div>

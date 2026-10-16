@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SSR战魂 BI 需求清单</title>
+  <style>
+    :root { --bg:#eef2f5; --card:#fff; --ink:#17212b; --line:#d5dde5; --code:#edf1f5; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+    header { padding:26px 18px 20px; background:#123a5a; color:#fff; }
+    header div, main { width:min(920px,100%); margin:auto; }
+    h1 { margin:0; font-size:28px; }
+    main { padding:16px; display:grid; gap:12px; }
+    section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px 18px; }
+    h2 { margin:0 0 9px; font-size:19px; }
+    p { margin:5px 0 10px; }
+    code { background:var(--code); padding:1px 5px; border-radius:4px; font:13px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace; }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; min-width:620px; border-collapse:collapse; font-size:14px; }
+    th, td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+    th { background:#f3f6f8; }
+    td:first-child code { white-space:nowrap; }
+  </style>
+</head>
+<body>
+<header>
+  <div><h1>SSR战魂 BI 需求清单</h1></div>
+</header>
+
+<main>
+  <section>
+    <h2>一、战魂升级</h2>
+    <p>日志：<code>war_soul_upgrade</code>。每次战魂升级成功时记录。</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>字段</th><th>内容</th></tr></thead>
+        <tbody>
+          <tr><td><code>related_id</code></td><td>本次升级操作 ID</td></tr>
+          <tr><td><code>hero_id</code></td><td>被升级 SSR 的英雄唯一 ID</td></tr>
+          <tr><td><code>hero_cfg_id</code></td><td>被升级 SSR 的英雄配置 ID</td></tr>
+          <tr><td><code>old_lvl</code></td><td>升级前战魂等级</td></tr>
+          <tr><td><code>new_lvl</code></td><td>升级后战魂等级</td></tr>
+          <tr><td><code>old_exp</code></td><td>升级前战魂经验</td></tr>
+          <tr><td><code>new_exp</code></td><td>升级后战魂经验</td></tr>
+          <tr><td><code>add_exp</code></td><td>本次增加的战魂经验</td></tr>
+          <tr><td><code>frag_detail</code></td><td>本次消耗的英雄碎片明细（道具ID*数量）</td></tr>
+          <tr><td><code>item_detail</code></td><td>本次消耗的道具明细（英雄宝箱等非碎片道具，道具ID*数量）</td></tr>
+          <tr><td><code>hero_detail</code></td><td>本次消耗的英雄本体明细</td></tr>
+          <tr><td><code>max_star</code></td><td>本次消耗英雄本体中的最高星级</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>二、觉醒刻印节点解锁</h2>
+    <p>日志：<code>war_soul_node</code>（独立表）。普通节点和高级节点解锁成功时都记录。</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>字段</th><th>内容</th></tr></thead>
+        <tbody>
+          <tr><td><code>related_id</code></td><td>本次解锁操作 ID；高级节点与资产流水 630 的事件 ID 相同</td></tr>
+          <tr><td><code>hero_id</code></td><td>解锁节点的 SSR 英雄唯一 ID</td></tr>
+          <tr><td><code>hero_cfg_id</code></td><td>解锁节点的 SSR 英雄配置 ID</td></tr>
+          <tr><td><code>node_id</code></td><td>本次解锁的节点 ID</td></tr>
+          <tr><td><code>war_soul_lvl</code></td><td>解锁时的战魂等级</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>三、资产消耗</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>reason ID</th><th>内容</th></tr></thead>
+        <tbody>
+          <tr><td><code>628</code></td><td>战魂升级消耗英雄碎片</td></tr>
+          <tr><td><code>629</code></td><td>战魂升级消耗英雄本体</td></tr>
+          <tr><td><code>630</code></td><td>高级节点解锁消耗</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</body>
+</html>

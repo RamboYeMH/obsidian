@@ -1,12 +1,13 @@
 连接:ssh ubuntu@192.168.1.204
 跳板机连接
 审核服分支：
-1. cd ops/ansible 
-2.  ./console.sh
-3. env h5review //切换到h5环境
-4. use 1 // 使用环境
-5. vars //查看变量
-6. deploy //部署某个包
+1. sudo su
+2. cd ops/ansible (/home/ubuntu/ops/ansible)
+3.  ./console.sh
+4. env h5review //切换到h5环境
+5. use 1 // 使用环境
+6. vars //查看变量
+7. deploy //部署某个包
 
 **查看日志**
 

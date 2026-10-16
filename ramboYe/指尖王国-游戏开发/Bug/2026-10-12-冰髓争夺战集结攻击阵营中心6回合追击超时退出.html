@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>集结攻击阵营中心追击超时</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --ink:#1b2230; --muted:#5d6678; --line:#dde1e8;
+  --accent:#2f5d8a; --ok:#1f7a55; --ok-soft:#e3f2ea; --bad:#a83a32; --bad-soft:#f8e6e4; --warn:#9a6a12; --warn-soft:#f7eedb;
+  --serif:"Noto Serif SC","Songti SC",serif; --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#12161d; --surface:#1a2029; --ink:#e4e8ef; --muted:#98a2b3; --line:#2b3340;
+    --accent:#7fa8d4; --ok:#5fc99a; --ok-soft:#173228; --bad:#e8857c; --bad-soft:#3a1d1b; --warn:#e0b45c; --warn-soft:#352a14;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#12161d; --surface:#1a2029; --ink:#e4e8ef; --muted:#98a2b3; --line:#2b3340;
+  --accent:#7fa8d4; --ok:#5fc99a; --ok-soft:#173228; --bad:#e8857c; --bad-soft:#3a1d1b; --warn:#e0b45c; --warn-soft:#352a14;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.7 var(--sans);margin:0;padding-inline:16px;padding-block:32px 56px}
+.wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:10px}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+h1{font:700 30px/1.3 var(--serif);margin:0;text-wrap:balance}
+h2{font:700 19px/1.4 var(--serif);margin:0 0 12px;text-wrap:balance}
+h3{font:600 15px/1.5 var(--sans);margin:16px 0 6px}
+p{margin:0 0 8px;max-width:72ch}
+ul,ol{margin:0;padding-left:1.3em}
+li{margin:3px 0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:13px}
+.meta b{color:var(--ink);font-weight:500}
+code,.mono{font-family:var(--mono);font-size:.86em;overflow-wrap:anywhere}
+.verdict{background:var(--bad-soft);border:1px solid color-mix(in srgb,var(--bad) 35%,transparent);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.verdict .tag{align-self:flex-start;font:600 12px/1 var(--sans);color:var(--bad);border:1px solid var(--bad);border-radius:999px;padding:5px 10px}
+.verdict p{font-size:16px;margin:0}
+section{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 22px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.fact{display:flex;flex-direction:column;gap:2px}
+.fact .k{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.fact .v{font:600 18px/1.4 var(--mono);font-variant-numeric:tabular-nums}
+.fact .v small{font:400 12px var(--sans);color:var(--muted);margin-left:4px}
+.tl{list-style:none;padding:0;margin:0;display:flex;flex-direction:column}
+.tl li{display:grid;grid-template-columns:110px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--line);margin:0}
+.tl li:first-child{border-top:0}
+.tl .t{font:600 13px/1.6 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.tl li.bad .t{color:var(--bad)}
+.tl li.ok .t{color:var(--ok)}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-top:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:12px;letter-spacing:.04em;border-top:0}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font:600 11px/1 var(--sans);border-radius:999px;padding:4px 8px;white-space:nowrap}
+.pill.bad{color:var(--bad);background:var(--bad-soft)}
+.pill.warn{color:var(--warn);background:var(--warn-soft)}
+.pill.ok{color:var(--ok);background:var(--ok-soft)}
+.note{border-left:3px solid var(--warn);background:var(--warn-soft);padding:10px 14px;border-radius:0 6px 6px 0;font-size:14px;margin-top:12px}
+.todo{list-style:none;padding:0}
+.todo li{padding-left:24px;position:relative}
+.todo li::before{content:"";position:absolute;left:2px;top:7px;width:12px;height:12px;border:1.5px solid var(--muted);border-radius:3px}
+.log{font:12px/1.6 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin:6px 0 4px;overflow-x:auto;white-space:pre}
+.log .hl{color:var(--bad);font-weight:600}
+.log .ok{color:var(--ok);font-weight:600}
+.cap{font-size:13px;color:var(--muted);margin:2px 0 12px}
+.diagram{display:grid;grid-template-columns:minmax(0,340px) 1fr;gap:20px;align-items:center}
+.diagram svg{width:100%;height:auto}
+.legend{list-style:none;padding:0;margin:0;font-size:14px;display:flex;flex-direction:column;gap:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:middle}
+.fc{display:flex;flex-direction:column;align-items:stretch;max-width:720px;margin:4px auto 0}
+.fc-row{display:grid;grid-template-columns:minmax(0,1fr) 30px minmax(0,210px);align-items:center;gap:0}
+.fc-node{border:1.5px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 12px;text-align:center}
+.fc-node b{display:block;font:600 14px/1.5 var(--sans)}
+.fc-node span{display:block;font:12px/1.5 var(--mono);color:var(--muted);overflow-wrap:anywhere}
+.fc-node.q{border-color:var(--accent);background:var(--bg);border-radius:22px}
+.fc-node.q b::before{content:"◇ ";color:var(--accent)}
+.fc-node.warn{border-color:var(--warn);background:var(--warn-soft)}
+.fc-node.bad{border-color:var(--bad);background:var(--bad-soft)}
+.fc-node.bad b{color:var(--bad)}
+.fc-node.side{background:var(--bg);border-width:1px}
+.fc-node.dash{background:transparent;border:1.2px dashed var(--muted)}
+.fc-h{font:600 12px/1 var(--sans);color:var(--muted);text-align:center;white-space:nowrap}
+.fc-h::after{content:"→";display:block;font-size:16px;margin-top:2px}
+.fc-v{display:grid;grid-template-columns:minmax(0,1fr) 30px minmax(0,210px)}
+.fc-v div{justify-self:center;display:flex;flex-direction:column;align-items:center;padding:2px 0;color:var(--bad);font:600 12px/1.2 var(--sans)}
+.fc-v div::before{content:"";width:2px;height:12px;background:var(--bad)}
+.fc-v div::after{content:"▼";font-size:10px;line-height:1}
+.fc-v em{font-style:normal;color:var(--accent);margin:2px 0}
+.fc-loop{margin:4px 0 0;font-size:13px;color:var(--bad);text-align:center}
+@media (max-width:640px){
+  .fc-row,.fc-v{grid-template-columns:1fr}
+  .fc-h{text-align:left;padding:4px 0 2px}
+  .fc-h::after{content:"↓";display:inline;margin-left:4px}
+  .fc-h,.fc-row>.fc-node.side,.fc-row>.fc-node.dash{margin-left:28px}
+  .fc-row>.fc-node.side,.fc-row>.fc-node.dash{margin-bottom:4px;padding:6px 10px}
+}
+details{margin-top:6px}
+summary{cursor:pointer;font-size:14px;color:var(--accent)}
+@media (max-width:640px){
+  .tl li{grid-template-columns:1fr;gap:2px}
+  .diagram{grid-template-columns:1fr}
+  h1{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Bug 排查 · 冰髓争夺战 · cross7</div>
+  <h1>集结攻击阵营中心打了 6 回合就退出：追击超时</h1>
+  <div class="meta">
+    <span>类型 <b>Bug</b></span>
+    <span>版本 <b>1053</b></span>
+    <span>状态 <b>已定位，根治方案已改（未提交），计划下个版本</b></span>
+    <span>环境 <b>192.168.50.117 · h5-dev3 cross7 / game121</b></span>
+    <span>玩家 <b>5254193</b></span>
+    <span>创建日期 <b>2026-10-12</b></span>
+  </div>
+</header>
+
+<div class="verdict">
+  <span class="tag">结论</span>
+  <p>集结 <code>7695703180996225411</code> 不是被打光，也不是被遣返。它到达阵营中心时和其他部队重叠，<code>atkTroopMove</code> 把它挪到了一个<b>超出追击半径</b>的站位：距离 16786，追击半径 16500。防守方驻防不动，集结追了 <code>MaxChaseRound=5</code> 回合还没回到范围内，于是 <b>“追击时间太长，结束战斗”</b>，带兵存活退出。战报照常发出，所以战报里只有前几回合。</p>
+  <p>挪出范围的原因：站位环是冰霜怪（阻挡半径 2000）先生成并缓存在防守方身上的，半径 17000；玩家部队阻挡半径 1500，追击半径只有 16500，复用这个环就会被挪出范围。</p>
+</div>
+
+<section>
+  <h2>关键数据</h2>
+  <div class="facts">
+    <div class="fact"><span class="k">从到达到退出</span><span class="v">9.1<small>秒</small></span></div>
+    <div class="fact"><span class="k">挪位后的距离</span><span class="v">16786</span></div>
+    <div class="fact"><span class="k">追击半径 chasingRadius</span><span class="v">16500</span></div>
+    <div class="fact"><span class="k">MaxChaseRound</span><span class="v">5<small>回合</small></span></div>
+    <div class="fact"><span class="k">结束方式</span><span class="v" style="color:var(--warn)">存活退出</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>时间线（游戏时间 2027-01-26）</h2>
+  <ul class="tl">
+    <li><span class="t">20:24:02</span><div>玩家发起集结，目标是冰髓门 <code>7695694230284258958</code>，传送后去打阵营中心 <code>7695694230284258908</code>。</div></li>
+    <li><span class="t">20:24:51</span><div>途中被两座水晶塔各打掉 4% 战力（76.0T → 约 70T）。</div></li>
+    <li><span class="t">20:25:02.44</span><div><code>TroopAtkUnionCenterArrive</code>，防守集结是 <code>7695702824513937557</code>。到达点 <code>{1748421, 4464402}</code> 离中心约 16034，<b>原本在范围内</b>。因为和其他部队重叠，触发 <code>atkTroopMove</code>，沿 7 个 roundPoints 挪到 <code>{1744917, 4473904}</code>，这个点离中心约 16859。</div></li>
+    <li class="bad"><span class="t">20:25:05.34</span><div><code>[RCDEBUG] battleChasing outOfRange</code>：<code>dis:16786 chasingRadius:16500</code>，脱离攻击范围，开始追击。</div></li>
+    <li><span class="t">20:25:09.47</span><div>防守集结处于驻防状态（state 10），走“正在进行其他行为，不追击”，放弃这个目标。</div></li>
+    <li class="bad"><span class="t">20:25:11.53</span><div><code>追击时间太长, 结束战斗：5</code> → <code>battleChasingFail</code> → <code>GiveUpTarget</code> → <code>settleBattle</code>，接着 <code>rTroopBattleEndAlive</code>，集结解散，编队回城。</div></li>
+  </ul>
+  <details>
+    <summary>原始日志（cross7）</summary>
+<div class="log">20:25:02.440060 atkTroopMove unit 7695703180996225411 start {X:1748421 Z:4464402} center {X:1732500 Z:4462500}
+               roundPoints [... {X:1744917 Z:4473904}]
+20:25:02.440332 TroopAtkUnionCenterArrive troop:7695703180996225411 atk center:7695694230284258908 defenderID:7695702824513937557
+20:25:05.340672 [RCDEBUG] battleChasing outOfRange owner:7695703180996225411(MapUnitRallyTroop) coord:{1745295 4473366}
+               state:2 marching:false target:7695702824513937557 coord:{1732500 4462500} <span class="hl">dis:16786 chasingRadius:16500</span>
+20:25:09.466787 正在进行其他行为，不追击, owner:7695702824513937557, state:10
+20:25:11.528756 <span class="hl">追击时间太长, 结束战斗：5</span> player:5254193 troop:7695703180996225411 targetPlayer:6414300
+20:25:11.529204 GiveUpTarget settle owner 7695703180996225411 target 7695702824513937557
+20:25:11.531641 enter rTroopBattleEndAlive 7695703180996225411, player owner 5254193</div>
+  </details>
+</section>
+
+<section>
+  <h2>站位示意</h2>
+  <div class="diagram">
+    <svg viewBox="-30 -200 230 230" role="img" aria-label="阵营中心周围站位与追击半径示意">
+      <circle cx="0" cy="0" r="165" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 4"/>
+      <circle cx="0" cy="0" r="5" fill="var(--ink)"/>
+      <text x="8" y="16" font-size="10" fill="var(--muted)">阵营中心</text>
+      <text x="96" y="-148" font-size="10" fill="var(--accent)">r = 16500</text>
+      <circle cx="112" cy="-4" r="5" fill="var(--ok)"/>
+      <circle cx="159" cy="-19" r="5" fill="var(--warn)"/>
+      <path d="M159 -19 Q 152 -80 124 -114" fill="none" stroke="var(--warn)" stroke-width="1.5"/>
+      <circle cx="124" cy="-114" r="5" fill="var(--bad)"/>
+      <circle cx="128" cy="-109" r="3" fill="none" stroke="var(--bad)" stroke-width="1.5"/>
+    </svg>
+    <ul class="legend">
+      <li><i style="background:var(--ok)"></i>其他集结：<code>no paths</code> 不挪位，距离约 11000，一直在范围内，打到被打光</li>
+      <li><i style="background:var(--warn)"></i>本集结到达点：距离约 16034，在范围内</li>
+      <li><i style="background:var(--bad)"></i>挪位终点：距离约 16859，超出 16500 → 追击 5 回合超时</li>
+      <li style="color:var(--muted);font-size:13px">比例 1:100（单位：毫米坐标），Z 轴朝上</li>
+    </ul>
+  </div>
+</section>
+
+<section class="flowchart">
+  <h2>流程图：怎么从“到达”走到“追击超时结束”</h2>
+  <p class="cap">中间一列是这支集结实际走的路径（红色箭头），右侧是没走到的分支：其他集结走的是“没找到空位，原地开打”。</p>
+  <div class="fc">
+    <div class="fc-row"><div class="fc-node "><b>① 集结到达阵营中心</b><span>TroopAtkUnionCenterArrive · 20:25:02</span></div><div></div><div></div></div>
+    <div class="fc-v"><div></div></div>
+    <div class="fc-row"><div class="fc-node q"><b>与其他部队重叠？</b><span>atkTroopMoveCoordIsOverlap</span></div><div class="fc-h">否</div><div class="fc-node side"><b>原地开打</b><span>不挪位</span></div></div>
+    <div class="fc-v"><div><em>是</em></div></div>
+    <div class="fc-row"><div class="fc-node "><b>② atkTroopMovePaths 找站位</b><span>从防守方缓存的环形点里找最近空位</span></div><div></div><div></div></div>
+    <div class="fc-v"><div></div></div>
+    <div class="fc-row"><div class="fc-node q"><b>找到空位？</b></div><div class="fc-h">否</div><div class="fc-node side"><b>no paths，原地开打</b><span>其他集结：距离≈11000</span></div></div>
+    <div class="fc-v"><div><em>是</em></div></div>
+    <div class="fc-row"><div class="fc-node warn"><b>③ StartMarch 挪到站位终点</b><span>距离 16034 → ≈16859（&gt; 16500）</span></div><div></div><div></div></div>
+    <div class="fc-v"><div></div></div>
+    <div class="fc-row"><div class="fc-node q"><b>dis ≤ chasingRadius？</b><span>每秒 battlePrepare · ctl_battle.go:218</span></div><div class="fc-h">是</div><div class="fc-node side"><b>正常攻击回合</b><span>↺ 下一秒重新判断</span></div></div>
+    <div class="fc-v"><div><em>否</em></div></div>
+    <div class="fc-row"><div class="fc-node warn"><b>④ battleChasing 开始追击</b><span>dis 16786 &gt; 16500 · 20:25:05</span></div><div class="fc-h">同时</div><div class="fc-node dash"><b>防守方：驻防不追击</b><span>state 10 · 20:25:09 放弃目标</span></div></div>
+    <div class="fc-v"><div></div></div>
+    <div class="fc-row"><div class="fc-node q"><b>回到范围内？</b></div><div class="fc-h">是</div><div class="fc-node side"><b>CancelChase 恢复攻击</b><span>本次没有发生</span></div></div>
+    <div class="fc-v"><div><em>否</em></div></div>
+    <div class="fc-row"><div class="fc-node "><b>ChasingRound + 1</b></div><div></div><div></div></div>
+    <div class="fc-v"><div></div></div>
+    <div class="fc-row"><div class="fc-node q"><b>ChasingRound ≥ 5？</b><span>types.MaxChaseRound · ctl_battle.go:642</span></div><div class="fc-h">否</div><div class="fc-node side"><b>下一秒</b><span>回到「回到范围内？」再判断</span></div></div>
+    <div class="fc-v"><div><em>是</em></div></div>
+    <div class="fc-row"><div class="fc-node bad"><b>⑤ 追击时间太长，结束战斗</b><span>battleChasingFail · 20:25:11.53</span></div><div></div><div></div></div>
+    <div class="fc-v"><div></div></div>
+    <div class="fc-row"><div class="fc-node "><b>⑥ settleBattle（存活）</b><span>rTroopBattleEndAlive · 集结解散回城，发战报</span></div><div></div><div></div></div>
+    <p class="fc-loop">④ 之后的「回到范围内？→ +1 → ≥5？」每秒循环一次，连续 5 次都没回到范围内就走到 ⑤</p>
+  </div>
+  <p class="cap">从到达到结束一共约 9 秒，其中 20:25:05 起追击了 5 回合（1 秒 1 回合）才超时。战报里的回合数和这段时间有没有一一对应，还没拿战报数据核对。代码位置：判断范围 <code>ctl_battle.go:218</code>，追击计数和超时 <code>ctl_battle.go:642</code>（<code>types.MaxChaseRound = 5</code>），挪位 <code>ctl_battle_move.go:30</code>。</p>
+</section>
+
+<section>
+  <h2>代码链路</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>位置</th><th>作用</th></tr></thead>
+    <tbody>
+      <tr><td><code>game/wmap/internal/ctl_union_center.go:360</code></td><td><code>TroopAtkUnionCenterFactoryArrive</code>：到达后调用 <code>troopAtkTroop</code> 打驻防集结</td></tr>
+      <tr><td><code>game/wmap/internal/ctl_battle_move.go:30</code></td><td><code>atkTroopMove</code>：和其他部队重叠时，把进攻方挪到目标周围的空站位</td></tr>
+      <tr><td><code>game/wmap/internal/ctl_battle_move.go:249</code></td><td><code>atkTroopMovePaths</code>：站位半径用 <code>GetBattleRadius</code>（驻防时取建筑），从 <code>GetRangeCoord</code> 预设点里选离部队最近的空位</td></tr>
+      <tr><td><code>game/wmap/internal/battle/battlectx.go:309</code></td><td><code>GetRangeCoord</code>：预设环形点<b>缓存在防守方 BatCtx.RangeCoord 里</b>，只在为空时按当次调用者的半径生成（本次是 NPC 生成的 17000 环）</td></tr>
+      <tr><td><code>game/wmap/internal/mmap/melem/unit_mgr.go:481</code></td><td><code>BattleChasingDis</code>：追击半径 = 双方阻挡半径 + <code>VTroopRangeRadiusExtra</code>(5000)</td></tr>
+      <tr><td><code>game/wmap/internal/ctl_battle.go:218</code></td><td><code>battlePrepare</code>：<code>inDst = dis ≤ chasingRadius</code>，不满足就进入追击</td></tr>
+      <tr><td><code>game/wmap/internal/ctl_battle.go:642</code></td><td><code>battleChasing</code>：追击回合 ≥ <code>types.MaxChaseRound</code>(5) 返回结束 → <code>battleChasingFail</code></td></tr>
+    </tbody>
+  </table></div>
+  <p class="cap">配置：<code>ConstConfigCfg.tsv</code> 10131007 <code>v_troop_range_radius_extra</code> = 5000，10131008 <code>v_march_trigger_battle_radius_extra</code> = 5000。两者相等，所以同一支部队算出的站位半径和追击半径是一样的；问题出在环是别的单位（NPC）用自己的半径生成后被复用的，见下方“根因”。</p>
+</section>
+
+<section>
+  <h2>根因</h2>
+  <p><b>站位环是冰霜怪（NPC）生成后缓存在防守方身上的，半径按 NPC 的阻挡半径算成了 17000；玩家部队复用这个环，被挪到 16500–17000 之间，超出了自己 16500 的追击半径。</b></p>
+
+  <h3>1. 环只生成一次，之后一直复用</h3>
+  <p><code>atkTroopMovePaths</code>（<code>ctl_battle_move.go:249</code>）用<b>当前进攻方</b>的 <code>GetBattleRadius</code> 算出 <code>top</code>，再调防守方的 <code>BatCtx.GetRangeCoord(top, …)</code>。而 <code>GetRangeCoord</code>（<code>battle/battlectx.go:309</code>）只在 <code>len(RangeCoord) &lt;= 0</code> 时才生成环，之后直接返回缓存，后来者传入的 <code>top</code> 不起作用。</p>
+  <p>清空环的地方只有两处，对驻防在阵营中心、持续被攻打的防守集结都不生效：</p>
+  <ul>
+    <li><code>battleStart</code>（<code>battle/battlectx.go:935</code>）：开头 <code>selfIn &amp;&amp; opIn</code> 时直接 return；防守方一直在战斗中，新进攻方到达时也已把目标设成它，所以不会清空。</li>
+    <li><code>checkAtkTroopMoveChose</code>（<code>ctl_battle_move.go:221</code>）：只在行军途中检查时清<b>行军部队自己</b>的环；防守方驻防不行军，永远调不到。</li>
+  </ul>
+
+  <h3>2. 半径为什么对不上</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>项</th><th>值</th><th>来源</th></tr></thead>
+    <tbody>
+      <tr><td>玩家部队 / 集结的阻挡半径</td><td class="num">1500</td><td><code>ConstConfigCfg</code> 10135030 <code>player_troop_collision_radius</code>（<code>mtroop/player_troop.go:118</code>、<code>rally_troop.go:69</code>）</td></tr>
+      <tr><td>NPC 阻挡半径</td><td class="num">2000</td><td><code>D2NpcTroopClassCfg.collision_radius</code>，400 行都是 2000（<code>mtroop/npc_troop.go:79</code>）</td></tr>
+      <tr><td>射程 / 触发战斗 extra</td><td class="num">5000 / 5000</td><td>10131007 / 10131008</td></tr>
+      <tr><td>阵营中心阻挡半径</td><td class="num">10000</td><td>由日志 <code>chasingRadius:16500</code> 反推：16500 − 1500 − 5000</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li>玩家集结的追击半径 = 1500 + 5000 + 10000 = <b>16500</b>（与日志一致）。它自己算的站位半径也是 16500，<b>如果环是它生成的就不会出问题</b>。</li>
+    <li>NPC 算出的站位半径 = 2000 + 5000 + 10000 = <b>17000</b>，等于实际环的半径。</li>
+  </ul>
+
+  <h3>3. 日志反推：环半径一直是 17000</h3>
+  <p>挪位路径由 <code>GetSpiralCoords</code> 生成，只走到 <code>(n-1)/n</code>，最后一个点并不在环上。所以环半径 = 起点距离 + (终点距离 − 起点距离) × n / (n−1)。对今天所有 <code>atkTroopMove … roundPoints</code> 反推：</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>时间</th><th>进攻方</th><th>起点距离</th><th>终点距离</th><th>n</th><th>反推环半径</th></tr></thead>
+    <tbody>
+      <tr><td class="num">20:04:23</td><td>其他部队</td><td class="num">15135</td><td class="num">16532</td><td class="num">4</td><td class="num"><b>16998</b></td></tr>
+      <tr><td class="num">20:07:03</td><td>5254193 单队</td><td class="num">15974</td><td class="num">16828</td><td class="num">6</td><td class="num"><b>16998</b></td></tr>
+      <tr><td class="num">20:14:25</td><td>5254193 单队</td><td class="num">15615</td><td class="num">16800</td><td class="num">7</td><td class="num"><b>16997</b></td></tr>
+      <tr><td class="num">20:22:51</td><td>其他部队</td><td class="num">15703</td><td class="num">16782</td><td class="num">6</td><td class="num"><b>16998</b></td></tr>
+      <tr><td class="num">20:25:02</td><td><b>5254193 集结（本次）</b></td><td class="num">16034</td><td class="num">16859</td><td class="num">7</td><td class="num"><b>16997</b></td></tr>
+      <tr><td class="num">20:30:47</td><td>NPC</td><td class="num">15624</td><td class="num">16769</td><td class="num">6</td><td class="num"><b>16998</b></td></tr>
+    </tbody>
+  </table></div>
+  <p class="cap">这段时间防守集结换了好几个，反推出的环半径始终是 17000，不随挪位的进攻方变化。</p>
+
+  <h3>4. “防守集结”的生命周期与环的生成者</h3>
+  <p>阵营中心的驻防编队平时是一支支独立编队。第一支进攻部队到达时，<code>TroopAtkUnionCenterFactoryArrive</code>（<code>ctl_union_center.go:360</code>）发现 <code>DefenderID</code> 对应的集结不存在，就调用 <code>CreateUnionCenterDefendRally</code>（<code>:253</code>）/ <code>newDefendRally</code>（<code>:310</code>），把驻防编队合成一个临时“防守集结”。这个集结的阻挡半径等于中心的阻挡半径，并带着<b>全新的 BatCtx，<code>RangeCoord</code> 为空</b>。防守集结战斗结束时，<code>DefendUnionCenterEnd</code>（<code>:1335</code>）会解散它：打输了解散并让中心扣 1 点耐久；打赢了且已没人在打它也解散。下一波进攻到达时再新建，环随之重新生成。</p>
+  <p>环由“新防守集结出现后，<b>第一个到达时发生重叠</b>的进攻单位”生成（<code>atkTroopMoveCoordIsOverlap</code> 为真才会进入 <code>atkTroopMovePaths</code>；日志打 <code>no paths</code> 的那次调用也已经生成了环）。今天 20:00 后 cross7 的 7 个防守集结：</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>防守集结</th><th>第一支到达</th><th>本轮到达次数</th><th>首次挪位（生成环的单位）</th></tr></thead>
+    <tbody>
+      <tr><td><code>…7490164523158</code></td><td class="num">20:01:57</td><td class="num">1</td><td>没有挪位</td></tr>
+      <tr><td><code>…8057100207815</code></td><td class="num">20:04:09</td><td class="num">22</td><td>20:04:23 <code>7695697906776352072</code> <span class="pill warn">GM 刷的冰霜怪</span></td></tr>
+      <tr><td><code>…0165929163784</code></td><td class="num">20:12:20</td><td class="num">39</td><td>20:12:25 <code>7695699981245569559</code> <span class="pill warn">GM 刷的冰霜怪</span></td></tr>
+      <tr><td><b><code>…2824513937557</code>（本次）</b></td><td class="num">20:22:39</td><td class="num">22</td><td>20:22:46 <code>7695702644125310653</code> <span class="pill warn">GM 刷的冰霜怪</span></td></tr>
+      <tr><td><code>…4559680733616</code></td><td class="num">20:29:23</td><td class="num">5</td><td>20:29:23 5254193 集结（<code>no paths</code>）</td></tr>
+      <tr><td><code>…5109436550053</code></td><td class="num">20:31:31</td><td class="num">7</td><td>20:31:39 5254193 集结（<code>no paths</code>）</td></tr>
+      <tr><td><code>…5882530666956</code></td><td class="num">20:34:31</td><td class="num">8</td><td>20:34:31 5254193 集结（<code>no paths</code>）</td></tr>
+    </tbody>
+  </table></div>
+  <p class="cap">本次出问题的防守集结，环确认是 GM 命令刷出的冰霜怪生成的（日志 <code>cmdGMSpawnIceFrostMonster spawned npc:7695702644125310653 atkCamp:3 defCamp:2</code>，20:21:57）。并非每次都是 NPC 先生成：后三个防守集结首次挪位的是玩家集结，按“只生成一次”环应为 16500，但 <code>…3616</code> 在 20:30:47 的 NPC 挪位反推出的环仍是 16998，说明环中途被清空并重新生成过（可能是防守集结短暂脱离战斗后经 <code>battleStart</code> 清空），具体哪一步还没查实。</p>
+
+  <h3>5. 侧面印证</h3>
+  <ul>
+    <li>今天被挪位后触发 <code>battleChasing outOfRange</code> 的，<b>只有玩家 5254193 的 5 支部队</b>：单队 <code>…444619/621</code>、<code>…961549/863463</code>，以及本次集结。日志里的 <code>dis</code> 分别是 16626 / 16620 / 16560 / 16522 / 16786，都超过 16500。</li>
+    <li>其他被挪到 16550–16866 的单位都没触发，它们大多是 NPC，追击半径本来就是 17000。</li>
+    <li>那 4 支单队开始追击后都走回了范围内，又重新挪了一次位（20:07:09、20:07:56、20:14:31、20:14:46 各有一次 <code>atkTroopMove</code>）。只有这支集结 5 回合内没走回来，导致超时。</li>
+  </ul>
+  <div class="note"><span class="pill warn">待查</span> 集结开始追击后，5 秒内为什么没能走回 16500 以内，还没查清楚。防守方在中心原地不动，可能和行军路径被建筑阻挡有关。另外，环中途被重新生成的具体路径也还没查实，<code>GetRangeCoord</code> 生成环时没有日志。</div>
+</section>
+
+<section>
+  <h2>本次排查顺带确认</h2>
+  <ul>
+    <li>最初反馈“没有战报”：服务器侧每场战斗都有 <code>settleBattle</code> → <code>packModuleBattleInfo</code> → game121 <code>SendMail</code> → 平台 <code>/new/mail</code> 返回 <code>Err:0</code>，没有漏发。</li>
+    <li>其他集结打 40–60 秒后是 <code>BattleResultDead</code>（被打光），属于正常战败。期间水晶塔每约 12.4 秒打掉 2×4% 战力，加速了战败。</li>
+    <li>“防守方是空编队就 return、不发战报”的分支（ice-2748）这次没有触发。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>复现步骤（修复前的代码）</h2>
+  <p>关键是：<b>先让冰霜怪生成 17000 的环，再让玩家集结在重叠的情况下到达</b>。“挪位后超出追击范围”稳定复现；最终是否因追击超时退出战斗不一定每次出现。</p>
+  <h3>前置条件</h3>
+  <ul>
+    <li>冰髓争夺战处于<b>战斗阶段</b>（进攻阵营中心需要 <code>IsIceContestInBattlePhase</code> 通过）。</li>
+    <li>防守方阵营（如阵营 2）的阵营中心里有玩家驻防编队。</li>
+    <li>进攻方阵营（如阵营 3）准备 2–3 个能发起集结的账号。</li>
+  </ul>
+  <h3>步骤</h3>
+  <ol>
+    <li><b>让防守集结重新开始</b>：确认当前没人在打这个阵营中心，等上一波的防守集结解散，下一支到达会新建防守集结，环为空。</li>
+    <li><b>先刷两只冰霜怪，让 NPC 生成环</b>：
+<div class="log">gmspawnicefrost 3 2 10   // 进攻阵营 防守阵营 [出怪倒计时秒]，目标自动是防守方阵营中心
+gmspawnicefrost 3 2 12</div>
+      第一只到达时不重叠，不生成环；第二只到达时与第一只重叠，触发 <code>atkTroopMove</code>，按 NPC 阻挡半径 2000 生成 17000 的环。日志应有 <code>atkTroopMove unit &lt;冰霜怪ID&gt; ... roundPoints [...]</code>。<b>重叠后第一个触发挪位的必须是冰霜怪</b>，若玩家部队先在重叠时到达，生成的是 16500 的环，复现不出来。</li>
+    <li><b>冰霜怪还在打的时候，让玩家集结到达</b>：防守集结一直在战斗中，环不会被清空。从冰髓门出来的到达点基本固定，几乎必然与场上单位重叠。可以多发几支（单队、集结都发）。</li>
+  </ol>
+  <h3>判定（看 cross 日志）</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>现象</th><th>日志</th><th>稳定性</th></tr></thead>
+    <tbody>
+      <tr><td>到达后被挪到环上，且找到了空站位</td><td><code>atkTroopMove unit &lt;玩家部队ID&gt; ... roundPoints [...]</code>（不是 <code>no paths</code>）</td><td><span class="pill ok">稳定</span></td></tr>
+      <tr><td><b>挪完后超出追击范围</b></td><td><code>[RCDEBUG] battleChasing outOfRange owner:&lt;玩家部队ID&gt; ... dis:165xx~168xx chasingRadius:16500</code></td><td><span class="pill ok">每次挪位都出现</span></td></tr>
+      <tr><td>防守方驻防不追</td><td><code>正在进行其他行为，不追击, owner:&lt;防守集结ID&gt;, state:10</code></td><td><span class="pill ok">稳定</span></td></tr>
+      <tr><td><b>追击 5 回合超时，退出战斗</b></td><td><code>追击时间太长, 结束战斗：5 player:&lt;pid&gt; troop:&lt;部队ID&gt;</code></td><td><span class="pill warn">不一定</span></td></tr>
+      <tr><td>带兵存活退出，战报只有前几回合</td><td><code>rTroopBattleEndAlive &lt;部队ID&gt;</code></td><td><span class="pill warn">随上一条</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="cap">追击超时不稳定：今天被挪出范围的 5 支部队里，4 支单队追回了范围，只有这支集结 5 回合内没追回来，原因待查。建议判定标准：修复前只要出现 <code>battleChasing outOfRange ... chasingRadius:16500</code> 即算复现；多发几支集结大概率能看到一次“追击时间太长”。</p>
+  <p class="cap">终点距离：取 <code>atkTroopMove</code> 日志最后一个 <code>roundPoints</code> 坐标，减去中心坐标后算 √(dx²+dz²)。今天中心是 <code>{1732500, 4462500}</code>；修复前在 16550–16860 之间。</p>
+</section>
+
+<section>
+  <h2>根治方案（已改，未提交，计划下个版本）</h2>
+  <p>只改 <code>game/wmap/internal/ctl_battle_move.go</code> 的 <code>atkTroopMovePaths</code>（+18 / −3 行）：<b>缓存的环仍用来分配站位（角度和占用标记不变），但选路和移动前，把环上的点沿原方向缩放到本部队自己的站位半径。</b></p>
+<div class="log">rounds := batCtx.GetRangeCoord(top, tarCoord, nv1Max)
+// 预设点缓存在目标身上, 半径由首个生成者决定(如NPC阻挡半径更大), 按本部队的半径缩放后再选路,
+// 否则会被挪出本部队的追击范围
+<span class="ok">ownRounds := scaleRangeCoords(rounds, tarCoord, radius)</span>
+...   // 找离 behind 最近的点、atkTroopMovePresetPaths 选路都改用 ownRounds
+path, index := wmap.atkTroopMovePresetPaths(unit, tarCoord, idx, <span class="ok">ownRounds</span>)
+if len(path) &gt; 0 {
+	// 占用标记按缓存中的原始点记录
+	batCtx.UseRangeCoord(rounds[index])
+	return path
+}
+
+// scaleRangeCoords 将围绕 center 的预设点沿原方向缩放到 radius 半径上
+func scaleRangeCoords(rounds []geo.Coord, center geo.Coord, radius int32) []geo.Coord {
+	ret := make([]geo.Coord, len(rounds))
+	for i, c := range rounds {
+		vec := geo.NewVector(center, c)
+		length := vec.Length()
+		if length &lt;= 0 {
+			ret[i] = c
+			continue
+		}
+		ret[i] = vec.Trunc(float64(radius) / length).ToCoord(center)
+	}
+	return ret
+}</div>
+  <h3>效果</h3>
+  <ul>
+    <li>玩家部队（阻挡半径 1500）挪到自己 16500 的环上；螺旋路径只走到 <code>(n-1)/n</code>，终点一定 ≤ 16500，在追击范围内且不与他人重叠。</li>
+    <li>NPC（阻挡半径 2000）缩放到 17000，与原来的环相同，行为不变。</li>
+    <li>与环由谁生成、中途是否被清空重建无关，都能保证终点不超出本部队的站位半径。</li>
+    <li>同一角度的站位 NPC 和玩家会站在不同半径上（17000 / 16500）；占用仍按原始点记录，同一角度 20 秒内只分给一个单位，不会叠在一起。</li>
+  </ul>
+  <h3>为什么不选其他方案</h3>
+  <ul>
+    <li><b>记下生成半径、不同就重建环</b>：多个不同半径的单位轮流到达时环会反复重建，占用标记丢失，反而更容易重叠。</li>
+    <li><b>驻防目标时终点超出追击半径就不移动</b>（中途加过的兜底）：已按要求移除，<code>atkTroopMove</code> 本身无改动。</li>
+  </ul>
+  <div class="note"><span class="pill warn">注意</span> 移除兜底后，若以后把 10131008（触发战斗半径）调得比 10131007（射程）大，或某玩法驻防集结的阻挡半径比所驻防建筑大（<code>atkTroopMovePaths</code> 取两者较大者，<code>BattleChasingDis</code> 固定用建筑），站位半径会再次超过追击半径，问题会重现且没有日志提示。</div>
+  <h3>性能影响：可忽略</h3>
+  <ul>
+    <li>只在部队到达且与他人重叠时触发，事件驱动，不在每秒的战斗 tick 里。</li>
+    <li>每次多一个切片分配（环上点数 8 / 16 / 40，阵营中心为 40 个点，约 320 字节）和每点一次开方、一次除法；同函数里本就对每点算一次距离，后续 <code>atkTroopMovePresetPaths</code> 的螺旋路径和碰撞检测要重一到两个数量级。</li>
+    <li>不改变环的生成、缓存、清空频率，不增加锁、日志或网络调用，无常驻内存。</li>
+  </ul>
+  <h3>修复后验证</h3>
+  <ul class="todo">
+    <li>按上面的复现步骤操作：玩家部队挪位后不再出现 <code>battleChasing outOfRange</code> 和 <code>追击时间太长</code>，<code>atkTroopMove</code> 终点到中心的距离 ≤ 16500</li>
+    <li>回归野外：多支部队同时打同一个野怪或玩家部队，挪位后站位正常、无明显重叠</li>
+    <li>回归王座、龙巢等驻防建筑：多支部队同时到达时的站位表现</li>
+  </ul>
+  <h3>可选后续</h3>
+  <ul class="todo">
+    <li>在 <code>GetRangeCoord</code> 生成环时加日志（<code>circleCoord</code>、<code>centerCoord</code>、<code>n</code>、防守方 ID），便于确认生成者</li>
+    <li>查清集结开始追击后 5 秒内为何没能走回范围</li>
+  </ul>
+</section>
+
+</div>
+</body>
+</html>
