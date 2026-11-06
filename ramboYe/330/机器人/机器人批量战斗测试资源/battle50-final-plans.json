@@ -1,0 +1,423 @@
+[
+  {
+    "id": "battle50_account_prepare_v1",
+    "draft": {
+      "id": "battle50_account_prepare_v1",
+      "name": "批量战斗_账号准备后保持在线",
+      "description": "仅账号准备，不迁城不开战；完成后保持在线等待下一阶段。失败停止，不自动从头重复GM。",
+      "character_capability": "allow_uncreated",
+      "age_stages": [
+        {
+          "stage_id": "stage_1c1f6f8b-0262-4dec-82c3-61c3d4c631c7",
+          "name": "账号准备",
+          "start_age_days": 0,
+          "session_policy": {
+            "online_duration_sec": {
+              "min": 86400,
+              "max": 86400
+            },
+            "offline_duration_sec": {
+              "min": 0,
+              "max": 0
+            },
+            "max_successful_sessions": 1,
+            "logout_after_blocks": false,
+            "logout_grace_sec": 5
+          },
+          "block_policy": {
+            "mode": "sequence",
+            "selection": "ordered",
+            "interval_sec": {
+              "min": 1,
+              "max": 1
+            },
+            "blocks": [
+              {
+                "spec_id": "assets",
+                "block_id": "battle50_prepare_assets_v1",
+                "version": 1,
+                "timeout_sec": 300,
+                "on_error": "stop"
+              },
+              {
+                "spec_id": "lineups",
+                "block_id": "battle50_prepare_lineups_v1",
+                "version": 1,
+                "timeout_sec": 300,
+                "on_error": "stop"
+              },
+              {
+                "spec_id": "refill",
+                "block_id": "battle50_refill_verify_v1",
+                "version": 1,
+                "timeout_sec": 300,
+                "on_error": "stop"
+              }
+            ],
+            "no_candidate_policy": {
+              "max_wait_sec": 0,
+              "max_attempts": 0,
+              "max_idle_sec": 0,
+              "backoff_sec": {
+                "min": 0,
+                "max": 0
+              }
+            }
+          }
+        }
+      ],
+      "union_policy": {},
+      "state_module_policy": {},
+      "dynamic_params": {},
+      "execution_mode": "sequence"
+    },
+    "revision": 2,
+    "lifecycle_state": "active",
+    "published_version": 1,
+    "published_hash": "b456c13966fbf08900e52416ecaf9cb99659df8a7c0590e92f0376cf272d26df",
+    "created_at": "2026-10-28T10:56:41.941Z",
+    "updated_at": "2026-10-28T10:56:41.987Z",
+    "schema_version": 2,
+    "has_unpublished_changes": false
+  },
+  {
+    "id": "battle50_account_resume_v2",
+    "draft": {
+      "id": "battle50_account_resume_v2",
+      "name": "批量战斗_已解锁账号增量准备",
+      "description": "跳过已执行yao001与队列卡，只补缺失十星英雄、上阵穿装补兵。on_error stop仅停止会话，失败须人工停止运行。",
+      "character_capability": "allow_uncreated",
+      "age_stages": [
+        {
+          "stage_id": "stage_924f41df-e6fe-40d7-8776-42d1afb5ad92",
+          "name": "账号准备",
+          "start_age_days": 0,
+          "session_policy": {
+            "online_duration_sec": {
+              "min": 86400,
+              "max": 86400
+            },
+            "offline_duration_sec": {
+              "min": 0,
+              "max": 0
+            },
+            "max_successful_sessions": 1,
+            "logout_after_blocks": false,
+            "logout_grace_sec": 5
+          },
+          "block_policy": {
+            "mode": "sequence",
+            "selection": "ordered",
+            "interval_sec": {
+              "min": 1,
+              "max": 1
+            },
+            "blocks": [
+              {
+                "spec_id": "assets",
+                "block_id": "battle50_prepare_assets_exact_v2",
+                "version": 1,
+                "params": {
+                  "skip_yao": true
+                },
+                "timeout_sec": 300,
+                "on_error": "stop"
+              },
+              {
+                "spec_id": "lineups",
+                "block_id": "battle50_lineups_resume_v2",
+                "version": 1,
+                "params": {
+                  "verify_now": false
+                },
+                "timeout_sec": 300,
+                "on_error": "stop"
+              },
+              {
+                "spec_id": "refill",
+                "block_id": "battle50_refill_verify_v1",
+                "version": 1,
+                "timeout_sec": 300,
+                "on_error": "stop"
+              }
+            ],
+            "no_candidate_policy": {
+              "max_wait_sec": 0,
+              "max_attempts": 0,
+              "max_idle_sec": 0,
+              "backoff_sec": {
+                "min": 0,
+                "max": 0
+              }
+            }
+          }
+        }
+      ],
+      "union_policy": {},
+      "state_module_policy": {},
+      "dynamic_params": {},
+      "execution_mode": "sequence"
+    },
+    "revision": 2,
+    "lifecycle_state": "active",
+    "published_version": 1,
+    "published_hash": "f5c1a0899e8b952d70f99926547dfa0ba04a8807f0cf0fa6efb26dee4d2e1d73",
+    "created_at": "2026-10-29T01:49:34.447Z",
+    "updated_at": "2026-10-29T01:49:34.481Z",
+    "schema_version": 2,
+    "has_unpublished_changes": false
+  },
+  {
+    "id": "battle50_gap2_prepare_v2",
+    "draft": {
+      "id": "battle50_gap2_prepare_v2",
+      "name": "批量战斗_补2队后续接准备",
+      "description": "跳过已执行yao001与队列卡，只补缺失十星英雄、上阵穿装补兵。on_error stop仅停止会话，失败须人工停止运行。",
+      "character_capability": "allow_uncreated",
+      "age_stages": [
+        {
+          "stage_id": "stage_5418b728-2f25-48e6-ae83-67c1ba096ee2",
+          "name": "账号准备",
+          "start_age_days": 0,
+          "session_policy": {
+            "online_duration_sec": {
+              "min": 86400,
+              "max": 86400
+            },
+            "offline_duration_sec": {
+              "min": 0,
+              "max": 0
+            },
+            "max_successful_sessions": 1,
+            "logout_after_blocks": false,
+            "logout_grace_sec": 5
+          },
+          "block_policy": {
+            "mode": "sequence",
+            "selection": "ordered",
+            "interval_sec": {
+              "min": 1,
+              "max": 1
+            },
+            "blocks": [
+              {
+                "spec_id": "assets",
+                "block_id": "battle50_prepare_assets_exact_v2",
+                "version": 1,
+                "params": {
+                  "skip_yao": true
+                },
+                "timeout_sec": 300,
+                "on_error": "stop"
+              },
+              {
+                "spec_id": "extend",
+                "block_id": "battle50_extend_verified_gap_v2",
+                "version": 1,
+                "params": {
+                  "expected_unlock_mask": 63,
+                  "queue_cards_to_add": 2
+                },
+                "timeout_sec": 120,
+                "on_error": "stop"
+              },
+              {
+                "spec_id": "lineups",
+                "block_id": "battle50_lineups_resume_v2",
+                "version": 1,
+                "params": {
+                  "verify_now": false
+                },
+                "timeout_sec": 300,
+                "on_error": "stop"
+              },
+              {
+                "spec_id": "refill",
+                "block_id": "battle50_refill_verify_v1",
+                "version": 1,
+                "timeout_sec": 300,
+                "on_error": "stop"
+              }
+            ],
+            "no_candidate_policy": {
+              "max_wait_sec": 0,
+              "max_attempts": 0,
+              "max_idle_sec": 0,
+              "backoff_sec": {
+                "min": 0,
+                "max": 0
+              }
+            }
+          }
+        }
+      ],
+      "union_policy": {},
+      "state_module_policy": {},
+      "dynamic_params": {},
+      "execution_mode": "sequence"
+    },
+    "revision": 2,
+    "lifecycle_state": "active",
+    "published_version": 1,
+    "published_hash": "6f7859c551b807f6b3d87bd00ad671e8defb0f3d2cb0c74e647ac6a5d2d21906",
+    "created_at": "2026-10-29T01:55:34.276Z",
+    "updated_at": "2026-10-29T01:55:34.306Z",
+    "schema_version": 2,
+    "has_unpublished_changes": false
+  },
+  {
+    "id": "battle50_last_account_v3",
+    "draft": {
+      "id": "battle50_last_account_v3",
+      "name": "批量战斗_最后账号续接",
+      "description": "跳过已执行yao001与队列卡，只补缺失十星英雄、上阵穿装补兵。on_error stop仅停止会话，失败须人工停止运行。",
+      "character_capability": "allow_uncreated",
+      "age_stages": [
+        {
+          "stage_id": "stage_d9f8e6cd-94ca-4e7d-8fb7-8a68a8c5f993",
+          "name": "账号准备",
+          "start_age_days": 0,
+          "session_policy": {
+            "online_duration_sec": {
+              "min": 86400,
+              "max": 86400
+            },
+            "offline_duration_sec": {
+              "min": 0,
+              "max": 0
+            },
+            "max_successful_sessions": 1,
+            "logout_after_blocks": false,
+            "logout_grace_sec": 5
+          },
+          "block_policy": {
+            "mode": "sequence",
+            "selection": "ordered",
+            "interval_sec": {
+              "min": 1,
+              "max": 1
+            },
+            "blocks": [
+              {
+                "spec_id": "extend",
+                "block_id": "battle50_extend_verified_gap_v3",
+                "version": 1,
+                "params": {
+                  "expected_unlock_mask": 15,
+                  "queue_cards_to_add": 4
+                },
+                "timeout_sec": 120,
+                "on_error": "stop"
+              },
+              {
+                "spec_id": "lineups",
+                "block_id": "battle50_lineups_resume_v2",
+                "version": 1,
+                "params": {
+                  "verify_now": false
+                },
+                "timeout_sec": 300,
+                "on_error": "stop"
+              },
+              {
+                "spec_id": "refill",
+                "block_id": "battle50_refill_verify_v1",
+                "version": 1,
+                "timeout_sec": 300,
+                "on_error": "stop"
+              }
+            ],
+            "no_candidate_policy": {
+              "max_wait_sec": 0,
+              "max_attempts": 0,
+              "max_idle_sec": 0,
+              "backoff_sec": {
+                "min": 0,
+                "max": 0
+              }
+            }
+          }
+        }
+      ],
+      "union_policy": {},
+      "state_module_policy": {},
+      "dynamic_params": {},
+      "execution_mode": "sequence"
+    },
+    "revision": 2,
+    "lifecycle_state": "active",
+    "published_version": 1,
+    "published_hash": "83ba3bdc0acf8be377f1ea7187e18752a9371bb09d9e0ad82df7ac7aa4830e44",
+    "created_at": "2026-10-29T01:58:03.647Z",
+    "updated_at": "2026-10-29T01:58:03.66Z",
+    "schema_version": 2,
+    "has_unpublished_changes": false
+  },
+  {
+    "id": "battle50_prepared_hold_v1",
+    "draft": {
+      "id": "battle50_prepared_hold_v1",
+      "name": "批量战斗_已准备账号验收并在线等待",
+      "description": "只回读装备与编队并补满兵力，不重复yao001和造英雄，不迁城不战斗",
+      "character_capability": "allow_uncreated",
+      "age_stages": [
+        {
+          "stage_id": "stage_194a7ddf-7d24-4949-9a28-bfc76906b7a8",
+          "name": "账号准备",
+          "start_age_days": 0,
+          "session_policy": {
+            "online_duration_sec": {
+              "min": 86400,
+              "max": 86400
+            },
+            "offline_duration_sec": {
+              "min": 0,
+              "max": 0
+            },
+            "max_successful_sessions": 1,
+            "logout_after_blocks": false,
+            "logout_grace_sec": 5
+          },
+          "block_policy": {
+            "mode": "sequence",
+            "selection": "ordered",
+            "interval_sec": {
+              "min": 1,
+              "max": 1
+            },
+            "blocks": [
+              {
+                "spec_id": "refill",
+                "block_id": "battle50_refill_verify_v1",
+                "version": 1,
+                "timeout_sec": 300,
+                "on_error": "stop"
+              }
+            ],
+            "no_candidate_policy": {
+              "max_wait_sec": 0,
+              "max_attempts": 0,
+              "max_idle_sec": 0,
+              "backoff_sec": {
+                "min": 0,
+                "max": 0
+              }
+            }
+          }
+        }
+      ],
+      "union_policy": {},
+      "state_module_policy": {},
+      "dynamic_params": {},
+      "execution_mode": "sequence"
+    },
+    "revision": 2,
+    "lifecycle_state": "active",
+    "published_version": 1,
+    "published_hash": "aa50efeb266c8d78b9cf4ce047a94d29aaff514278bfea6b4e6701f5fe88ce14",
+    "created_at": "2026-10-28T10:59:07.696Z",
+    "updated_at": "2026-10-28T10:59:07.722Z",
+    "schema_version": 2,
+    "has_unpublished_changes": false
+  }
+]

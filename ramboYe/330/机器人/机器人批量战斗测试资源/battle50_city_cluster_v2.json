@@ -1,0 +1,271 @@
+{
+  "record": {
+    "block": {
+      "ID": "battle50_city_cluster_v2",
+      "Name": "批量战斗_按实时勘察坐标集中迁城",
+      "StartAt": "LoginChoice",
+      "States": {
+        "AddTeleportItem": {
+          "Ack": "GMAck",
+          "Next": "AttemptTarget",
+          "Parameters": {
+            "args": [
+              "addasset",
+              "{{string session.playerID}}",
+              "item",
+              "11114417",
+              "1"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "AtTarget": {
+          "Choices": [
+            {
+              "Condition": "session.city.coord.X == session.migrate_base_x && session.city.coord.Z == session.migrate_base_z",
+              "Next": "ReadMap"
+            }
+          ],
+          "Default": "ReadItems",
+          "Type": "Choice"
+        },
+        "AttemptTarget": {
+          "Compute": [
+            {
+              "expr": "session.migrate_base_x + session.migrate_offsets[session.migrate_attempt][0]",
+              "save": "session.migrate_x"
+            },
+            {
+              "expr": "session.migrate_base_z + session.migrate_offsets[session.migrate_attempt][1]",
+              "save": "session.migrate_z"
+            }
+          ],
+          "Next": "Teleport",
+          "Type": "Local"
+        },
+        "CallLogin": {
+          "CallChain": "login_no_init_v1",
+          "Next": "SetTarget",
+          "Type": "Call"
+        },
+        "CityChoice": {
+          "Choices": [
+            {
+              "Condition": "has_path('session.city.cityID') && to_int(session.city.cityID) > 0",
+              "Next": "AtTarget"
+            }
+          ],
+          "Default": "CreateCity",
+          "Type": "Choice"
+        },
+        "CreateCity": {
+          "Ack": "NewMapCityAck",
+          "Assert": [
+            {
+              "Expr": "session.migrate_create_err == 'ErrCodeSuccess' || session.migrate_create_err == 0",
+              "Message": "首次入图建城必须成功"
+            }
+          ],
+          "Extract": {
+            "session.migrate_create_err": "$.errCode"
+          },
+          "Next": "ReadCity",
+          "Notify": [
+            "CityNtf"
+          ],
+          "Request": "NewMapCityReq",
+          "TimeoutMs": 20000,
+          "Type": "Request"
+        },
+        "ItemChoice": {
+          "Choices": [
+            {
+              "Condition": "to_int(get_map(state.core.asset.items, '11114417')) > 0 || to_int(get_map(state.core.asset.items, '11114420')) > 0",
+              "Next": "AttemptTarget"
+            }
+          ],
+          "Default": "AddTeleportItem",
+          "Type": "Choice"
+        },
+        "LoginChoice": {
+          "Choices": [
+            {
+              "Condition": "has_path('session.playerID') && session.playerID > 0",
+              "Next": "SetTarget"
+            }
+          ],
+          "Default": "CallLogin",
+          "Type": "Choice"
+        },
+        "NextOffset": {
+          "Compute": [
+            {
+              "expr": "session.migrate_attempt + 1",
+              "save": "session.migrate_attempt"
+            }
+          ],
+          "Next": "AttemptTarget",
+          "Type": "Local"
+        },
+        "ReadCity": {
+          "LocalLogic": "get_local_city",
+          "Next": "CityChoice",
+          "Type": "Local"
+        },
+        "ReadItems": {
+          "Ack": "AssetAck",
+          "Next": "ItemChoice",
+          "Notify": [
+            "AssetNtf"
+          ],
+          "Parameters": {
+            "typ": [
+              "item"
+            ]
+          },
+          "Request": "AssetReq",
+          "Type": "Request"
+        },
+        "ReadLineups": {
+          "Ack": "LineupsInfoAck",
+          "Assert": [
+            {
+              "Expr": "len(session.migrate_lineups[0].lineups) == 8 && len(filter(session.migrate_lineups[0].lineups, 'item.state != 1')) == 0",
+              "Message": "迁城前8队必须全部在城内"
+            }
+          ],
+          "Extract": {
+            "session.migrate_lineups": "$.lineupTypeDatas"
+          },
+          "Next": "ReadCity",
+          "Parameters": {
+            "lineupTyp": [
+              0
+            ]
+          },
+          "Request": "LineupsInfoReq",
+          "Type": "Request"
+        },
+        "ReadMap": {
+          "Ack": "WildMapViewAck",
+          "Assert": [
+            {
+              "Expr": "len(session.migrate_own_city) == 1",
+              "Message": "目标区域完整地图视野必须唯一找到本人城堡"
+            }
+          ],
+          "Compute": [
+            {
+              "expr": "filter(session.migrate_entities, '(item.type == \"MapUnitPlayerCity\" || item.type == 2) && to_int(item.owner.ID) == session.playerID')",
+              "save": "session.migrate_own_city"
+            }
+          ],
+          "Extract": {
+            "session.migrate_entities": "$.entities"
+          },
+          "Next": "VerifyPosition",
+          "Parameters": {
+            "centerPos": {
+              "X": "{{session.migrate_base_x}}",
+              "Z": "{{session.migrate_base_z}}"
+            },
+            "lod": 0,
+            "map_type": 0,
+            "reconnect": true,
+            "xSpan": 40000,
+            "zSpan": 40000
+          },
+          "Request": "WildMapViewReq",
+          "Type": "Request"
+        },
+        "SetTarget": {
+          "Assert": [
+            {
+              "Expr": "session.migrate_index >= 0 && session.migrate_index < 50",
+              "Message": "仅适用于本批900001至900050"
+            },
+            {
+              "Expr": "to_int(session.migrate_targets[session.migrate_index].robot_id) == to_int(global.robot_id)",
+              "Message": "机器人ID必须匹配其专属迁城坐标"
+            }
+          ],
+          "Compute": [
+            {
+              "expr": "to_int(global.robot_id) - 900001",
+              "save": "session.migrate_index"
+            },
+            {
+              "expr": "fromJSON(global.city_targets_json)",
+              "save": "session.migrate_targets"
+            },
+            {
+              "expr": "to_int(session.migrate_targets[session.migrate_index].x)",
+              "save": "session.migrate_base_x"
+            },
+            {
+              "expr": "to_int(session.migrate_targets[session.migrate_index].z)",
+              "save": "session.migrate_base_z"
+            },
+            {
+              "expr": "[[0,0]]",
+              "save": "session.migrate_offsets"
+            },
+            {
+              "expr": "0",
+              "save": "session.migrate_attempt"
+            }
+          ],
+          "Next": "ReadLineups",
+          "Type": "Local"
+        },
+        "Teleport": {
+          "Ack": "TeleportCityAck",
+          "Extract": {
+            "session.migrate_err": "$.errCode"
+          },
+          "Next": "TeleportResult",
+          "Parameters": {
+            "pos": {
+              "position": {
+                "X": "{{session.migrate_x}}",
+                "Z": "{{session.migrate_z}}"
+              }
+            },
+            "type": 1
+          },
+          "Request": "TeleportCityReq",
+          "TimeoutMs": 20000,
+          "Type": "Request"
+        },
+        "TeleportFailed": {
+          "Comment": "迁城未获成功回执，保留错误码；不得当作迁城完成",
+          "Type": "Fail"
+        },
+        "TeleportResult": {
+          "Choices": [
+            {
+              "Condition": "session.migrate_err == 'ErrCodeSuccess' || session.migrate_err == 0",
+              "Next": "ReadMap"
+            }
+          ],
+          "Default": "TeleportFailed",
+          "Type": "Choice"
+        },
+        "VerifyPosition": {
+          "Assert": [
+            {
+              "Expr": "session.migrate_own_city[0].position.position.X == session.migrate_base_x && session.migrate_own_city[0].position.position.Z == session.migrate_base_z",
+              "Message": "本人城堡实际坐标必须精确等于已分配落点"
+            }
+          ],
+          "End": true,
+          "Type": "Pass"
+        }
+      }
+    },
+    "readonly": false,
+    "source": "database"
+  },
+  "revision": "0cb19611bd181a8848762eece4970025c1d801d34ddb96cf21067ee9b82a1b56"
+}

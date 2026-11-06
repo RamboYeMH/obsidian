@@ -1,0 +1,146 @@
+{
+  "block": {
+    "ID": "battle50_pair_attack_v1",
+    "Name": "小规模首轮攻城",
+    "StartAt": "Init",
+    "States": {
+      "Attack": {
+        "Ack": "NewTroopAck",
+        "Assert": [
+          {
+            "Expr": "session.pair_attack_err == 0 || session.pair_attack_err == 'ErrCodeSuccess'",
+            "Message": "攻城出征请求必须成功"
+          }
+        ],
+        "Extract": {
+          "session.pair_attack_err": "$.errCode"
+        },
+        "Next": "ReadOwn",
+        "Parameters": {
+          "action": 1,
+          "endCoord": "{{session.pair_target.0.position.position}}",
+          "lineupIndex": 0,
+          "lineup_type": 0,
+          "targetID": "{{global.target_city_id}}"
+        },
+        "Request": "NewTroopReq",
+        "TimeoutMs": 15000,
+        "Type": "Request"
+      },
+      "BattleChoice": {
+        "Choices": [
+          {
+            "Condition": "len(filter(session.pair_own, 'item.property.troop.battleInfo.inBattle == true')) > 0",
+            "Next": "MakeBattleLog"
+          },
+          {
+            "Condition": "session.pair_saw_out && len(session.pair_own) == 0",
+            "Next": "BattleNotObserved"
+          },
+          {
+            "Condition": "session.pair_poll < 1200",
+            "Next": "Wait"
+          }
+        ],
+        "Default": "BattleNotObserved",
+        "Type": "Choice"
+      },
+      "BattleLog": {
+        "End": true,
+        "LocalLogic": "log",
+        "Type": "Local"
+      },
+      "BattleNotObserved": {
+        "Comment": "未观察到真实交战，不把出征成功视为战斗通过",
+        "Type": "Fail"
+      },
+      "Init": {
+        "Compute": [
+          {
+            "expr": "0",
+            "save": "session.pair_poll"
+          },
+          {
+            "expr": "false",
+            "save": "session.pair_saw_out"
+          }
+        ],
+        "Next": "Ready",
+        "Type": "Local"
+      },
+      "MakeBattleLog": {
+        "Compute": [
+          {
+            "expr": "\"BATTLE50_PAIR_COMBAT_JSON=\" + toJSON({\"robot_id\":global.robot_id,\"player_id\":session.playerID,\"target_player\":33869,\"troops\":session.pair_own})",
+            "save": "session.log_message"
+          }
+        ],
+        "Next": "BattleLog",
+        "Type": "Local"
+      },
+      "ReadOwn": {
+        "Ack": "PlayerTroopsAck",
+        "Compute": [
+          {
+            "expr": "filter(session.pair_troops, '(item.type == 1 || item.type == \"MapUnitPlayerTroop\") && item.property.troop != nil && !item.property.troop.isTempLineUp')",
+            "save": "session.pair_own"
+          },
+          {
+            "expr": "session.pair_saw_out || len(session.pair_own) > 0",
+            "save": "session.pair_saw_out"
+          }
+        ],
+        "Extract": {
+          "session.pair_troops": "$.entities"
+        },
+        "Next": "BattleChoice",
+        "Request": "PlayerTroopsReq",
+        "Type": "Request"
+      },
+      "Ready": {
+        "CallChain": "battle50_refill_verify_v1",
+        "Next": "Target",
+        "Type": "Call"
+      },
+      "Target": {
+        "Ack": "MapUnitAck",
+        "Assert": [
+          {
+            "Expr": "len(session.pair_target) == 1 && to_int(session.pair_target[0].owner.ID) == 33869 && to_int(session.pair_target[0].property.mapCity.onShield) <= 0",
+            "Message": "仅允许攻击本轮指定且无盾的守方城堡"
+          }
+        ],
+        "Extract": {
+          "session.pair_target": "$.entities"
+        },
+        "Next": "Attack",
+        "Parameters": {
+          "entityIDs": [
+            "{{global.target_city_id}}"
+          ]
+        },
+        "Request": "MapUnitReq",
+        "Type": "Request"
+      },
+      "Tick": {
+        "Compute": [
+          {
+            "expr": "session.pair_poll + 1",
+            "save": "session.pair_poll"
+          }
+        ],
+        "Next": "ReadOwn",
+        "Type": "Local"
+      },
+      "Wait": {
+        "Next": "Tick",
+        "Parameters": {
+          "wait_duration": 500
+        },
+        "Type": "Wait"
+      }
+    }
+  },
+  "id": "battle50_pair_attack_v1",
+  "revision": "87b4b891a42c98061ae0032d754b60a87480d7af215d7f15aba161247b85c1c5"
+}

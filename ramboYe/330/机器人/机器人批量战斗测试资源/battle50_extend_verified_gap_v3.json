@@ -1,0 +1,214 @@
+{
+  "record": {
+    "block": {
+      "ID": "battle50_extend_verified_gap_v3",
+      "Name": "批量战斗_修复后重新查询再补队",
+      "StartAt": "LoginChoice",
+      "States": {
+        "AddCard": {
+          "Ack": "GMAck",
+          "Next": "CountCard",
+          "Parameters": {
+            "args": [
+              "addasset",
+              "{{string session.playerID}}",
+              "item",
+              "9110001",
+              "1"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "CallLogin": {
+          "CallChain": "login_no_init_v1",
+          "Next": "ReadBefore",
+          "Type": "Call"
+        },
+        "CheckCards": {
+          "Choices": [
+            {
+              "Condition": "session.battle_cards_remaining > 0",
+              "Next": "AddCard"
+            }
+          ],
+          "Default": "VerifyUnlock",
+          "Type": "Choice"
+        },
+        "ClearFailedCard": {
+          "Ack": "GMAck",
+          "Next": "CheckCards",
+          "Parameters": {
+            "args": [
+              "addasset",
+              "{{string session.playerID}}",
+              "item",
+              "9110001",
+              "-1"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "CountCard": {
+          "Compute": [
+            {
+              "expr": "session.battle_cards_remaining - 1",
+              "save": "session.battle_cards_remaining"
+            }
+          ],
+          "Next": "CheckCards",
+          "Type": "Local"
+        },
+        "Done": {
+          "Type": "Succeed"
+        },
+        "GapChoice": {
+          "Choices": [
+            {
+              "Condition": "to_int(session.battle_unlock_mask) == 255",
+              "Next": "Done"
+            }
+          ],
+          "Default": "ValidateGap",
+          "Type": "Choice"
+        },
+        "LoginChoice": {
+          "Choices": [
+            {
+              "Condition": "has_path('session.playerID') && session.playerID > 0",
+              "Next": "ReadBefore"
+            }
+          ],
+          "Default": "CallLogin",
+          "Type": "Choice"
+        },
+        "QueueCardResidue": {
+          "Choices": [
+            {
+              "Condition": "to_int(get_map(state.core.asset.items, '9110001')) > 0",
+              "Next": "ClearFailedCard"
+            }
+          ],
+          "Default": "CheckCards",
+          "Type": "Choice"
+        },
+        "ReadBag": {
+          "Ack": "AssetAck",
+          "Next": "QueueCardResidue",
+          "Notify": [
+            "AssetNtf"
+          ],
+          "Parameters": {
+            "typ": [
+              "item"
+            ]
+          },
+          "Request": "AssetReq",
+          "Type": "Request"
+        },
+        "ReadBefore": {
+          "Ack": "LineupsInfoAck",
+          "Assert": [
+            {
+              "Expr": "len(filter(session.battle_before[0].lineups, 'item.state != 1')) == 0",
+              "Message": "全部编队必须在城内才能准备"
+            }
+          ],
+          "Extract": {
+            "session.battle_before": "$.lineupTypeDatas"
+          },
+          "Next": "ReadUnlock",
+          "Parameters": {
+            "lineupTyp": [
+              0
+            ]
+          },
+          "Request": "LineupsInfoReq",
+          "Type": "Request"
+        },
+        "ReadFinalMask": {
+          "Ack": "GMAck",
+          "Extract": {
+            "session.battle_unlock_mask": "$.locked"
+          },
+          "ExtractFrom": "LineupsNtf",
+          "Next": "GapChoice",
+          "Notify": [
+            "LineupsNtf"
+          ],
+          "Parameters": {
+            "args": [
+              "unlocklineup",
+              "{{string session.playerID}}",
+              "0"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "ReadUnlock": {
+          "Ack": "GMAck",
+          "Next": "ReadFinalMask",
+          "Parameters": {
+            "args": [
+              "fixPlayerLineupData",
+              "{{string session.playerID}}"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "ValidateGap": {
+          "Assert": [
+            {
+              "Expr": "to_int(session.battle_unlock_mask) == to_int(global.expected_unlock_mask)",
+              "Message": "实际解锁位图必须匹配核实的缺口，拒绝盲目扩队"
+            },
+            {
+              "Expr": "session.battle_cards_remaining > 0 && session.battle_cards_remaining <= 4",
+              "Message": "本批缺口只能为1至4个队列"
+            }
+          ],
+          "Compute": [
+            {
+              "expr": "to_int(global.queue_cards_to_add)",
+              "save": "session.battle_cards_remaining"
+            }
+          ],
+          "Next": "ReadBag",
+          "Type": "Local"
+        },
+        "VerifyUnlock": {
+          "Ack": "GMAck",
+          "Assert": [
+            {
+              "Expr": "to_int(session.battle_final_unlock) == 255",
+              "Message": "扩队后必须实际解锁8队"
+            }
+          ],
+          "Extract": {
+            "session.battle_final_unlock": "$.locked"
+          },
+          "ExtractFrom": "LineupsNtf",
+          "Next": "Done",
+          "Notify": [
+            "LineupsNtf"
+          ],
+          "Parameters": {
+            "args": [
+              "unlocklineup",
+              "{{string session.playerID}}",
+              "0"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        }
+      }
+    },
+    "readonly": false,
+    "source": "database"
+  },
+  "revision": "08d4d8ca461959f27a6c82015964a033899b0c571dda3eebc1c2bf1eed0addc3"
+}

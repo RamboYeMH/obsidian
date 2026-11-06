@@ -1,0 +1,222 @@
+[
+  {
+    "id": 2004,
+    "type": 5,
+    "item_i_d": 3400031,
+    "own_buff": [
+      2004001
+    ],
+    "use_buff": [
+      2004101
+    ],
+    "collision_radius": 4000,
+    "exclusion_radius": 6000,
+    "unlock": "",
+    "item": {
+      "id": 3400031,
+      "comment": "幻戏城堡:永久（高）",
+      "class": "item_skin",
+      "quality": 7,
+      "category_param": {
+        "effect": [
+          {
+            "typ": "item_skin",
+            "id": 2004,
+            "val": -1
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": 2002,
+    "type": 5,
+    "item_i_d": 3400011,
+    "own_buff": [
+      2002001
+    ],
+    "use_buff": [
+      2002101
+    ],
+    "collision_radius": 4000,
+    "exclusion_radius": 6000,
+    "unlock": "",
+    "item": {
+      "id": 3400011,
+      "comment": "月兔蟾宫:永久",
+      "class": "item_skin",
+      "quality": 7,
+      "category_param": {
+        "effect": [
+          {
+            "typ": "item_skin",
+            "id": 2002,
+            "val": -1
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": 1191,
+    "type": 5,
+    "item_i_d": 3400211,
+    "own_buff": [
+      1191001
+    ],
+    "use_buff": [
+      1191101
+    ],
+    "collision_radius": 4000,
+    "exclusion_radius": 6000,
+    "unlock": "",
+    "item": {
+      "id": 3400211,
+      "comment": "幻夜魔城-2026万圣节",
+      "class": "item_skin",
+      "quality": 7,
+      "category_param": {
+        "effect": [
+          {
+            "typ": "item_skin",
+            "id": 1191,
+            "val": -1
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": 1189,
+    "type": 5,
+    "item_i_d": 3400191,
+    "own_buff": [
+      1189001
+    ],
+    "use_buff": [
+      1189101
+    ],
+    "collision_radius": 4000,
+    "exclusion_radius": 6000,
+    "unlock": "",
+    "item": {
+      "id": 3400191,
+      "comment": "月影华台-2026中秋节",
+      "class": "item_skin",
+      "quality": 7,
+      "category_param": {
+        "effect": [
+          {
+            "typ": "item_skin",
+            "id": 1189,
+            "val": -1
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": 110071,
+    "type": 9,
+    "item_i_d": 7041079,
+    "get_name": [
+      "Actv_Halloween_Festival_2026_Name1"
+    ],
+    "collision_radius": 0,
+    "exclusion_radius": 0,
+    "unlock": "",
+    "item": {
+      "id": 7041079,
+      "comment": "烛魂战骑-万圣节",
+      "class": "item_march_skin",
+      "quality": 7,
+      "category_param": {
+        "effect": [
+          {
+            "typ": "item_skin",
+            "id": 110071,
+            "val": -1
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": 110070,
+    "type": 9,
+    "item_i_d": 7041078,
+    "get_name": [
+      "Actv_Halloween_Festival_2026_Name1"
+    ],
+    "collision_radius": 0,
+    "exclusion_radius": 0,
+    "unlock": "",
+    "item": {
+      "id": 7041078,
+      "comment": "幽蓝幻骑-万圣节",
+      "class": "item_march_skin",
+      "quality": 7,
+      "category_param": {
+        "effect": [
+          {
+            "typ": "item_skin",
+            "id": 110070,
+            "val": -1
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": 110069,
+    "type": 9,
+    "item_i_d": 7041077,
+    "get_name": [
+      "Actv_Mid_Autumn_2026_Name1"
+    ],
+    "collision_radius": 0,
+    "exclusion_radius": 0,
+    "unlock": "",
+    "item": {
+      "id": 7041077,
+      "comment": "桂影弦声-中秋节",
+      "class": "item_march_skin",
+      "quality": 7,
+      "category_param": {
+        "effect": [
+          {
+            "typ": "item_skin",
+            "id": 110069,
+            "val": -1
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": 110068,
+    "type": 9,
+    "item_i_d": 7041076,
+    "get_name": [
+      "Actv_Mid_Autumn_2026_Name1"
+    ],
+    "collision_radius": 0,
+    "exclusion_radius": 0,
+    "unlock": "",
+    "item": {
+      "id": 7041076,
+      "comment": "玉兔逐月-中秋节",
+      "class": "item_march_skin",
+      "quality": 7,
+      "category_param": {
+        "effect": [
+          {
+            "typ": "item_skin",
+            "id": 110068,
+            "val": -1
+          }
+        ]
+      }
+    }
+  }
+]

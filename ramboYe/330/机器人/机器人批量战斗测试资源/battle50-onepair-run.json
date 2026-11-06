@@ -1,0 +1,123 @@
+{
+  "id": "6ae2fe8b6688d12996b7c22e",
+  "plan_id": "battle50_pair_attack_hold_v1",
+  "plan_version": 1,
+  "status": "running",
+  "started_at": "2026-10-29T08:06:35.991981302Z",
+  "run_snapshot": {
+    "task_plan": {
+      "id": "battle50_pair_attack_hold_v1",
+      "version": 1,
+      "content": {
+        "id": "battle50_pair_attack_hold_v1",
+        "name": "小规模一攻一守_交战后召回补兵在线",
+        "description": "仅900004一队攻击900048；实际交战后召回，失败也保留并清理，不自动重打",
+        "character_capability": "allow_uncreated",
+        "age_stages": [
+          {
+            "stage_id": "stage_909e9ec0-d7d2-46e2-b516-b3b0cc71915f",
+            "name": "换装后重新集中迁城",
+            "start_age_days": 0,
+            "session_policy": {
+              "online_duration_sec": {
+                "min": 86400,
+                "max": 86400
+              },
+              "offline_duration_sec": {
+                "min": 0,
+                "max": 0
+              },
+              "max_successful_sessions": 1,
+              "logout_after_blocks": false,
+              "logout_grace_sec": 5
+            },
+            "block_policy": {
+              "mode": "sequence",
+              "selection": "ordered",
+              "interval_sec": {
+                "min": 1,
+                "max": 1
+              },
+              "blocks": [
+                {
+                  "spec_id": "attack",
+                  "block_id": "battle50_pair_attack_v1",
+                  "version": 1,
+                  "params": {
+                    "target_city_id": "7701917783926153023"
+                  },
+                  "timeout_sec": 660,
+                  "on_error": "continue"
+                },
+                {
+                  "spec_id": "cleanup",
+                  "block_id": "battle50_pair_cleanup_v1",
+                  "version": 1,
+                  "timeout_sec": 360,
+                  "on_error": "continue"
+                }
+              ],
+              "no_candidate_policy": {
+                "max_wait_sec": 0,
+                "max_attempts": 0,
+                "max_idle_sec": 0,
+                "backoff_sec": {
+                  "min": 0,
+                  "max": 0
+                }
+              }
+            }
+          }
+        ],
+        "union_policy": {},
+        "state_module_policy": {},
+        "dynamic_params": {},
+        "execution_mode": "sequence"
+      },
+      "content_hash": "a6f0dd8ca1271f6235c3588b920a13f34c99b619cd5b9f474284160d898404d8",
+      "published_at": "2026-10-29T08:06:35.477Z"
+    },
+    "target": {
+      "environment_id": "test",
+      "server_id": 1,
+      "gate_addr": "127.0.0.1:21001"
+    },
+    "execution_policy": {
+      "timezone": "Asia/Taipei",
+      "login_rate": 1,
+      "ccu_limit": 1
+    },
+    "source": "manual",
+    "manual_selection": {
+      "selector": {
+        "id": "battle50_prepare_pilot_v1",
+        "version": 1,
+        "content": {
+          "id": "battle50_prepare_pilot_v1",
+          "name": "批量战斗准备_新账号先行验证",
+          "rules": {
+            "robot_ids": [
+              900004
+            ],
+            "exclude_paused": true,
+            "exclude_online": true
+          },
+          "order": "robot_id_asc",
+          "conflict_policy": "skip"
+        },
+        "content_hash": "624a1a26fe3cd8735140d7cef98cf3517a0d736ef06f2ed578b0b63cbfb7aba9",
+        "published_at": "2026-10-28T10:56:41.91Z"
+      },
+      "count": 1,
+      "seed": 20261029
+    },
+    "session_timing_guardrails": {
+      "min_online_sec": 1,
+      "max_online_sec": 86400,
+      "min_offline_sec": 0,
+      "max_offline_sec": 604800,
+      "min_interval_sec": 0,
+      "max_interval_sec": 86400
+    }
+  }
+}

@@ -1,0 +1,1005 @@
+{
+  "record": {
+    "block": {
+      "ID": "battle50_prepare_lineups_v1",
+      "Name": "批量战斗_英雄穿装满编补兵_v1",
+      "StartAt": "LoginChoice",
+      "States": {
+        "AddEquip1": {
+          "Ack": "GMAck",
+          "Next": "NeedEquip2",
+          "Parameters": {
+            "args": [
+              "addasset",
+              "{{string session.playerID}}",
+              "item",
+              "2001021",
+              "{{string session.battle_equip_need}}"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "AddEquip2": {
+          "Ack": "GMAck",
+          "Next": "NeedEquip3",
+          "Parameters": {
+            "args": [
+              "addasset",
+              "{{string session.playerID}}",
+              "item",
+              "2002021",
+              "{{string session.battle_equip_need}}"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "AddEquip3": {
+          "Ack": "GMAck",
+          "Next": "Wear0_0",
+          "Parameters": {
+            "args": [
+              "addasset",
+              "{{string session.playerID}}",
+              "item",
+              "2003021",
+              "{{string session.battle_equip_need}}"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "AddQueueCard": {
+          "Ack": "GMAck",
+          "Extract": {
+            "session.battle_unlock_mask": "$.locked"
+          },
+          "ExtractFrom": "LineupsNtf",
+          "Next": "CheckUnlock",
+          "Notify": [
+            "LineupsNtf"
+          ],
+          "Parameters": {
+            "args": [
+              "addasset",
+              "{{string session.playerID}}",
+              "item",
+              "9110001",
+              "1"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "CallLogin": {
+          "CallChain": "login_no_init_v1",
+          "Next": "ReadBefore",
+          "Type": "Call"
+        },
+        "CheckUnlock": {
+          "Choices": [
+            {
+              "Condition": "to_int(session.battle_unlock_mask) == 255",
+              "Next": "ChooseHeroes"
+            }
+          ],
+          "Default": "AddQueueCard",
+          "Type": "Choice"
+        },
+        "ChooseHeroes": {
+          "Ack": "GetHeroListAck",
+          "Assert": [
+            {
+              "Expr": "len(filter(session.battle_chosen, 'item != nil && to_int(item.heroId) > 0')) == 32",
+              "Message": "需要32个已验证十星映射的不同英雄"
+            }
+          ],
+          "Compute": [
+            {
+              "expr": "[max_by(filter(session.battle_heroes, 'item.cfgId == 1010010'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010011'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010013'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010016'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010017'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010018'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010019'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010020'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010021'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010022'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010023'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010024'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010029'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010030'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010031'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010032'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010033'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010034'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010035'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010036'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010037'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010038'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010039'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010040'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010041'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010042'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010043'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010044'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010045'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010046'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010047'), 'power'),max_by(filter(session.battle_heroes, 'item.cfgId == 1010048'), 'power')]",
+              "save": "session.battle_chosen"
+            }
+          ],
+          "Extract": {
+            "session.battle_heroes": "$.heroes"
+          },
+          "Next": "EditLineups",
+          "Request": "GetHeroListReq",
+          "Type": "Request"
+        },
+        "ClearFailedCard": {
+          "Ack": "GMAck",
+          "Next": "CheckUnlock",
+          "Parameters": {
+            "args": [
+              "addasset",
+              "{{string session.playerID}}",
+              "item",
+              "9110001",
+              "-1"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "Done": {
+          "Type": "Succeed"
+        },
+        "EditLineups": {
+          "Ack": "LineupEditAck",
+          "Next": "ReadLineups",
+          "Parameters": {
+            "lineup_type": 0,
+            "list": [
+              {
+                "heroIDs": [
+                  "{{session.battle_chosen.0.heroId}}",
+                  "{{session.battle_chosen.1.heroId}}",
+                  "{{session.battle_chosen.2.heroId}}",
+                  "{{session.battle_chosen.3.heroId}}"
+                ],
+                "index": 0
+              },
+              {
+                "heroIDs": [
+                  "{{session.battle_chosen.4.heroId}}",
+                  "{{session.battle_chosen.5.heroId}}",
+                  "{{session.battle_chosen.6.heroId}}",
+                  "{{session.battle_chosen.7.heroId}}"
+                ],
+                "index": 1
+              },
+              {
+                "heroIDs": [
+                  "{{session.battle_chosen.8.heroId}}",
+                  "{{session.battle_chosen.9.heroId}}",
+                  "{{session.battle_chosen.10.heroId}}",
+                  "{{session.battle_chosen.11.heroId}}"
+                ],
+                "index": 2
+              },
+              {
+                "heroIDs": [
+                  "{{session.battle_chosen.12.heroId}}",
+                  "{{session.battle_chosen.13.heroId}}",
+                  "{{session.battle_chosen.14.heroId}}",
+                  "{{session.battle_chosen.15.heroId}}"
+                ],
+                "index": 3
+              },
+              {
+                "heroIDs": [
+                  "{{session.battle_chosen.16.heroId}}",
+                  "{{session.battle_chosen.17.heroId}}",
+                  "{{session.battle_chosen.18.heroId}}",
+                  "{{session.battle_chosen.19.heroId}}"
+                ],
+                "index": 4
+              },
+              {
+                "heroIDs": [
+                  "{{session.battle_chosen.20.heroId}}",
+                  "{{session.battle_chosen.21.heroId}}",
+                  "{{session.battle_chosen.22.heroId}}",
+                  "{{session.battle_chosen.23.heroId}}"
+                ],
+                "index": 5
+              },
+              {
+                "heroIDs": [
+                  "{{session.battle_chosen.24.heroId}}",
+                  "{{session.battle_chosen.25.heroId}}",
+                  "{{session.battle_chosen.26.heroId}}",
+                  "{{session.battle_chosen.27.heroId}}"
+                ],
+                "index": 6
+              },
+              {
+                "heroIDs": [
+                  "{{session.battle_chosen.28.heroId}}",
+                  "{{session.battle_chosen.29.heroId}}",
+                  "{{session.battle_chosen.30.heroId}}",
+                  "{{session.battle_chosen.31.heroId}}"
+                ],
+                "index": 7
+              }
+            ]
+          },
+          "Request": "LineupEditReq",
+          "Type": "Request"
+        },
+        "EquipChoice1": {
+          "Choices": [
+            {
+              "Condition": "session.battle_equip_need > 0",
+              "Next": "AddEquip1"
+            }
+          ],
+          "Default": "NeedEquip2",
+          "Type": "Choice"
+        },
+        "EquipChoice2": {
+          "Choices": [
+            {
+              "Condition": "session.battle_equip_need > 0",
+              "Next": "AddEquip2"
+            }
+          ],
+          "Default": "NeedEquip3",
+          "Type": "Choice"
+        },
+        "EquipChoice3": {
+          "Choices": [
+            {
+              "Condition": "session.battle_equip_need > 0",
+              "Next": "AddEquip3"
+            }
+          ],
+          "Default": "Wear0_0",
+          "Type": "Choice"
+        },
+        "FinishChoice": {
+          "Choices": [
+            {
+              "Condition": "has_path('global.verify_now') && global.verify_now == true",
+              "Next": "RefillVerify"
+            }
+          ],
+          "Default": "Done",
+          "Type": "Choice"
+        },
+        "LoginChoice": {
+          "Choices": [
+            {
+              "Condition": "has_path('session.playerID') && session.playerID > 0",
+              "Next": "ReadBefore"
+            }
+          ],
+          "Default": "CallLogin",
+          "Type": "Choice"
+        },
+        "NeedEquip1": {
+          "Compute": [
+            {
+              "expr": "to_int(len(filter(session.battle_heroes, 'item.heroId in session.battle_selected_ids && !(2001021 in item.equips)'))) - to_int(get_map(state.core.asset.items, '2001021'))",
+              "save": "session.battle_equip_need"
+            }
+          ],
+          "Next": "EquipChoice1",
+          "Type": "Local"
+        },
+        "NeedEquip2": {
+          "Compute": [
+            {
+              "expr": "to_int(len(filter(session.battle_heroes, 'item.heroId in session.battle_selected_ids && !(2002021 in item.equips)'))) - to_int(get_map(state.core.asset.items, '2002021'))",
+              "save": "session.battle_equip_need"
+            }
+          ],
+          "Next": "EquipChoice2",
+          "Type": "Local"
+        },
+        "NeedEquip3": {
+          "Compute": [
+            {
+              "expr": "to_int(len(filter(session.battle_heroes, 'item.heroId in session.battle_selected_ids && !(2003021 in item.equips)'))) - to_int(get_map(state.core.asset.items, '2003021'))",
+              "save": "session.battle_equip_need"
+            }
+          ],
+          "Next": "EquipChoice3",
+          "Type": "Local"
+        },
+        "QueueCardResidue": {
+          "Choices": [
+            {
+              "Condition": "to_int(session.battle_unlock_mask) != 255 && to_int(get_map(state.core.asset.items, '9110001')) > 0",
+              "Next": "ClearFailedCard"
+            }
+          ],
+          "Default": "CheckUnlock",
+          "Type": "Choice"
+        },
+        "ReadBag": {
+          "Ack": "AssetAck",
+          "Next": "QueueCardResidue",
+          "Notify": [
+            "AssetNtf"
+          ],
+          "Parameters": {
+            "typ": [
+              "item"
+            ]
+          },
+          "Request": "AssetReq",
+          "Type": "Request"
+        },
+        "ReadBefore": {
+          "Ack": "LineupsInfoAck",
+          "Assert": [
+            {
+              "Expr": "len(filter(session.battle_before[0].lineups, 'item.state != 1')) == 0",
+              "Message": "全部编队必须在城内才能准备"
+            }
+          ],
+          "Extract": {
+            "session.battle_before": "$.lineupTypeDatas"
+          },
+          "Next": "ReadUnlock",
+          "Parameters": {
+            "lineupTyp": [
+              0
+            ]
+          },
+          "Request": "LineupsInfoReq",
+          "Type": "Request"
+        },
+        "ReadHeroes": {
+          "Compute": [
+            {
+              "expr": "[session.battle_lineups[0].lineups[0].heroes[0].heroID,session.battle_lineups[0].lineups[0].heroes[1].heroID,session.battle_lineups[0].lineups[0].heroes[2].heroID,session.battle_lineups[0].lineups[0].heroes[3].heroID,session.battle_lineups[0].lineups[1].heroes[0].heroID,session.battle_lineups[0].lineups[1].heroes[1].heroID,session.battle_lineups[0].lineups[1].heroes[2].heroID,session.battle_lineups[0].lineups[1].heroes[3].heroID,session.battle_lineups[0].lineups[2].heroes[0].heroID,session.battle_lineups[0].lineups[2].heroes[1].heroID,session.battle_lineups[0].lineups[2].heroes[2].heroID,session.battle_lineups[0].lineups[2].heroes[3].heroID,session.battle_lineups[0].lineups[3].heroes[0].heroID,session.battle_lineups[0].lineups[3].heroes[1].heroID,session.battle_lineups[0].lineups[3].heroes[2].heroID,session.battle_lineups[0].lineups[3].heroes[3].heroID,session.battle_lineups[0].lineups[4].heroes[0].heroID,session.battle_lineups[0].lineups[4].heroes[1].heroID,session.battle_lineups[0].lineups[4].heroes[2].heroID,session.battle_lineups[0].lineups[4].heroes[3].heroID,session.battle_lineups[0].lineups[5].heroes[0].heroID,session.battle_lineups[0].lineups[5].heroes[1].heroID,session.battle_lineups[0].lineups[5].heroes[2].heroID,session.battle_lineups[0].lineups[5].heroes[3].heroID,session.battle_lineups[0].lineups[6].heroes[0].heroID,session.battle_lineups[0].lineups[6].heroes[1].heroID,session.battle_lineups[0].lineups[6].heroes[2].heroID,session.battle_lineups[0].lineups[6].heroes[3].heroID,session.battle_lineups[0].lineups[7].heroes[0].heroID,session.battle_lineups[0].lineups[7].heroes[1].heroID,session.battle_lineups[0].lineups[7].heroes[2].heroID,session.battle_lineups[0].lineups[7].heroes[3].heroID]",
+              "save": "session.battle_selected_ids"
+            }
+          ],
+          "Next": "NeedEquip1",
+          "Type": "Local"
+        },
+        "ReadLineups": {
+          "Ack": "LineupsInfoAck",
+          "Assert": [
+            {
+              "Expr": "len(session.battle_lineups[0].lineups) == 8 && len(filter(session.battle_lineups[0].lineups, 'len(item.heroes) != 4')) == 0",
+              "Message": "必须8支正式编队且每队4英雄"
+            }
+          ],
+          "Extract": {
+            "session.battle_lineups": "$.lineupTypeDatas"
+          },
+          "Next": "ReadHeroes",
+          "Parameters": {
+            "lineupTyp": [
+              0
+            ]
+          },
+          "Request": "LineupsInfoReq",
+          "Type": "Request"
+        },
+        "ReadUnlock": {
+          "Ack": "GMAck",
+          "Extract": {
+            "session.battle_unlock_mask": "$.locked"
+          },
+          "ExtractFrom": "LineupsNtf",
+          "Next": "ReadBag",
+          "Notify": [
+            "LineupsNtf"
+          ],
+          "Parameters": {
+            "args": [
+              "fixPlayerLineupData",
+              "{{string session.playerID}}"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "RefillVerify": {
+          "CallChain": "battle50_refill_verify_v1",
+          "End": true,
+          "Type": "Call"
+        },
+        "Wear0_0": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第1队第1名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear0_1",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.0.heroes.0.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear0_1": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第1队第2名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear0_2",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.0.heroes.1.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear0_2": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第1队第3名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear0_3",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.0.heroes.2.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear0_3": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第1队第4名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear1_0",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.0.heroes.3.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear1_0": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第2队第1名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear1_1",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.1.heroes.0.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear1_1": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第2队第2名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear1_2",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.1.heroes.1.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear1_2": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第2队第3名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear1_3",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.1.heroes.2.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear1_3": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第2队第4名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear2_0",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.1.heroes.3.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear2_0": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第3队第1名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear2_1",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.2.heroes.0.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear2_1": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第3队第2名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear2_2",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.2.heroes.1.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear2_2": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第3队第3名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear2_3",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.2.heroes.2.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear2_3": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第3队第4名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear3_0",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.2.heroes.3.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear3_0": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第4队第1名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear3_1",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.3.heroes.0.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear3_1": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第4队第2名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear3_2",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.3.heroes.1.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear3_2": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第4队第3名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear3_3",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.3.heroes.2.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear3_3": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第4队第4名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear4_0",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.3.heroes.3.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear4_0": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第5队第1名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear4_1",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.4.heroes.0.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear4_1": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第5队第2名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear4_2",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.4.heroes.1.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear4_2": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第5队第3名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear4_3",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.4.heroes.2.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear4_3": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第5队第4名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear5_0",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.4.heroes.3.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear5_0": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第6队第1名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear5_1",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.5.heroes.0.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear5_1": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第6队第2名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear5_2",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.5.heroes.1.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear5_2": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第6队第3名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear5_3",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.5.heroes.2.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear5_3": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第6队第4名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear6_0",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.5.heroes.3.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear6_0": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第7队第1名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear6_1",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.6.heroes.0.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear6_1": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第7队第2名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear6_2",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.6.heroes.1.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear6_2": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第7队第3名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear6_3",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.6.heroes.2.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear6_3": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第7队第4名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear7_0",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.6.heroes.3.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear7_0": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第8队第1名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear7_1",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.7.heroes.0.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear7_1": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第8队第2名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear7_2",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.7.heroes.1.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear7_2": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第8队第3名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "Wear7_3",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.7.heroes.2.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        },
+        "Wear7_3": {
+          "Ack": "HeroEquipWearQuicklyAck",
+          "Assert": [
+            {
+              "Expr": "2001021 in session.battle_last_worn.equips && 2002021 in session.battle_last_worn.equips && 2003021 in session.battle_last_worn.equips",
+              "Message": "第8队第4名英雄必须穿齐最高品质最高星级三件装备"
+            }
+          ],
+          "Extract": {
+            "session.battle_last_worn": "$.hero"
+          },
+          "Next": "FinishChoice",
+          "Parameters": {
+            "ID": "{{session.battle_lineups.0.lineups.7.heroes.3.heroID}}",
+            "isWear": true
+          },
+          "Request": "HeroEquipWearQuicklyReq",
+          "Type": "Request"
+        }
+      }
+    },
+    "readonly": false,
+    "source": "database"
+  },
+  "revision": "90bdd9b4b84da4899cca7b4310d08fcab623f693d296ca61d3a2dc27ed68245d"
+}

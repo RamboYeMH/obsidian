@@ -1,0 +1,3 @@
+2026-11-29 18:06:27.317784	[34mINFO[0m	internal/ctl_lineup.go:1151	33824 redif startmarch assign:false lineup:7701671162607879426 redif:6314520 lineup:631452 tmplineup:0
+2026-11-29 18:07:32.255142	[34mINFO[0m	internal/ctl_lineup.go:3439	[CDSNAP] 33824 RETURN lineup:7701671162607879426 old:76154 in:61004 lost:15150 hurt:0
+2026-11-29 18:07:32.286662	[33mWARN[0m	internal/ctl_lineup.go:3561	setLineupDataCb addEasterSoldier args pid:33824 deadSoldier:15150, pvpDeadSoldier:15150 isCross:false, isBfPlayGame:false

@@ -1,0 +1,11 @@
+# Private local deployment state and credentials
+*.local.env
+local-services.env
+answers.json
+deploy-settings.json
+deployment.env
+runtime-config.json
+docker-compose.yaml
+*.previous
+backups/
+logs/

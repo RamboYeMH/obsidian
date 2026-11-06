@@ -1,0 +1,130 @@
+{
+  "block": {
+    "ID": "battle50_pair_cleanup_v1",
+    "Name": "小规模召回归城补兵",
+    "StartAt": "Init",
+    "States": {
+      "Choice": {
+        "Choices": [
+          {
+            "Condition": "len(session.pair_recallable) > 0",
+            "Next": "Recall"
+          },
+          {
+            "Condition": "len(session.pair_cleanup_out) == 0",
+            "Next": "ReadHome"
+          },
+          {
+            "Condition": "session.pair_cleanup_poll < 600",
+            "Next": "Wait"
+          }
+        ],
+        "Default": "ReturnFailed",
+        "Type": "Choice"
+      },
+      "HomeChoice": {
+        "Choices": [
+          {
+            "Condition": "len(session.pair_home[0].lineups) == 8 && len(filter(session.pair_home[0].lineups, 'item.state != 1')) == 0",
+            "Next": "Refill"
+          },
+          {
+            "Condition": "session.pair_cleanup_poll < 600",
+            "Next": "Wait"
+          }
+        ],
+        "Default": "ReturnFailed",
+        "Type": "Choice"
+      },
+      "Init": {
+        "Compute": [
+          {
+            "expr": "0",
+            "save": "session.pair_cleanup_poll"
+          }
+        ],
+        "Next": "ReadOwn",
+        "Type": "Local"
+      },
+      "ReadHome": {
+        "Ack": "LineupsInfoAck",
+        "Extract": {
+          "session.pair_home": "$.lineupTypeDatas"
+        },
+        "Next": "HomeChoice",
+        "Parameters": {
+          "lineupTyp": [
+            0
+          ]
+        },
+        "Request": "LineupsInfoReq",
+        "Type": "Request"
+      },
+      "ReadOwn": {
+        "Ack": "PlayerTroopsAck",
+        "Compute": [
+          {
+            "expr": "filter(session.pair_cleanup_entities, '(item.type == 1 || item.type == \"MapUnitPlayerTroop\") && item.property.troop != nil && !item.property.troop.isTempLineUp && to_int(item.property.troop.defendCityId) == 0')",
+            "save": "session.pair_cleanup_out"
+          },
+          {
+            "expr": "filter(session.pair_cleanup_out, 'item.position.move == nil || (item.position.move.action != 3 && item.position.move.action != \"MarchActReturn\")')",
+            "save": "session.pair_recallable"
+          }
+        ],
+        "Extract": {
+          "session.pair_cleanup_entities": "$.entities"
+        },
+        "Next": "Choice",
+        "Request": "PlayerTroopsReq",
+        "Type": "Request"
+      },
+      "Recall": {
+        "Ack": "RecallMarchAck",
+        "Assert": [
+          {
+            "Expr": "session.pair_recall_err == 0 || session.pair_recall_err == 'ErrCodeSuccess' || session.pair_recall_err == 5006 || session.pair_recall_err == 'ErrCodeEntityNotFound'",
+            "Message": "召回必须成功，或目标消失后继续回读核验"
+          }
+        ],
+        "Extract": {
+          "session.pair_recall_err": "$.errCode"
+        },
+        "Next": "Wait",
+        "Parameters": {
+          "entityID": "{{session.pair_recallable.0.ID}}"
+        },
+        "Request": "RecallMarchReq",
+        "Type": "Request"
+      },
+      "Refill": {
+        "CallChain": "battle50_refill_verify_v1",
+        "End": true,
+        "Type": "Call"
+      },
+      "ReturnFailed": {
+        "Comment": "未全部归城，不能判为完成",
+        "Type": "Fail"
+      },
+      "Tick": {
+        "Compute": [
+          {
+            "expr": "session.pair_cleanup_poll + 1",
+            "save": "session.pair_cleanup_poll"
+          }
+        ],
+        "Next": "ReadOwn",
+        "Type": "Local"
+      },
+      "Wait": {
+        "Next": "Tick",
+        "Parameters": {
+          "wait_duration": 500
+        },
+        "Type": "Wait"
+      }
+    }
+  },
+  "id": "battle50_pair_cleanup_v1",
+  "revision": "25562fd2dd2be7b19636e8f7e85b29662d6f89fce76206f8a510c2fcc97b2ec0"
+}

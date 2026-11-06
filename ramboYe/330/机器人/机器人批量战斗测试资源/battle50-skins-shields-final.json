@@ -1,0 +1,1600 @@
+{
+  "observed_at": "2026-10-29T03:53:52.574562+00:00",
+  "environment_id": "test",
+  "server_id": 1,
+  "pools": [
+    {
+      "id": 2004,
+      "type": 5,
+      "item_i_d": 3400031,
+      "own_buff": [
+        2004001
+      ],
+      "use_buff": [
+        2004101
+      ],
+      "collision_radius": 4000,
+      "exclusion_radius": 6000,
+      "unlock": "",
+      "item": {
+        "id": 3400031,
+        "comment": "幻戏城堡:永久（高）",
+        "class": "item_skin",
+        "quality": 7,
+        "category_param": {
+          "effect": [
+            {
+              "typ": "item_skin",
+              "id": 2004,
+              "val": -1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 2002,
+      "type": 5,
+      "item_i_d": 3400011,
+      "own_buff": [
+        2002001
+      ],
+      "use_buff": [
+        2002101
+      ],
+      "collision_radius": 4000,
+      "exclusion_radius": 6000,
+      "unlock": "",
+      "item": {
+        "id": 3400011,
+        "comment": "月兔蟾宫:永久",
+        "class": "item_skin",
+        "quality": 7,
+        "category_param": {
+          "effect": [
+            {
+              "typ": "item_skin",
+              "id": 2002,
+              "val": -1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 1191,
+      "type": 5,
+      "item_i_d": 3400211,
+      "own_buff": [
+        1191001
+      ],
+      "use_buff": [
+        1191101
+      ],
+      "collision_radius": 4000,
+      "exclusion_radius": 6000,
+      "unlock": "",
+      "item": {
+        "id": 3400211,
+        "comment": "幻夜魔城-2026万圣节",
+        "class": "item_skin",
+        "quality": 7,
+        "category_param": {
+          "effect": [
+            {
+              "typ": "item_skin",
+              "id": 1191,
+              "val": -1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 1189,
+      "type": 5,
+      "item_i_d": 3400191,
+      "own_buff": [
+        1189001
+      ],
+      "use_buff": [
+        1189101
+      ],
+      "collision_radius": 4000,
+      "exclusion_radius": 6000,
+      "unlock": "",
+      "item": {
+        "id": 3400191,
+        "comment": "月影华台-2026中秋节",
+        "class": "item_skin",
+        "quality": 7,
+        "category_param": {
+          "effect": [
+            {
+              "typ": "item_skin",
+              "id": 1189,
+              "val": -1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 110071,
+      "type": 9,
+      "item_i_d": 7041079,
+      "get_name": [
+        "Actv_Halloween_Festival_2026_Name1"
+      ],
+      "collision_radius": 0,
+      "exclusion_radius": 0,
+      "unlock": "",
+      "item": {
+        "id": 7041079,
+        "comment": "烛魂战骑-万圣节",
+        "class": "item_march_skin",
+        "quality": 7,
+        "category_param": {
+          "effect": [
+            {
+              "typ": "item_skin",
+              "id": 110071,
+              "val": -1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 110070,
+      "type": 9,
+      "item_i_d": 7041078,
+      "get_name": [
+        "Actv_Halloween_Festival_2026_Name1"
+      ],
+      "collision_radius": 0,
+      "exclusion_radius": 0,
+      "unlock": "",
+      "item": {
+        "id": 7041078,
+        "comment": "幽蓝幻骑-万圣节",
+        "class": "item_march_skin",
+        "quality": 7,
+        "category_param": {
+          "effect": [
+            {
+              "typ": "item_skin",
+              "id": 110070,
+              "val": -1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 110069,
+      "type": 9,
+      "item_i_d": 7041077,
+      "get_name": [
+        "Actv_Mid_Autumn_2026_Name1"
+      ],
+      "collision_radius": 0,
+      "exclusion_radius": 0,
+      "unlock": "",
+      "item": {
+        "id": 7041077,
+        "comment": "桂影弦声-中秋节",
+        "class": "item_march_skin",
+        "quality": 7,
+        "category_param": {
+          "effect": [
+            {
+              "typ": "item_skin",
+              "id": 110069,
+              "val": -1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 110068,
+      "type": 9,
+      "item_i_d": 7041076,
+      "get_name": [
+        "Actv_Mid_Autumn_2026_Name1"
+      ],
+      "collision_radius": 0,
+      "exclusion_radius": 0,
+      "unlock": "",
+      "item": {
+        "id": 7041076,
+        "comment": "玉兔逐月-中秋节",
+        "class": "item_march_skin",
+        "quality": 7,
+        "category_param": {
+          "effect": [
+            {
+              "typ": "item_skin",
+              "id": 110068,
+              "val": -1
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "rows": [
+    {
+      "robot_id": 900001,
+      "player_id": 33700,
+      "role": "进攻",
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110069,
+        110068,
+        110071,
+        110070,
+        110071,
+        110068,
+        110069,
+        110069
+      ],
+      "shield_before": -1,
+      "shield_after": -1,
+      "era_after": 25,
+      "online": true,
+      "x": 1542.0,
+      "z": 1756.0,
+      "run_id": "6ae2c1886688d12996b7b412",
+      "skin_task_id": "mongo-99849f06b72f10b94a4b8feb687e4ecd19584d4de1c4350bb3f7c5aa346227ec-block-000001",
+      "shield_task_id": "mongo-99849f06b72f10b94a4b8feb687e4ecd19584d4de1c4350bb3f7c5aa346227ec-block-000002",
+      "full_troops_task_id": "mongo-99849f06b72f10b94a4b8feb687e4ecd19584d4de1c4350bb3f7c5aa346227ec-block-000003",
+      "verified_at": "2026-10-29T03:46:58.587Z"
+    },
+    {
+      "robot_id": 900002,
+      "player_id": 33721,
+      "role": "进攻",
+      "castle_skin": 1191,
+      "lineup_skins": [
+        110070,
+        110070,
+        110069,
+        110069,
+        110071,
+        110071,
+        110071,
+        110069
+      ],
+      "shield_before": -1,
+      "shield_after": -1,
+      "era_after": 25,
+      "online": true,
+      "x": 1652.0,
+      "z": 1754.0,
+      "run_id": "6ae2c1886688d12996b7b412",
+      "skin_task_id": "mongo-81ed3e0ff35cbd33640f6f5a9ac8676ea07f534059ade4b5a2a066d77b69310e-block-000001",
+      "shield_task_id": "mongo-81ed3e0ff35cbd33640f6f5a9ac8676ea07f534059ade4b5a2a066d77b69310e-block-000002",
+      "full_troops_task_id": "mongo-81ed3e0ff35cbd33640f6f5a9ac8676ea07f534059ade4b5a2a066d77b69310e-block-000003",
+      "verified_at": "2026-10-29T03:46:52.288Z"
+    },
+    {
+      "robot_id": 900003,
+      "player_id": 33722,
+      "role": "进攻",
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110070,
+        110068,
+        110070,
+        110071,
+        110069,
+        110068,
+        110068,
+        110071
+      ],
+      "shield_before": 1796187195203,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1606.0,
+      "z": 1756.0,
+      "run_id": "6ae2c1886688d12996b7b412",
+      "skin_task_id": "mongo-f3b8b977d1e079ec62550d1835a362ab29ffa40d25cb62ac96eb8a4dd0c0fe5a-block-000001",
+      "shield_task_id": "mongo-f3b8b977d1e079ec62550d1835a362ab29ffa40d25cb62ac96eb8a4dd0c0fe5a-block-000002",
+      "full_troops_task_id": "mongo-f3b8b977d1e079ec62550d1835a362ab29ffa40d25cb62ac96eb8a4dd0c0fe5a-block-000003",
+      "verified_at": "2026-10-29T03:46:54.815Z"
+    },
+    {
+      "robot_id": 900004,
+      "player_id": 33824,
+      "role": "进攻",
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110070,
+        110069,
+        110068,
+        110069,
+        110070,
+        110071,
+        110068,
+        110068
+      ],
+      "shield_before": 1796184974938,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1622.0,
+      "z": 1698.0,
+      "run_id": "6ae2c1076688d12996b7b393",
+      "skin_task_id": "mongo-df5900d1ff2ccd534bf5cac0b871ac513eb86af07b0bc9782fd2161086cc1d6b-block-000001",
+      "shield_task_id": "mongo-df5900d1ff2ccd534bf5cac0b871ac513eb86af07b0bc9782fd2161086cc1d6b-block-000002",
+      "full_troops_task_id": "mongo-df5900d1ff2ccd534bf5cac0b871ac513eb86af07b0bc9782fd2161086cc1d6b-block-000003",
+      "verified_at": "2026-10-29T03:44:12.392Z"
+    },
+    {
+      "robot_id": 900005,
+      "player_id": 33841,
+      "role": "进攻",
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110068,
+        110071,
+        110071,
+        110071,
+        110071,
+        110069,
+        110070,
+        110070
+      ],
+      "shield_before": 1796187194985,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1548.0,
+      "z": 1702.0,
+      "run_id": "6ae2c1876688d12996b7b3b3",
+      "skin_task_id": "mongo-3f3bf606a7cdf0aeb149d2da29505d29879b647af7fc6a33b4384704aa9f24db-block-000001",
+      "shield_task_id": "mongo-3f3bf606a7cdf0aeb149d2da29505d29879b647af7fc6a33b4384704aa9f24db-block-000002",
+      "full_troops_task_id": "mongo-3f3bf606a7cdf0aeb149d2da29505d29879b647af7fc6a33b4384704aa9f24db-block-000003",
+      "verified_at": "2026-10-29T03:47:16.643Z"
+    },
+    {
+      "robot_id": 900006,
+      "player_id": 33840,
+      "role": "进攻",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110068,
+        110069,
+        110071,
+        110069,
+        110071,
+        110068,
+        110068,
+        110071
+      ],
+      "shield_before": 1796187206493,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1594.0,
+      "z": 1704.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-cabd2d9c44f15f6e451169f037dc799445248fa3b101fd8ea14940c2f22927eb-block-000001",
+      "shield_task_id": "mongo-cabd2d9c44f15f6e451169f037dc799445248fa3b101fd8ea14940c2f22927eb-block-000002",
+      "full_troops_task_id": "mongo-cabd2d9c44f15f6e451169f037dc799445248fa3b101fd8ea14940c2f22927eb-block-000003",
+      "verified_at": "2026-10-29T03:46:45.555Z"
+    },
+    {
+      "robot_id": 900007,
+      "player_id": 33832,
+      "role": "进攻",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110068,
+        110069,
+        110069,
+        110069,
+        110071,
+        110068,
+        110068,
+        110071
+      ],
+      "shield_before": 1796187195322,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1646.0,
+      "z": 1704.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-4f8ee698a13b9beca38faedc9918cd345c995532c758ddebeddc22d267a1248b-block-000001",
+      "shield_task_id": "mongo-4f8ee698a13b9beca38faedc9918cd345c995532c758ddebeddc22d267a1248b-block-000002",
+      "full_troops_task_id": "mongo-4f8ee698a13b9beca38faedc9918cd345c995532c758ddebeddc22d267a1248b-block-000003",
+      "verified_at": "2026-10-29T03:46:47.293Z"
+    },
+    {
+      "robot_id": 900008,
+      "player_id": 33857,
+      "role": "进攻",
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110070,
+        110069,
+        110069,
+        110070,
+        110069,
+        110070,
+        110069,
+        110070
+      ],
+      "shield_before": 1796187195323,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1526.0,
+      "z": 1708.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-483cb6d9dbdb798e87092573c80950de396f917842207453bafa314ecee00da6-block-000001",
+      "shield_task_id": "mongo-483cb6d9dbdb798e87092573c80950de396f917842207453bafa314ecee00da6-block-000002",
+      "full_troops_task_id": "mongo-483cb6d9dbdb798e87092573c80950de396f917842207453bafa314ecee00da6-block-000003",
+      "verified_at": "2026-10-29T03:47:00.941Z"
+    },
+    {
+      "robot_id": 900009,
+      "player_id": 33851,
+      "role": "进攻",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110069,
+        110069,
+        110071,
+        110070,
+        110069,
+        110071,
+        110068,
+        110068
+      ],
+      "shield_before": 1796187206390,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1680.0,
+      "z": 1710.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-39e12368368d69066b70e6b0ff7bf58a2829a4cb93ab081c813e47ec2c88fc54-block-000001",
+      "shield_task_id": "mongo-39e12368368d69066b70e6b0ff7bf58a2829a4cb93ab081c813e47ec2c88fc54-block-000002",
+      "full_troops_task_id": "mongo-39e12368368d69066b70e6b0ff7bf58a2829a4cb93ab081c813e47ec2c88fc54-block-000003",
+      "verified_at": "2026-10-29T03:47:04.698Z"
+    },
+    {
+      "robot_id": 900010,
+      "player_id": 33736,
+      "role": "进攻",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110070,
+        110071,
+        110068,
+        110068,
+        110068,
+        110071,
+        110068,
+        110069
+      ],
+      "shield_before": -1,
+      "shield_after": -1,
+      "era_after": 25,
+      "online": true,
+      "x": 1580.0,
+      "z": 1704.0,
+      "run_id": "6ae2c1886688d12996b7b412",
+      "skin_task_id": "mongo-fd74f4dc3b95b1e89bab914da62a38075ce093679869e829e16e98a797281b45-block-000001",
+      "shield_task_id": "mongo-fd74f4dc3b95b1e89bab914da62a38075ce093679869e829e16e98a797281b45-block-000002",
+      "full_troops_task_id": "mongo-fd74f4dc3b95b1e89bab914da62a38075ce093679869e829e16e98a797281b45-block-000003",
+      "verified_at": "2026-10-29T03:46:48.432Z"
+    },
+    {
+      "robot_id": 900011,
+      "player_id": 33858,
+      "role": "进攻",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110071,
+        110070,
+        110068,
+        110069,
+        110071,
+        110071,
+        110068,
+        110071
+      ],
+      "shield_before": 1796187200221,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1610.0,
+      "z": 1714.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-3e188d0d9444eecd3abda3ba0dc3d2012e796b2263f7ecff0e94fb564b5a073c-block-000001",
+      "shield_task_id": "mongo-3e188d0d9444eecd3abda3ba0dc3d2012e796b2263f7ecff0e94fb564b5a073c-block-000002",
+      "full_troops_task_id": "mongo-3e188d0d9444eecd3abda3ba0dc3d2012e796b2263f7ecff0e94fb564b5a073c-block-000003",
+      "verified_at": "2026-10-29T03:47:07.191Z"
+    },
+    {
+      "robot_id": 900012,
+      "player_id": 33830,
+      "role": "进攻",
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110071,
+        110068,
+        110069,
+        110068,
+        110071,
+        110070,
+        110071,
+        110070
+      ],
+      "shield_before": 1796187194842,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1576.0,
+      "z": 1716.0,
+      "run_id": "6ae2c1876688d12996b7b3b9",
+      "skin_task_id": "mongo-0c41b13678a15d65cc476fe0a853f8372885452523d07be6fa8d8c6750027e1b-block-000001",
+      "shield_task_id": "mongo-0c41b13678a15d65cc476fe0a853f8372885452523d07be6fa8d8c6750027e1b-block-000002",
+      "full_troops_task_id": "mongo-0c41b13678a15d65cc476fe0a853f8372885452523d07be6fa8d8c6750027e1b-block-000003",
+      "verified_at": "2026-10-29T03:47:19.688Z"
+    },
+    {
+      "robot_id": 900013,
+      "player_id": 33843,
+      "role": "进攻",
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110068,
+        110070,
+        110068,
+        110071,
+        110070,
+        110068,
+        110071,
+        110070
+      ],
+      "shield_before": 1796187195202,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1642.0,
+      "z": 1716.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-711785d866018aa5482caa0a2dd916e2d464ef99c4ab487e730f75f90d7c30a4-block-000001",
+      "shield_task_id": "mongo-711785d866018aa5482caa0a2dd916e2d464ef99c4ab487e730f75f90d7c30a4-block-000002",
+      "full_troops_task_id": "mongo-711785d866018aa5482caa0a2dd916e2d464ef99c4ab487e730f75f90d7c30a4-block-000003",
+      "verified_at": "2026-10-29T03:46:52.408Z"
+    },
+    {
+      "robot_id": 900014,
+      "player_id": 33826,
+      "role": "进攻",
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110068,
+        110069,
+        110069,
+        110069,
+        110069,
+        110071,
+        110068,
+        110071
+      ],
+      "shield_before": 1796187211074,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1500.0,
+      "z": 1720.0,
+      "run_id": "6ae2c1886688d12996b7b412",
+      "skin_task_id": "mongo-1eacfb55fe0a831d75be73bf31ee81bcc5f5baba164f66aa9420958dd3906e37-block-000001",
+      "shield_task_id": "mongo-1eacfb55fe0a831d75be73bf31ee81bcc5f5baba164f66aa9420958dd3906e37-block-000002",
+      "full_troops_task_id": "mongo-1eacfb55fe0a831d75be73bf31ee81bcc5f5baba164f66aa9420958dd3906e37-block-000003",
+      "verified_at": "2026-10-29T03:46:57.055Z"
+    },
+    {
+      "robot_id": 900015,
+      "player_id": 33860,
+      "role": "进攻",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110068,
+        110071,
+        110070,
+        110068,
+        110071,
+        110069,
+        110071,
+        110069
+      ],
+      "shield_before": 1796187211484,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1520.0,
+      "z": 1720.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-4b0ec84cab5686ba591648d9e3f0b6e8ced6417692cb12eb84b2dd2372962c56-block-000001",
+      "shield_task_id": "mongo-4b0ec84cab5686ba591648d9e3f0b6e8ced6417692cb12eb84b2dd2372962c56-block-000002",
+      "full_troops_task_id": "mongo-4b0ec84cab5686ba591648d9e3f0b6e8ced6417692cb12eb84b2dd2372962c56-block-000003",
+      "verified_at": "2026-10-29T03:46:48.435Z"
+    },
+    {
+      "robot_id": 900016,
+      "player_id": 33842,
+      "role": "进攻",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110071,
+        110071,
+        110071,
+        110070,
+        110070,
+        110070,
+        110071,
+        110069
+      ],
+      "shield_before": 1796187200220,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1534.0,
+      "z": 1720.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-41bfc7f28a74aee06e21f283b1838bf8dc16d045256a808a5efdeed6ffe8889d-block-000001",
+      "shield_task_id": "mongo-41bfc7f28a74aee06e21f283b1838bf8dc16d045256a808a5efdeed6ffe8889d-block-000002",
+      "full_troops_task_id": "mongo-41bfc7f28a74aee06e21f283b1838bf8dc16d045256a808a5efdeed6ffe8889d-block-000003",
+      "verified_at": "2026-10-29T03:46:49.78Z"
+    },
+    {
+      "robot_id": 900017,
+      "player_id": 33834,
+      "role": "进攻",
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110068,
+        110069,
+        110071,
+        110071,
+        110068,
+        110070,
+        110069,
+        110068
+      ],
+      "shield_before": 1796187206859,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1548.0,
+      "z": 1722.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-fede4b47ae426d8058d8d0d80b8d0717ee8078b88addddb0b2d27f4cecb6ec3c-block-000001",
+      "shield_task_id": "mongo-fede4b47ae426d8058d8d0d80b8d0717ee8078b88addddb0b2d27f4cecb6ec3c-block-000002",
+      "full_troops_task_id": "mongo-fede4b47ae426d8058d8d0d80b8d0717ee8078b88addddb0b2d27f4cecb6ec3c-block-000003",
+      "verified_at": "2026-10-29T03:47:07.937Z"
+    },
+    {
+      "robot_id": 900018,
+      "player_id": 33825,
+      "role": "进攻",
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110068,
+        110070,
+        110071,
+        110069,
+        110069,
+        110069,
+        110069,
+        110071
+      ],
+      "shield_before": 1796187201019,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1672.0,
+      "z": 1724.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-e1e5bacf47092a9071876512683f74261e550f3e8e41b5ab9e2e831af6fba1ef-block-000001",
+      "shield_task_id": "mongo-e1e5bacf47092a9071876512683f74261e550f3e8e41b5ab9e2e831af6fba1ef-block-000002",
+      "full_troops_task_id": "mongo-e1e5bacf47092a9071876512683f74261e550f3e8e41b5ab9e2e831af6fba1ef-block-000003",
+      "verified_at": "2026-10-29T03:47:10.445Z"
+    },
+    {
+      "robot_id": 900019,
+      "player_id": 33852,
+      "role": "进攻",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110070,
+        110070,
+        110071,
+        110068,
+        110069,
+        110069,
+        110068,
+        110071
+      ],
+      "shield_before": 1796187201417,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1510.0,
+      "z": 1730.0,
+      "run_id": "6ae2c1886688d12996b7b412",
+      "skin_task_id": "mongo-00499dac805eecc030dd7f37a73a604712a7a73ca6111b1ef57b886155ec7c57-block-000001",
+      "shield_task_id": "mongo-00499dac805eecc030dd7f37a73a604712a7a73ca6111b1ef57b886155ec7c57-block-000002",
+      "full_troops_task_id": "mongo-00499dac805eecc030dd7f37a73a604712a7a73ca6111b1ef57b886155ec7c57-block-000003",
+      "verified_at": "2026-10-29T03:46:51.327Z"
+    },
+    {
+      "robot_id": 900020,
+      "player_id": 33831,
+      "role": "进攻",
+      "castle_skin": 1191,
+      "lineup_skins": [
+        110069,
+        110071,
+        110070,
+        110071,
+        110068,
+        110068,
+        110071,
+        110071
+      ],
+      "shield_before": 1796187207931,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1558.0,
+      "z": 1730.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-6e190e0cedc593dc8cd95ddec78fc93050f197fcf2ff212e54a5a67390720664-block-000001",
+      "shield_task_id": "mongo-6e190e0cedc593dc8cd95ddec78fc93050f197fcf2ff212e54a5a67390720664-block-000002",
+      "full_troops_task_id": "mongo-6e190e0cedc593dc8cd95ddec78fc93050f197fcf2ff212e54a5a67390720664-block-000003",
+      "verified_at": "2026-10-29T03:47:02.779Z"
+    },
+    {
+      "robot_id": 900021,
+      "player_id": 33827,
+      "role": "进攻",
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110068,
+        110070,
+        110069,
+        110071,
+        110071,
+        110070,
+        110068,
+        110068
+      ],
+      "shield_before": 1796187197506,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1638.0,
+      "z": 1730.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-1e23df0ba70f9fa8dc16f6610e74beb4ed3c884429788b3764a9dc64afb27c70-block-000001",
+      "shield_task_id": "mongo-1e23df0ba70f9fa8dc16f6610e74beb4ed3c884429788b3764a9dc64afb27c70-block-000002",
+      "full_troops_task_id": "mongo-1e23df0ba70f9fa8dc16f6610e74beb4ed3c884429788b3764a9dc64afb27c70-block-000003",
+      "verified_at": "2026-10-29T03:46:53.712Z"
+    },
+    {
+      "robot_id": 900022,
+      "player_id": 33844,
+      "role": "进攻",
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110070,
+        110068,
+        110069,
+        110069,
+        110071,
+        110069,
+        110071,
+        110069
+      ],
+      "shield_before": 1796187209043,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1492.0,
+      "z": 1732.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-0c904391f3c970fe31625acd05ed6a12b8b4b85c87a35fce0edbd8771c3be71f-block-000001",
+      "shield_task_id": "mongo-0c904391f3c970fe31625acd05ed6a12b8b4b85c87a35fce0edbd8771c3be71f-block-000002",
+      "full_troops_task_id": "mongo-0c904391f3c970fe31625acd05ed6a12b8b4b85c87a35fce0edbd8771c3be71f-block-000003",
+      "verified_at": "2026-10-29T03:47:03.546Z"
+    },
+    {
+      "robot_id": 900023,
+      "player_id": 33862,
+      "role": "进攻",
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110070,
+        110068,
+        110068,
+        110071,
+        110071,
+        110069,
+        110068,
+        110070
+      ],
+      "shield_before": 1796187201585,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1690.0,
+      "z": 1734.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-87b1485801198b6eae74c46e6feedbb1eb64f6e95b07a5f0f21bf896fe037991-block-000001",
+      "shield_task_id": "mongo-87b1485801198b6eae74c46e6feedbb1eb64f6e95b07a5f0f21bf896fe037991-block-000002",
+      "full_troops_task_id": "mongo-87b1485801198b6eae74c46e6feedbb1eb64f6e95b07a5f0f21bf896fe037991-block-000003",
+      "verified_at": "2026-10-29T03:46:50.275Z"
+    },
+    {
+      "robot_id": 900024,
+      "player_id": 33853,
+      "role": "进攻",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110070,
+        110071,
+        110069,
+        110070,
+        110068,
+        110068,
+        110071,
+        110070
+      ],
+      "shield_before": 1796187203996,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1626.0,
+      "z": 1736.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-23973dbfa591c374825cf765d49389a5ecac7a46fa4b674eb3ef89a626cc295e-block-000001",
+      "shield_task_id": "mongo-23973dbfa591c374825cf765d49389a5ecac7a46fa4b674eb3ef89a626cc295e-block-000002",
+      "full_troops_task_id": "mongo-23973dbfa591c374825cf765d49389a5ecac7a46fa4b674eb3ef89a626cc295e-block-000003",
+      "verified_at": "2026-10-29T03:46:53.269Z"
+    },
+    {
+      "robot_id": 900025,
+      "player_id": 33828,
+      "role": "进攻",
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110068,
+        110069,
+        110070,
+        110070,
+        110068,
+        110068,
+        110071,
+        110068
+      ],
+      "shield_before": 1796187195169,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1666.0,
+      "z": 1736.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-2b02de4022078fa5073e09c567dcdc5492c5b24c5e26e37f6789dd8c29ac7279-block-000001",
+      "shield_task_id": "mongo-2b02de4022078fa5073e09c567dcdc5492c5b24c5e26e37f6789dd8c29ac7279-block-000002",
+      "full_troops_task_id": "mongo-2b02de4022078fa5073e09c567dcdc5492c5b24c5e26e37f6789dd8c29ac7279-block-000003",
+      "verified_at": "2026-10-29T03:47:13.426Z"
+    },
+    {
+      "robot_id": 900026,
+      "player_id": 33846,
+      "role": "进攻",
+      "castle_skin": 1191,
+      "lineup_skins": [
+        110069,
+        110068,
+        110070,
+        110070,
+        110069,
+        110070,
+        110071,
+        110069
+      ],
+      "shield_before": 1796187199125,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1638.0,
+      "z": 1744.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-4cdff520fff91d3cd4c10aba11c2906f9150d4b6aafb601cfd1be0f0138506b1-block-000001",
+      "shield_task_id": "mongo-4cdff520fff91d3cd4c10aba11c2906f9150d4b6aafb601cfd1be0f0138506b1-block-000002",
+      "full_troops_task_id": "mongo-4cdff520fff91d3cd4c10aba11c2906f9150d4b6aafb601cfd1be0f0138506b1-block-000003",
+      "verified_at": "2026-10-29T03:46:54.469Z"
+    },
+    {
+      "robot_id": 900027,
+      "player_id": 33836,
+      "role": "进攻",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110068,
+        110069,
+        110070,
+        110069,
+        110070,
+        110068,
+        110071,
+        110071
+      ],
+      "shield_before": 1796187212905,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1524.0,
+      "z": 1758.0,
+      "run_id": "6ae2c1886688d12996b7b412",
+      "skin_task_id": "mongo-0a9564aea65b67b78901de48db5a7739052d5ddd9335893edea66eee78dd7031-block-000001",
+      "shield_task_id": "mongo-0a9564aea65b67b78901de48db5a7739052d5ddd9335893edea66eee78dd7031-block-000002",
+      "full_troops_task_id": "mongo-0a9564aea65b67b78901de48db5a7739052d5ddd9335893edea66eee78dd7031-block-000003",
+      "verified_at": "2026-10-29T03:46:58.116Z"
+    },
+    {
+      "robot_id": 900028,
+      "player_id": 33835,
+      "role": "进攻",
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110071,
+        110068,
+        110069,
+        110071,
+        110071,
+        110070,
+        110071,
+        110068
+      ],
+      "shield_before": 1796187195326,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1502.0,
+      "z": 1758.0,
+      "run_id": "6ae2c1886688d12996b7b412",
+      "skin_task_id": "mongo-551a5d551f9b1f34cea6761fcde246419c115e2e51113956ef35926d39f51261-block-000001",
+      "shield_task_id": "mongo-551a5d551f9b1f34cea6761fcde246419c115e2e51113956ef35926d39f51261-block-000002",
+      "full_troops_task_id": "mongo-551a5d551f9b1f34cea6761fcde246419c115e2e51113956ef35926d39f51261-block-000003",
+      "verified_at": "2026-10-29T03:46:54.137Z"
+    },
+    {
+      "robot_id": 900029,
+      "player_id": 33861,
+      "role": "进攻",
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110071,
+        110071,
+        110068,
+        110069,
+        110070,
+        110071,
+        110068,
+        110068
+      ],
+      "shield_before": 1796187202422,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1626.0,
+      "z": 1754.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-4c294478c989b8167d5ce17a6ace1cc0c34398ead7944e18e607e6c0df9656c5-block-000001",
+      "shield_task_id": "mongo-4c294478c989b8167d5ce17a6ace1cc0c34398ead7944e18e607e6c0df9656c5-block-000002",
+      "full_troops_task_id": "mongo-4c294478c989b8167d5ce17a6ace1cc0c34398ead7944e18e607e6c0df9656c5-block-000003",
+      "verified_at": "2026-10-29T03:46:55.803Z"
+    },
+    {
+      "robot_id": 900030,
+      "player_id": 33845,
+      "role": "进攻",
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110068,
+        110069,
+        110068,
+        110069,
+        110071,
+        110071,
+        110068,
+        110071
+      ],
+      "shield_before": 1796187214150,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1652.0,
+      "z": 1692.0,
+      "run_id": "6ae2c1886688d12996b7b412",
+      "skin_task_id": "mongo-54f324e484ae10d20e00ee55f26165766bdebb4fdc3e8f8a84d79273a5fb37d9-block-000001",
+      "shield_task_id": "mongo-54f324e484ae10d20e00ee55f26165766bdebb4fdc3e8f8a84d79273a5fb37d9-block-000002",
+      "full_troops_task_id": "mongo-54f324e484ae10d20e00ee55f26165766bdebb4fdc3e8f8a84d79273a5fb37d9-block-000003",
+      "verified_at": "2026-10-29T03:46:56.316Z"
+    },
+    {
+      "robot_id": 900031,
+      "player_id": 33829,
+      "role": "防守",
+      "castle_skin": 1191,
+      "lineup_skins": [
+        110070,
+        110068,
+        110069,
+        110069,
+        110069,
+        110071,
+        110068,
+        110068
+      ],
+      "shield_before": 1796187214457,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1562.0,
+      "z": 1758.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-58b47059ff9ef87067dbf300ae37630a247aaa15a79317cded120cefdf4a765e-block-000001",
+      "shield_task_id": "mongo-58b47059ff9ef87067dbf300ae37630a247aaa15a79317cded120cefdf4a765e-block-000002",
+      "full_troops_task_id": "mongo-58b47059ff9ef87067dbf300ae37630a247aaa15a79317cded120cefdf4a765e-block-000003",
+      "verified_at": "2026-10-29T03:47:13.795Z"
+    },
+    {
+      "robot_id": 900032,
+      "player_id": 33847,
+      "role": "防守",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110068,
+        110070,
+        110071,
+        110071,
+        110068,
+        110070,
+        110071,
+        110070
+      ],
+      "shield_before": 1796187210028,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1678.0,
+      "z": 1758.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-8ba22df5e99df8263de6480083f01f5ee83f5aeabe3c255a6aab8c39cbb69e25-block-000001",
+      "shield_task_id": "mongo-8ba22df5e99df8263de6480083f01f5ee83f5aeabe3c255a6aab8c39cbb69e25-block-000002",
+      "full_troops_task_id": "mongo-8ba22df5e99df8263de6480083f01f5ee83f5aeabe3c255a6aab8c39cbb69e25-block-000003",
+      "verified_at": "2026-10-29T03:47:15.033Z"
+    },
+    {
+      "robot_id": 900033,
+      "player_id": 33854,
+      "role": "防守",
+      "castle_skin": 1191,
+      "lineup_skins": [
+        110068,
+        110070,
+        110071,
+        110069,
+        110070,
+        110071,
+        110070,
+        110068
+      ],
+      "shield_before": 1796187204743,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1574.0,
+      "z": 1766.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-10c2ca9efb1e9809a860772e5922bf7aa3a38bb0ef492d544b39fe29516c2ae2-block-000001",
+      "shield_task_id": "mongo-10c2ca9efb1e9809a860772e5922bf7aa3a38bb0ef492d544b39fe29516c2ae2-block-000002",
+      "full_troops_task_id": "mongo-10c2ca9efb1e9809a860772e5922bf7aa3a38bb0ef492d544b39fe29516c2ae2-block-000003",
+      "verified_at": "2026-10-29T03:47:05.378Z"
+    },
+    {
+      "robot_id": 900034,
+      "player_id": 33855,
+      "role": "防守",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110068,
+        110071,
+        110071,
+        110069,
+        110070,
+        110068,
+        110070,
+        110069
+      ],
+      "shield_before": 1796187199445,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1648.0,
+      "z": 1766.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-90eba8664b896f5a7a84818bb3365aa0dfb7a1494be7fcf1564ac2d4a3153a07-block-000001",
+      "shield_task_id": "mongo-90eba8664b896f5a7a84818bb3365aa0dfb7a1494be7fcf1564ac2d4a3153a07-block-000002",
+      "full_troops_task_id": "mongo-90eba8664b896f5a7a84818bb3365aa0dfb7a1494be7fcf1564ac2d4a3153a07-block-000003",
+      "verified_at": "2026-10-29T03:47:16.234Z"
+    },
+    {
+      "robot_id": 900035,
+      "player_id": 33848,
+      "role": "防守",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110070,
+        110070,
+        110070,
+        110070,
+        110071,
+        110068,
+        110070,
+        110068
+      ],
+      "shield_before": 1796187214891,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1608.0,
+      "z": 1770.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-695ecc394999ccf1890887bcaa25879c3fcdbcbc37abdba9f6c3ee02573df76c-block-000001",
+      "shield_task_id": "mongo-695ecc394999ccf1890887bcaa25879c3fcdbcbc37abdba9f6c3ee02573df76c-block-000002",
+      "full_troops_task_id": "mongo-695ecc394999ccf1890887bcaa25879c3fcdbcbc37abdba9f6c3ee02573df76c-block-000003",
+      "verified_at": "2026-10-29T03:47:17.52Z"
+    },
+    {
+      "robot_id": 900036,
+      "player_id": 33838,
+      "role": "防守",
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110069,
+        110071,
+        110069,
+        110071,
+        110071,
+        110069,
+        110069,
+        110070
+      ],
+      "shield_before": 1796187215365,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1530.0,
+      "z": 1774.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-7796fecea18507e9a1218d0816f2aef4e7f753eb205476dbecda2b5b895302d9-block-000001",
+      "shield_task_id": "mongo-7796fecea18507e9a1218d0816f2aef4e7f753eb205476dbecda2b5b895302d9-block-000002",
+      "full_troops_task_id": "mongo-7796fecea18507e9a1218d0816f2aef4e7f753eb205476dbecda2b5b895302d9-block-000003",
+      "verified_at": "2026-10-29T03:46:58.576Z"
+    },
+    {
+      "robot_id": 900037,
+      "player_id": 33833,
+      "role": "防守",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110068,
+        110070,
+        110071,
+        110069,
+        110070,
+        110070,
+        110068,
+        110070
+      ],
+      "shield_before": 1796187195168,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1588.0,
+      "z": 1774.0,
+      "run_id": "6ae2c1876688d12996b7b3b9",
+      "skin_task_id": "mongo-debe2d2beb8d13f511a675893ab6de967a34e89da8f88d6fbc2d9419f91e08b9-block-000001",
+      "shield_task_id": "mongo-debe2d2beb8d13f511a675893ab6de967a34e89da8f88d6fbc2d9419f91e08b9-block-000002",
+      "full_troops_task_id": "mongo-debe2d2beb8d13f511a675893ab6de967a34e89da8f88d6fbc2d9419f91e08b9-block-000003",
+      "verified_at": "2026-10-29T03:46:44.507Z"
+    },
+    {
+      "robot_id": 900038,
+      "player_id": 33866,
+      "role": "防守",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110071,
+        110071,
+        110068,
+        110068,
+        110070,
+        110069,
+        110069,
+        110069
+      ],
+      "shield_before": 1796187216408,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1494.0,
+      "z": 1776.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-ce6a008b214fccadd7d65c759fbf6dd54b6a6c10a504c0105bbcd0325ed4a7af-block-000001",
+      "shield_task_id": "mongo-ce6a008b214fccadd7d65c759fbf6dd54b6a6c10a504c0105bbcd0325ed4a7af-block-000002",
+      "full_troops_task_id": "mongo-ce6a008b214fccadd7d65c759fbf6dd54b6a6c10a504c0105bbcd0325ed4a7af-block-000003",
+      "verified_at": "2026-10-29T03:47:18.782Z"
+    },
+    {
+      "robot_id": 900039,
+      "player_id": 33856,
+      "role": "防守",
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110070,
+        110069,
+        110070,
+        110071,
+        110070,
+        110068,
+        110069,
+        110069
+      ],
+      "shield_before": 1796187195455,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1674.0,
+      "z": 1776.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-b2db178e0d055592849198f33e45c93b3cbf27e0b7fb040c9c1701ef153d90d8-block-000001",
+      "shield_task_id": "mongo-b2db178e0d055592849198f33e45c93b3cbf27e0b7fb040c9c1701ef153d90d8-block-000002",
+      "full_troops_task_id": "mongo-b2db178e0d055592849198f33e45c93b3cbf27e0b7fb040c9c1701ef153d90d8-block-000003",
+      "verified_at": "2026-10-29T03:46:56.987Z"
+    },
+    {
+      "robot_id": 900040,
+      "player_id": 33867,
+      "role": "防守",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110068,
+        110071,
+        110068,
+        110069,
+        110071,
+        110070,
+        110071,
+        110070
+      ],
+      "shield_before": 1796187200093,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1550.0,
+      "z": 1778.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-3bac224f2eec098cbb90be2584781ec746f0350c502a0f6b77d735c9ec1e3aab-block-000001",
+      "shield_task_id": "mongo-3bac224f2eec098cbb90be2584781ec746f0350c502a0f6b77d735c9ec1e3aab-block-000002",
+      "full_troops_task_id": "mongo-3bac224f2eec098cbb90be2584781ec746f0350c502a0f6b77d735c9ec1e3aab-block-000003",
+      "verified_at": "2026-10-29T03:47:09.558Z"
+    },
+    {
+      "robot_id": 900041,
+      "player_id": 33837,
+      "role": "防守",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110071,
+        110070,
+        110069,
+        110069,
+        110070,
+        110071,
+        110068,
+        110068
+      ],
+      "shield_before": 1796187216906,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1600.0,
+      "z": 1780.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-b6366a0470b0bf60666569eeb7600a56c836f267608320c546f5e7c6e28ba510-block-000001",
+      "shield_task_id": "mongo-b6366a0470b0bf60666569eeb7600a56c836f267608320c546f5e7c6e28ba510-block-000002",
+      "full_troops_task_id": "mongo-b6366a0470b0bf60666569eeb7600a56c836f267608320c546f5e7c6e28ba510-block-000003",
+      "verified_at": "2026-10-29T03:47:19.651Z"
+    },
+    {
+      "robot_id": 900042,
+      "player_id": 33868,
+      "role": "防守",
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110069,
+        110069,
+        110069,
+        110068,
+        110068,
+        110070,
+        110069,
+        110070
+      ],
+      "shield_before": 1796187199820,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1646.0,
+      "z": 1780.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-64719b20d87715385959417188c6b0241beaf2ab29681fea6ae408854e58e5da-block-000001",
+      "shield_task_id": "mongo-64719b20d87715385959417188c6b0241beaf2ab29681fea6ae408854e58e5da-block-000002",
+      "full_troops_task_id": "mongo-64719b20d87715385959417188c6b0241beaf2ab29681fea6ae408854e58e5da-block-000003",
+      "verified_at": "2026-10-29T03:47:20.149Z"
+    },
+    {
+      "robot_id": 900043,
+      "player_id": 33859,
+      "role": "防守",
+      "castle_skin": 1191,
+      "lineup_skins": [
+        110069,
+        110070,
+        110069,
+        110070,
+        110069,
+        110070,
+        110069,
+        110070
+      ],
+      "shield_before": 1796187205979,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1660.0,
+      "z": 1780.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-4d99e946c5940e7a0fbcd1cc5a320d3cbd4db05fdd5a84d482165e667d7987b4-block-000001",
+      "shield_task_id": "mongo-4d99e946c5940e7a0fbcd1cc5a320d3cbd4db05fdd5a84d482165e667d7987b4-block-000002",
+      "full_troops_task_id": "mongo-4d99e946c5940e7a0fbcd1cc5a320d3cbd4db05fdd5a84d482165e667d7987b4-block-000003",
+      "verified_at": "2026-10-29T03:46:59.606Z"
+    },
+    {
+      "robot_id": 900044,
+      "player_id": 33863,
+      "role": "防守",
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110068,
+        110071,
+        110071,
+        110068,
+        110071,
+        110070,
+        110070,
+        110068
+      ],
+      "shield_before": 1796187217285,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1634.0,
+      "z": 1786.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-47de180f4d227011d03cfab0b3b1d1176360cb40f0781111149782dd9533f3ee-block-000001",
+      "shield_task_id": "mongo-47de180f4d227011d03cfab0b3b1d1176360cb40f0781111149782dd9533f3ee-block-000002",
+      "full_troops_task_id": "mongo-47de180f4d227011d03cfab0b3b1d1176360cb40f0781111149782dd9533f3ee-block-000003",
+      "verified_at": "2026-10-29T03:47:09.025Z"
+    },
+    {
+      "robot_id": 900045,
+      "player_id": 33850,
+      "role": "防守",
+      "castle_skin": 1191,
+      "lineup_skins": [
+        110070,
+        110071,
+        110070,
+        110071,
+        110069,
+        110071,
+        110069,
+        110068
+      ],
+      "shield_before": 1796187199820,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1490.0,
+      "z": 1788.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-7aef8f0d262309858c5a2d48b66d13887fd34a9e8d0e42a442be02ab16385bf4-block-000001",
+      "shield_task_id": "mongo-7aef8f0d262309858c5a2d48b66d13887fd34a9e8d0e42a442be02ab16385bf4-block-000002",
+      "full_troops_task_id": "mongo-7aef8f0d262309858c5a2d48b66d13887fd34a9e8d0e42a442be02ab16385bf4-block-000003",
+      "verified_at": "2026-10-29T03:47:21.632Z"
+    },
+    {
+      "robot_id": 900046,
+      "player_id": 33849,
+      "role": "防守",
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110070,
+        110068,
+        110071,
+        110071,
+        110070,
+        110070,
+        110071,
+        110068
+      ],
+      "shield_before": 1796187206389,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1516.0,
+      "z": 1788.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-ba3a5a6e6f187849fc5bec94e3e68db25407664dd4764c46d3dc8a970435e605-block-000001",
+      "shield_task_id": "mongo-ba3a5a6e6f187849fc5bec94e3e68db25407664dd4764c46d3dc8a970435e605-block-000002",
+      "full_troops_task_id": "mongo-ba3a5a6e6f187849fc5bec94e3e68db25407664dd4764c46d3dc8a970435e605-block-000003",
+      "verified_at": "2026-10-29T03:47:22.417Z"
+    },
+    {
+      "robot_id": 900047,
+      "player_id": 33839,
+      "role": "防守",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110070,
+        110069,
+        110069,
+        110070,
+        110069,
+        110068,
+        110071,
+        110070
+      ],
+      "shield_before": 1796187210884,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1576.0,
+      "z": 1786.0,
+      "run_id": "6ae2c1886688d12996b7b412",
+      "skin_task_id": "mongo-c1331c5245c1a854bccc7feb2520c58eb71790148fd3a511d8d484d74564dd81-block-000001",
+      "shield_task_id": "mongo-c1331c5245c1a854bccc7feb2520c58eb71790148fd3a511d8d484d74564dd81-block-000002",
+      "full_troops_task_id": "mongo-c1331c5245c1a854bccc7feb2520c58eb71790148fd3a511d8d484d74564dd81-block-000003",
+      "verified_at": "2026-10-29T03:47:00.185Z"
+    },
+    {
+      "robot_id": 900048,
+      "player_id": 33869,
+      "role": "防守",
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110070,
+        110069,
+        110071,
+        110068,
+        110069,
+        110069,
+        110069,
+        110070
+      ],
+      "shield_before": 1796187194994,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1546.0,
+      "z": 1790.0,
+      "run_id": "6ae2c1876688d12996b7b3c0",
+      "skin_task_id": "mongo-8168d7b741e85b546142dcb916093e37ac97afa96bfebb79028ca0a1d5ca29fb-block-000001",
+      "shield_task_id": "mongo-8168d7b741e85b546142dcb916093e37ac97afa96bfebb79028ca0a1d5ca29fb-block-000002",
+      "full_troops_task_id": "mongo-8168d7b741e85b546142dcb916093e37ac97afa96bfebb79028ca0a1d5ca29fb-block-000003",
+      "verified_at": "2026-10-29T03:47:04.36Z"
+    },
+    {
+      "robot_id": 900049,
+      "player_id": 33864,
+      "role": "防守",
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110069,
+        110070,
+        110068,
+        110068,
+        110071,
+        110070,
+        110069,
+        110070
+      ],
+      "shield_before": 1796187195169,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1614.0,
+      "z": 1790.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-da83e8c73dea04eaf2abeb881bbbe0bd486b38e9ace01bf8e33f2da0b7acb816-block-000001",
+      "shield_task_id": "mongo-da83e8c73dea04eaf2abeb881bbbe0bd486b38e9ace01bf8e33f2da0b7acb816-block-000002",
+      "full_troops_task_id": "mongo-da83e8c73dea04eaf2abeb881bbbe0bd486b38e9ace01bf8e33f2da0b7acb816-block-000003",
+      "verified_at": "2026-10-29T03:47:00.557Z"
+    },
+    {
+      "robot_id": 900050,
+      "player_id": 33865,
+      "role": "防守",
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110071,
+        110071,
+        110070,
+        110069,
+        110069,
+        110070,
+        110070,
+        110071
+      ],
+      "shield_before": 1796187210383,
+      "shield_after": -1,
+      "era_after": 26,
+      "online": true,
+      "x": 1674.0,
+      "z": 1790.0,
+      "run_id": "6ae2c1886688d12996b7b3c7",
+      "skin_task_id": "mongo-c95e9c966dc836608087c4e3e4629324f058610454ce5d22dcc2ba70bf40f042-block-000001",
+      "shield_task_id": "mongo-c95e9c966dc836608087c4e3e4629324f058610454ce5d22dcc2ba70bf40f042-block-000002",
+      "full_troops_task_id": "mongo-c95e9c966dc836608087c4e3e4629324f058610454ce5d22dcc2ba70bf40f042-block-000003",
+      "verified_at": "2026-10-29T03:47:11.698Z"
+    }
+  ],
+  "castle_distribution": {
+    "2002": 12,
+    "1191": 7,
+    "2004": 12,
+    "1189": 19
+  },
+  "lineup_distribution": {
+    "110069": 99,
+    "110068": 96,
+    "110071": 107,
+    "110070": 98
+  },
+  "era_distribution": {
+    "25": 3,
+    "26": 47
+  },
+  "historical_task_failures": {
+    "block ReadReadySkins failed: assert[0] 4款城堡及4款编队皮肤均须永久拥有": 46,
+    "block ShieldStillOn failed: fail state reached: ShieldStillOn": 1
+  },
+  "scope": "皮肤、无盾、满兵、原坐标及在线验收；未发起战斗，单次会话上限24小时"
+}

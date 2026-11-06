@@ -1,0 +1,134 @@
+{
+  "record": {
+    "block": {
+      "ID": "battle50_refill_verify_v1",
+      "Name": "批量战斗_兵力补满与准备验收_v1",
+      "StartAt": "LoginChoice",
+      "States": {
+        "CallLogin": {
+          "CallChain": "login_no_init_v1",
+          "Next": "PoolTarget",
+          "Type": "Call"
+        },
+        "FillSoldiers": {
+          "Ack": "LineupQuickEditSoldiersAck",
+          "Next": "Ready",
+          "Parameters": {
+            "index": -1,
+            "lineup_type": 0
+          },
+          "Request": "LineupQuickEditSoldiersReq",
+          "Type": "Request"
+        },
+        "LoginChoice": {
+          "Choices": [
+            {
+              "Condition": "has_path('session.playerID') && session.playerID > 0",
+              "Next": "PoolTarget"
+            }
+          ],
+          "Default": "CallLogin",
+          "Type": "Choice"
+        },
+        "PoolTarget": {
+          "Ack": "LineupsInfoAck",
+          "Assert": [
+            {
+              "Expr": "session.battle_pool_target > 0",
+              "Message": "装备后最大带兵量必须大于0"
+            },
+            {
+              "Expr": "len(session.battle_equipped_lineups[0].lineups) == 8 && len(filter(session.battle_equipped_lineups[0].lineups, 'item.state != 1 || len(item.heroes) != 4')) == 0",
+              "Message": "重登录后仍须8队4英雄且全部在城内"
+            }
+          ],
+          "Compute": [
+            {
+              "expr": "(to_int(session.battle_equipped_lineups[0].lineups[0].maxSoldierCnt)+to_int(session.battle_equipped_lineups[0].lineups[1].maxSoldierCnt)+to_int(session.battle_equipped_lineups[0].lineups[2].maxSoldierCnt)+to_int(session.battle_equipped_lineups[0].lineups[3].maxSoldierCnt)+to_int(session.battle_equipped_lineups[0].lineups[4].maxSoldierCnt)+to_int(session.battle_equipped_lineups[0].lineups[5].maxSoldierCnt)+to_int(session.battle_equipped_lineups[0].lineups[6].maxSoldierCnt)+to_int(session.battle_equipped_lineups[0].lineups[7].maxSoldierCnt)) * 10",
+              "save": "session.battle_pool_target"
+            }
+          ],
+          "Extract": {
+            "session.battle_equipped_lineups": "$.lineupTypeDatas"
+          },
+          "Next": "RefillPool",
+          "Parameters": {
+            "lineupTyp": [
+              0
+            ]
+          },
+          "Request": "LineupsInfoReq",
+          "Type": "Request"
+        },
+        "Ready": {
+          "Ack": "LineupsInfoAck",
+          "Assert": [
+            {
+              "Expr": "len(session.battle_ready_lineups[0].lineups) == 8 && len(filter(session.battle_ready_lineups[0].lineups, 'len(item.heroes) != 4 || sum_values(item.soldiers) != to_int(item.maxSoldierCnt) || to_int(item.maxSoldierCnt) <= 0')) == 0",
+              "Message": "8队均满4英雄、每队兵力等于最大带兵量"
+            }
+          ],
+          "Extract": {
+            "session.battle_ready_lineups": "$.lineupTypeDatas"
+          },
+          "Next": "VerifyEquipment",
+          "Parameters": {
+            "lineupTyp": [
+              0
+            ]
+          },
+          "Request": "LineupsInfoReq",
+          "Type": "Request"
+        },
+        "RefillPool": {
+          "Ack": "GMAck",
+          "Next": "FillSoldiers",
+          "Parameters": {
+            "args": [
+              "redif",
+              "{{string session.playerID}}",
+              "{{string session.battle_pool_target}}"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "Summary": {
+          "Compute": [
+            {
+              "expr": "{'player_id':session.playerID, 'city_level':state.core.profile.city_level, 'lineup_count':len(session.battle_ready_lineups[0].lineups), 'hero_count':len(session.battle_final_ids), 'total_soldiers':session.battle_pool_target / 10, 'equipment_ids':[2001021,2002021,2003021]}",
+              "save": "session.log_message"
+            }
+          ],
+          "End": true,
+          "LocalLogic": "log",
+          "Type": "Local"
+        },
+        "VerifyEquipment": {
+          "Ack": "GetHeroListAck",
+          "Assert": [
+            {
+              "Expr": "len(filter(session.battle_final_heroes, 'item.heroId in session.battle_final_ids && 2001021 in item.equips && 2002021 in item.equips && 2003021 in item.equips')) == 32",
+              "Message": "重登录后32名上阵英雄仍穿齐最高品质三件装备"
+            }
+          ],
+          "Compute": [
+            {
+              "expr": "[session.battle_ready_lineups[0].lineups[0].heroes[0].heroID,session.battle_ready_lineups[0].lineups[0].heroes[1].heroID,session.battle_ready_lineups[0].lineups[0].heroes[2].heroID,session.battle_ready_lineups[0].lineups[0].heroes[3].heroID,session.battle_ready_lineups[0].lineups[1].heroes[0].heroID,session.battle_ready_lineups[0].lineups[1].heroes[1].heroID,session.battle_ready_lineups[0].lineups[1].heroes[2].heroID,session.battle_ready_lineups[0].lineups[1].heroes[3].heroID,session.battle_ready_lineups[0].lineups[2].heroes[0].heroID,session.battle_ready_lineups[0].lineups[2].heroes[1].heroID,session.battle_ready_lineups[0].lineups[2].heroes[2].heroID,session.battle_ready_lineups[0].lineups[2].heroes[3].heroID,session.battle_ready_lineups[0].lineups[3].heroes[0].heroID,session.battle_ready_lineups[0].lineups[3].heroes[1].heroID,session.battle_ready_lineups[0].lineups[3].heroes[2].heroID,session.battle_ready_lineups[0].lineups[3].heroes[3].heroID,session.battle_ready_lineups[0].lineups[4].heroes[0].heroID,session.battle_ready_lineups[0].lineups[4].heroes[1].heroID,session.battle_ready_lineups[0].lineups[4].heroes[2].heroID,session.battle_ready_lineups[0].lineups[4].heroes[3].heroID,session.battle_ready_lineups[0].lineups[5].heroes[0].heroID,session.battle_ready_lineups[0].lineups[5].heroes[1].heroID,session.battle_ready_lineups[0].lineups[5].heroes[2].heroID,session.battle_ready_lineups[0].lineups[5].heroes[3].heroID,session.battle_ready_lineups[0].lineups[6].heroes[0].heroID,session.battle_ready_lineups[0].lineups[6].heroes[1].heroID,session.battle_ready_lineups[0].lineups[6].heroes[2].heroID,session.battle_ready_lineups[0].lineups[6].heroes[3].heroID,session.battle_ready_lineups[0].lineups[7].heroes[0].heroID,session.battle_ready_lineups[0].lineups[7].heroes[1].heroID,session.battle_ready_lineups[0].lineups[7].heroes[2].heroID,session.battle_ready_lineups[0].lineups[7].heroes[3].heroID]",
+              "save": "session.battle_final_ids"
+            }
+          ],
+          "Extract": {
+            "session.battle_final_heroes": "$.heroes"
+          },
+          "Next": "Summary",
+          "Request": "GetHeroListReq",
+          "Type": "Request"
+        }
+      }
+    },
+    "readonly": false,
+    "source": "database"
+  },
+  "revision": "5d32593e51a096224063c3ec532e68a364b743e2ab2bebeed6bd35f967d0c0ea"
+}

@@ -1,0 +1,928 @@
+{
+  "record": {
+    "block": {
+      "ID": "battle50_prepare_assets_v1",
+      "Name": "批量战斗_账号资源英雄准备_v1",
+      "StartAt": "LoginChoice",
+      "States": {
+        "AddHero01": {
+          "Ack": "GMAck",
+          "Next": "CheckHero02",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010010",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero02": {
+          "Ack": "GMAck",
+          "Next": "CheckHero03",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010011",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero03": {
+          "Ack": "GMAck",
+          "Next": "CheckHero04",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010013",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero04": {
+          "Ack": "GMAck",
+          "Next": "CheckHero05",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010016",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero05": {
+          "Ack": "GMAck",
+          "Next": "CheckHero06",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010017",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero06": {
+          "Ack": "GMAck",
+          "Next": "CheckHero07",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010018",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero07": {
+          "Ack": "GMAck",
+          "Next": "CheckHero08",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010019",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero08": {
+          "Ack": "GMAck",
+          "Next": "CheckHero09",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010020",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero09": {
+          "Ack": "GMAck",
+          "Next": "CheckHero10",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010021",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero10": {
+          "Ack": "GMAck",
+          "Next": "CheckHero11",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010022",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero11": {
+          "Ack": "GMAck",
+          "Next": "CheckHero12",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010023",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero12": {
+          "Ack": "GMAck",
+          "Next": "CheckHero13",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010024",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero13": {
+          "Ack": "GMAck",
+          "Next": "CheckHero14",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010029",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero14": {
+          "Ack": "GMAck",
+          "Next": "CheckHero15",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010030",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero15": {
+          "Ack": "GMAck",
+          "Next": "CheckHero16",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010031",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero16": {
+          "Ack": "GMAck",
+          "Next": "CheckHero17",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010032",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero17": {
+          "Ack": "GMAck",
+          "Next": "CheckHero18",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010033",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero18": {
+          "Ack": "GMAck",
+          "Next": "CheckHero19",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010034",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero19": {
+          "Ack": "GMAck",
+          "Next": "CheckHero20",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010035",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero20": {
+          "Ack": "GMAck",
+          "Next": "CheckHero21",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010036",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero21": {
+          "Ack": "GMAck",
+          "Next": "CheckHero22",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010037",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero22": {
+          "Ack": "GMAck",
+          "Next": "CheckHero23",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010038",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero23": {
+          "Ack": "GMAck",
+          "Next": "CheckHero24",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010039",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero24": {
+          "Ack": "GMAck",
+          "Next": "CheckHero25",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010040",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero25": {
+          "Ack": "GMAck",
+          "Next": "CheckHero26",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010041",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero26": {
+          "Ack": "GMAck",
+          "Next": "CheckHero27",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010042",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero27": {
+          "Ack": "GMAck",
+          "Next": "CheckHero28",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010043",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero28": {
+          "Ack": "GMAck",
+          "Next": "CheckHero29",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010044",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero29": {
+          "Ack": "GMAck",
+          "Next": "CheckHero30",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010045",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero30": {
+          "Ack": "GMAck",
+          "Next": "CheckHero31",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010046",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero31": {
+          "Ack": "GMAck",
+          "Next": "CheckHero32",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010047",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "AddHero32": {
+          "Ack": "GMAck",
+          "Next": "Ready",
+          "Parameters": {
+            "args": [
+              "addhero",
+              "{{string session.playerID}}",
+              "1010048",
+              "10",
+              "150"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 10000,
+          "Type": "Request"
+        },
+        "CallLogin": {
+          "CallChain": "login_no_init_v1",
+          "Next": "ReadBefore",
+          "Type": "Call"
+        },
+        "CheckHero01": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 10')) > 0",
+              "Next": "CheckHero02"
+            }
+          ],
+          "Default": "AddHero01",
+          "Type": "Choice"
+        },
+        "CheckHero02": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 11')) > 0",
+              "Next": "CheckHero03"
+            }
+          ],
+          "Default": "AddHero02",
+          "Type": "Choice"
+        },
+        "CheckHero03": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 13')) > 0",
+              "Next": "CheckHero04"
+            }
+          ],
+          "Default": "AddHero03",
+          "Type": "Choice"
+        },
+        "CheckHero04": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 16')) > 0",
+              "Next": "CheckHero05"
+            }
+          ],
+          "Default": "AddHero04",
+          "Type": "Choice"
+        },
+        "CheckHero05": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 17')) > 0",
+              "Next": "CheckHero06"
+            }
+          ],
+          "Default": "AddHero05",
+          "Type": "Choice"
+        },
+        "CheckHero06": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 18')) > 0",
+              "Next": "CheckHero07"
+            }
+          ],
+          "Default": "AddHero06",
+          "Type": "Choice"
+        },
+        "CheckHero07": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 19')) > 0",
+              "Next": "CheckHero08"
+            }
+          ],
+          "Default": "AddHero07",
+          "Type": "Choice"
+        },
+        "CheckHero08": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 20')) > 0",
+              "Next": "CheckHero09"
+            }
+          ],
+          "Default": "AddHero08",
+          "Type": "Choice"
+        },
+        "CheckHero09": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 21')) > 0",
+              "Next": "CheckHero10"
+            }
+          ],
+          "Default": "AddHero09",
+          "Type": "Choice"
+        },
+        "CheckHero10": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 22')) > 0",
+              "Next": "CheckHero11"
+            }
+          ],
+          "Default": "AddHero10",
+          "Type": "Choice"
+        },
+        "CheckHero11": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 23')) > 0",
+              "Next": "CheckHero12"
+            }
+          ],
+          "Default": "AddHero11",
+          "Type": "Choice"
+        },
+        "CheckHero12": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 24')) > 0",
+              "Next": "CheckHero13"
+            }
+          ],
+          "Default": "AddHero12",
+          "Type": "Choice"
+        },
+        "CheckHero13": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 29')) > 0",
+              "Next": "CheckHero14"
+            }
+          ],
+          "Default": "AddHero13",
+          "Type": "Choice"
+        },
+        "CheckHero14": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 30')) > 0",
+              "Next": "CheckHero15"
+            }
+          ],
+          "Default": "AddHero14",
+          "Type": "Choice"
+        },
+        "CheckHero15": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 31')) > 0",
+              "Next": "CheckHero16"
+            }
+          ],
+          "Default": "AddHero15",
+          "Type": "Choice"
+        },
+        "CheckHero16": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 32')) > 0",
+              "Next": "CheckHero17"
+            }
+          ],
+          "Default": "AddHero16",
+          "Type": "Choice"
+        },
+        "CheckHero17": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 33')) > 0",
+              "Next": "CheckHero18"
+            }
+          ],
+          "Default": "AddHero17",
+          "Type": "Choice"
+        },
+        "CheckHero18": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 34')) > 0",
+              "Next": "CheckHero19"
+            }
+          ],
+          "Default": "AddHero18",
+          "Type": "Choice"
+        },
+        "CheckHero19": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 35')) > 0",
+              "Next": "CheckHero20"
+            }
+          ],
+          "Default": "AddHero19",
+          "Type": "Choice"
+        },
+        "CheckHero20": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 36')) > 0",
+              "Next": "CheckHero21"
+            }
+          ],
+          "Default": "AddHero20",
+          "Type": "Choice"
+        },
+        "CheckHero21": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 37')) > 0",
+              "Next": "CheckHero22"
+            }
+          ],
+          "Default": "AddHero21",
+          "Type": "Choice"
+        },
+        "CheckHero22": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 38')) > 0",
+              "Next": "CheckHero23"
+            }
+          ],
+          "Default": "AddHero22",
+          "Type": "Choice"
+        },
+        "CheckHero23": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 39')) > 0",
+              "Next": "CheckHero24"
+            }
+          ],
+          "Default": "AddHero23",
+          "Type": "Choice"
+        },
+        "CheckHero24": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 40')) > 0",
+              "Next": "CheckHero25"
+            }
+          ],
+          "Default": "AddHero24",
+          "Type": "Choice"
+        },
+        "CheckHero25": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 41')) > 0",
+              "Next": "CheckHero26"
+            }
+          ],
+          "Default": "AddHero25",
+          "Type": "Choice"
+        },
+        "CheckHero26": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 42')) > 0",
+              "Next": "CheckHero27"
+            }
+          ],
+          "Default": "AddHero26",
+          "Type": "Choice"
+        },
+        "CheckHero27": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 43')) > 0",
+              "Next": "CheckHero28"
+            }
+          ],
+          "Default": "AddHero27",
+          "Type": "Choice"
+        },
+        "CheckHero28": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 44')) > 0",
+              "Next": "CheckHero29"
+            }
+          ],
+          "Default": "AddHero28",
+          "Type": "Choice"
+        },
+        "CheckHero29": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 45')) > 0",
+              "Next": "CheckHero30"
+            }
+          ],
+          "Default": "AddHero29",
+          "Type": "Choice"
+        },
+        "CheckHero30": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 46')) > 0",
+              "Next": "CheckHero31"
+            }
+          ],
+          "Default": "AddHero30",
+          "Type": "Choice"
+        },
+        "CheckHero31": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 47')) > 0",
+              "Next": "CheckHero32"
+            }
+          ],
+          "Default": "AddHero31",
+          "Type": "Choice"
+        },
+        "CheckHero32": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.battle_heroes_before, 'item.cfgId % 1000 == 48')) > 0",
+              "Next": "Ready"
+            }
+          ],
+          "Default": "AddHero32",
+          "Type": "Choice"
+        },
+        "LoginChoice": {
+          "Choices": [
+            {
+              "Condition": "has_path('session.playerID') && session.playerID > 0",
+              "Next": "ReadBefore"
+            }
+          ],
+          "Default": "CallLogin",
+          "Type": "Choice"
+        },
+        "ReadBefore": {
+          "Ack": "LineupsInfoAck",
+          "Assert": [
+            {
+              "Expr": "len(filter(session.battle_before[0].lineups, 'item.state != 1')) == 0",
+              "Message": "准备前所有编队必须在城内"
+            }
+          ],
+          "Extract": {
+            "session.battle_before": "$.lineupTypeDatas"
+          },
+          "Next": "YaoChoice",
+          "Parameters": {
+            "lineupTyp": [
+              0
+            ]
+          },
+          "Request": "LineupsInfoReq",
+          "Type": "Request"
+        },
+        "ReadHeroes": {
+          "Ack": "GetHeroListAck",
+          "Extract": {
+            "session.battle_heroes_before": "$.heroes"
+          },
+          "Next": "CheckHero01",
+          "Request": "GetHeroListReq",
+          "Type": "Request"
+        },
+        "Ready": {
+          "Ack": "GetHeroListAck",
+          "Assert": [
+            {
+              "Expr": "len(session.battle_heroes_after) >= 32",
+              "Message": "账号至少具备32名英雄"
+            }
+          ],
+          "End": true,
+          "Extract": {
+            "session.battle_heroes_after": "$.heroes"
+          },
+          "Request": "GetHeroListReq",
+          "Type": "Request"
+        },
+        "Yao001": {
+          "Ack": "GMAck",
+          "Next": "ReadHeroes",
+          "Parameters": {
+            "args": [
+              "yao001",
+              "{{string session.playerID}}"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 15000,
+          "Type": "Request"
+        },
+        "YaoChoice": {
+          "Choices": [
+            {
+              "Condition": "has_path('global.skip_yao') && global.skip_yao == true",
+              "Next": "ReadHeroes"
+            }
+          ],
+          "Default": "Yao001",
+          "Type": "Choice"
+        }
+      }
+    },
+    "readonly": false,
+    "source": "database"
+  },
+  "revision": "1bd850df702fea0ac44dd67ba19d081259b7075585c423cff8d1fee1cd1e0f80"
+}

@@ -1,0 +1,289 @@
+{
+  "record": {
+    "block": {
+      "ID": "battle50_sync_skins_before_move_v1",
+      "Name": "批量战斗_迁城前保留并同步当前皮肤",
+      "StartAt": "LoginChoice",
+      "States": {
+        "CallLogin": {
+          "CallChain": "login_no_init_v1",
+          "Next": "ReadLineupsBefore",
+          "Type": "Call"
+        },
+        "KeepSelections": {
+          "Compute": [
+            {
+              "expr": "session.skin_outer_before",
+              "save": "session.skin_selected_city"
+            },
+            {
+              "expr": "session.skin_lineups_before[0].lineups[0].skinCfgId",
+              "save": "session.skin_selected_0"
+            },
+            {
+              "expr": "session.skin_lineups_before[0].lineups[1].skinCfgId",
+              "save": "session.skin_selected_1"
+            },
+            {
+              "expr": "session.skin_lineups_before[0].lineups[2].skinCfgId",
+              "save": "session.skin_selected_2"
+            },
+            {
+              "expr": "session.skin_lineups_before[0].lineups[3].skinCfgId",
+              "save": "session.skin_selected_3"
+            },
+            {
+              "expr": "session.skin_lineups_before[0].lineups[4].skinCfgId",
+              "save": "session.skin_selected_4"
+            },
+            {
+              "expr": "session.skin_lineups_before[0].lineups[5].skinCfgId",
+              "save": "session.skin_selected_5"
+            },
+            {
+              "expr": "session.skin_lineups_before[0].lineups[6].skinCfgId",
+              "save": "session.skin_selected_6"
+            },
+            {
+              "expr": "session.skin_lineups_before[0].lineups[7].skinCfgId",
+              "save": "session.skin_selected_7"
+            }
+          ],
+          "Next": "WearCity",
+          "Type": "Local"
+        },
+        "Log": {
+          "End": true,
+          "LocalLogic": "log",
+          "Type": "Local"
+        },
+        "LoginChoice": {
+          "Choices": [
+            {
+              "Condition": "has_path('session.playerID') && session.playerID > 0",
+              "Next": "ReadLineupsBefore"
+            }
+          ],
+          "Default": "CallLogin",
+          "Type": "Choice"
+        },
+        "MakeLog": {
+          "Compute": [
+            {
+              "expr": "\"BATTLE50_PREMOVE_SKINS_JSON=\" + toJSON({\"robot_id\":global.robot_id,\"player_id\":session.playerID,\"castle_skin\":session.skin_outer_after,\"lineup_skins\":[session.skin_lineups_after[0].lineups[0].skinCfgId,session.skin_lineups_after[0].lineups[1].skinCfgId,session.skin_lineups_after[0].lineups[2].skinCfgId,session.skin_lineups_after[0].lineups[3].skinCfgId,session.skin_lineups_after[0].lineups[4].skinCfgId,session.skin_lineups_after[0].lineups[5].skinCfgId,session.skin_lineups_after[0].lineups[6].skinCfgId,session.skin_lineups_after[0].lineups[7].skinCfgId],\"x\":session.skin_city_x,\"z\":session.skin_city_z})",
+              "save": "session.log_message"
+            }
+          ],
+          "Next": "Log",
+          "Type": "Local"
+        },
+        "ReadCity": {
+          "Assert": [
+            {
+              "Expr": "has_path('session.city.cityID') && to_int(session.city.cityID) > 0",
+              "Message": "必须已有大地图城堡"
+            }
+          ],
+          "Compute": [
+            {
+              "expr": "to_int(session.city.coord.X)",
+              "save": "session.skin_city_x"
+            },
+            {
+              "expr": "to_int(session.city.coord.Z)",
+              "save": "session.skin_city_z"
+            }
+          ],
+          "LocalLogic": "get_local_city",
+          "Next": "ReadReadySkins",
+          "Type": "Local"
+        },
+        "ReadLineupsAfter": {
+          "Ack": "LineupsInfoAck",
+          "Assert": [
+            {
+              "Expr": "len(session.skin_lineups_after[0].lineups) == 8",
+              "Message": "必须保留8支编队"
+            },
+            {
+              "Expr": "session.skin_lineups_after[0].lineups[0].index == 0 && session.skin_lineups_after[0].lineups[0].skinCfgId == session.skin_selected_0",
+              "Message": "第1队实际皮肤必须等于独立随机选择结果"
+            },
+            {
+              "Expr": "session.skin_lineups_after[0].lineups[1].index == 1 && session.skin_lineups_after[0].lineups[1].skinCfgId == session.skin_selected_1",
+              "Message": "第2队实际皮肤必须等于独立随机选择结果"
+            },
+            {
+              "Expr": "session.skin_lineups_after[0].lineups[2].index == 2 && session.skin_lineups_after[0].lineups[2].skinCfgId == session.skin_selected_2",
+              "Message": "第3队实际皮肤必须等于独立随机选择结果"
+            },
+            {
+              "Expr": "session.skin_lineups_after[0].lineups[3].index == 3 && session.skin_lineups_after[0].lineups[3].skinCfgId == session.skin_selected_3",
+              "Message": "第4队实际皮肤必须等于独立随机选择结果"
+            },
+            {
+              "Expr": "session.skin_lineups_after[0].lineups[4].index == 4 && session.skin_lineups_after[0].lineups[4].skinCfgId == session.skin_selected_4",
+              "Message": "第5队实际皮肤必须等于独立随机选择结果"
+            },
+            {
+              "Expr": "session.skin_lineups_after[0].lineups[5].index == 5 && session.skin_lineups_after[0].lineups[5].skinCfgId == session.skin_selected_5",
+              "Message": "第6队实际皮肤必须等于独立随机选择结果"
+            },
+            {
+              "Expr": "session.skin_lineups_after[0].lineups[6].index == 6 && session.skin_lineups_after[0].lineups[6].skinCfgId == session.skin_selected_6",
+              "Message": "第7队实际皮肤必须等于独立随机选择结果"
+            },
+            {
+              "Expr": "session.skin_lineups_after[0].lineups[7].index == 7 && session.skin_lineups_after[0].lineups[7].skinCfgId == session.skin_selected_7",
+              "Message": "第8队实际皮肤必须等于独立随机选择结果"
+            }
+          ],
+          "Extract": {
+            "session.skin_lineups_after": "$.lineupTypeDatas"
+          },
+          "Next": "ReadMap",
+          "Parameters": {
+            "lineupTyp": [
+              0
+            ]
+          },
+          "Request": "LineupsInfoReq",
+          "Type": "Request"
+        },
+        "ReadLineupsBefore": {
+          "Ack": "LineupsInfoAck",
+          "Assert": [
+            {
+              "Expr": "len(session.skin_lineups_before[0].lineups) == 8 && len(filter(session.skin_lineups_before[0].lineups, 'item.state != 1 || len(item.heroes) != 4')) == 0",
+              "Message": "穿戴前8队必须在城内且每队4英雄"
+            }
+          ],
+          "Extract": {
+            "session.skin_lineups_before": "$.lineupTypeDatas"
+          },
+          "Next": "ReadCity",
+          "Parameters": {
+            "lineupTyp": [
+              0
+            ]
+          },
+          "Request": "LineupsInfoReq",
+          "Type": "Request"
+        },
+        "ReadMap": {
+          "Ack": "WildMapViewAck",
+          "Assert": [
+            {
+              "Expr": "len(session.skin_map_city) == 1",
+              "Message": "地图回读必须唯一找到本人城堡"
+            }
+          ],
+          "Compute": [
+            {
+              "expr": "filter(session.skin_map_entities, '(item.type == 2 || item.type == \"MapUnitPlayerCity\") && to_int(item.owner.ID) == session.playerID')",
+              "save": "session.skin_map_city"
+            }
+          ],
+          "Extract": {
+            "session.skin_map_entities": "$.entities"
+          },
+          "Next": "VerifyMap",
+          "Parameters": {
+            "centerPos": {
+              "X": "{{session.skin_city_x}}",
+              "Z": "{{session.skin_city_z}}"
+            },
+            "lod": 0,
+            "map_type": 0,
+            "reconnect": true,
+            "xSpan": 40000,
+            "zSpan": 40000
+          },
+          "Request": "WildMapViewReq",
+          "Type": "Request"
+        },
+        "ReadReadySkins": {
+          "Ack": "GetAllSkinAck",
+          "Assert": [
+            {
+              "Expr": "len(filter(session.skin_info_ready, 'item.skinID == 2004 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_ready, 'item.skinID == 2002 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_ready, 'item.skinID == 1191 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_ready, 'item.skinID == 1189 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_ready, 'item.skinID == 110071 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_ready, 'item.skinID == 110070 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_ready, 'item.skinID == 110069 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_ready, 'item.skinID == 110068 && to_int(item.invalidTime) == -1')) == 1",
+              "Message": "4款城堡及4款编队皮肤均须永久拥有"
+            }
+          ],
+          "Extract": {
+            "session.skin_info_ready": "$.skinInfo",
+            "session.skin_outer_before": "$.curOuterSkin"
+          },
+          "Next": "RequireExistingSkins",
+          "Request": "GetAllSkinReq",
+          "Type": "Request"
+        },
+        "ReadSkinsAfter": {
+          "Ack": "GetAllSkinAck",
+          "Assert": [
+            {
+              "Expr": "session.skin_outer_after == session.skin_selected_city",
+              "Message": "回读城堡皮肤必须等于随机选择结果"
+            },
+            {
+              "Expr": "len(filter(session.skin_info_after, 'item.skinID == 2004 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_after, 'item.skinID == 2002 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_after, 'item.skinID == 1191 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_after, 'item.skinID == 1189 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_after, 'item.skinID == 110071 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_after, 'item.skinID == 110070 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_after, 'item.skinID == 110069 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_after, 'item.skinID == 110068 && to_int(item.invalidTime) == -1')) == 1",
+              "Message": "穿戴后仍永久拥有全部8款候选"
+            }
+          ],
+          "Extract": {
+            "session.skin_info_after": "$.skinInfo",
+            "session.skin_outer_after": "$.curOuterSkin"
+          },
+          "Next": "ReadLineupsAfter",
+          "Request": "GetAllSkinReq",
+          "Type": "Request"
+        },
+        "RequireExistingSkins": {
+          "Assert": [
+            {
+              "Expr": "session.skin_outer_before in [2004,2002,1191,1189] && session.skin_lineups_before[0].lineups[0].skinCfgId in [110071,110070,110069,110068] && session.skin_lineups_before[0].lineups[1].skinCfgId in [110071,110070,110069,110068] && session.skin_lineups_before[0].lineups[2].skinCfgId in [110071,110070,110069,110068] && session.skin_lineups_before[0].lineups[3].skinCfgId in [110071,110070,110069,110068] && session.skin_lineups_before[0].lineups[4].skinCfgId in [110071,110070,110069,110068] && session.skin_lineups_before[0].lineups[5].skinCfgId in [110071,110070,110069,110068] && session.skin_lineups_before[0].lineups[6].skinCfgId in [110071,110070,110069,110068] && session.skin_lineups_before[0].lineups[7].skinCfgId in [110071,110070,110069,110068]",
+              "Message": "迁城前必须已经穿戴已验证的高品质城堡和8队皮肤；不自动覆盖未匹配皮肤"
+            }
+          ],
+          "Next": "KeepSelections",
+          "Type": "Pass"
+        },
+        "VerifyMap": {
+          "Assert": [
+            {
+              "Expr": "session.skin_map_city[0].property.mapCity.d2SkinID == session.skin_selected_city",
+              "Message": "大地图城堡展示皮肤必须已同步"
+            },
+            {
+              "Expr": "session.skin_map_city[0].position.position.X == session.skin_city_x && session.skin_map_city[0].position.position.Z == session.skin_city_z",
+              "Message": "换装不能改变已验证城堡坐标"
+            }
+          ],
+          "Next": "MakeLog",
+          "Type": "Pass"
+        },
+        "WearCity": {
+          "Ack": "ChangeSkinAck",
+          "Assert": [
+            {
+              "Expr": "session.skin_change_err == 0 || session.skin_change_err == 'ErrCodeSuccess'",
+              "Message": "城堡皮肤穿戴必须成功"
+            }
+          ],
+          "Extract": {
+            "session.skin_change_err": "$.errCode"
+          },
+          "Next": "ReadSkinsAfter",
+          "Parameters": {
+            "cfgID": "{{session.skin_selected_city}}"
+          },
+          "Request": "ChangeSkinReq",
+          "Type": "Request"
+        }
+      }
+    },
+    "readonly": false,
+    "source": "database"
+  },
+  "revision": "ce2b58ecba0d492199be2bb1c19cf88e935b4512a5abe8253accc5106b96af02"
+}

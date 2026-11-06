@@ -1,0 +1,117 @@
+diff --git a/benchmark/README.md b/benchmark/README.md
+index 6a5b15db04..1a60bdce6d 100644
+--- a/benchmark/README.md
++++ b/benchmark/README.md
+@@ -417,6 +417,16 @@ MCP 也提供机器人画像、机器人选择器和投放计划的说明、查
+ `expected_revision`（新建除外）与显式 `confirm=true`。MCP 不提供 DeliveryRun 的启动、暂停、
+ 恢复或停止工具，运行态操作仍在 Benchmark 页面完成。
+ 
++机器人供给可使用 `preview_robot_batch` 和 `create_robot_batch`：前者接收环境、机器人 ID
++列表（或起止区间）、国家和语言并返回创建/冲突预览；后者使用 `batch` 传入相同参数并要求
++`confirm=true`。两者直接复用既有批量接口，不改变 ID 校验、冲突或创建规则。
++创建只生成机器人主档；随后用 `list_test_targets` 核对精确 ID，再由已有登录流程创建/登录角色。
++已有角色不因这两个工具被重置，画像也不在创建参数中绑定。
++
++游戏前置条件由 Agent 查代码和实际配置后编排，复用已有准备 Block、业务请求或
++`exec_gm_commands`（`gm_commands` 数组，可选 `gm_sleep_ms`），准备后核验状态。
++沿用现有 GM/环境策略，不新增通用存档写入或绕过权限；没有现成可达操作的条件需明确报告缺口。
++
+ #### Streamable HTTP
+ 
+ 启动 benchmark 后端后，MCP 使用同一个 HTTP 端口，默认地址为：
+diff --git a/benchmark/backend/internal/blockmcp/robot_batch.go b/benchmark/backend/internal/blockmcp/robot_batch.go
+new file mode 100644
+index 0000000000..6393bbbcee
+--- /dev/null
++++ b/benchmark/backend/internal/blockmcp/robot_batch.go
+@@ -0,0 +1,44 @@
++package blockmcp
++
++import (
++	"context"
++	"errors"
++	"net/http"
++
++	"github.com/modelcontextprotocol/go-sdk/mcp"
++)
++
++// 参数直接交给既有批量接口校验，不在 MCP 重写 ID 分配或机器人创建逻辑。
++type robotBatchInput struct {
++	EnvironmentID string `json:"environment_id" jsonschema:"explicit target environment ID"`
++	StartRobotID  int    `json:"start_robot_id,omitempty" jsonschema:"positive start of an inclusive ID range; mutually exclusive with robot_ids"`
++	EndRobotID    int    `json:"end_robot_id,omitempty" jsonschema:"end of the inclusive ID range"`
++	RobotIDs      []int  `json:"robot_ids,omitempty" jsonschema:"explicit positive robot IDs; mutually exclusive with the range"`
++	CountryCode   string `json:"country_code" jsonschema:"ISO country code, for example CN"`
++	Language      string `json:"language" jsonschema:"ISO 639-1 language code, for example zh"`
++	SkipExisting  bool   `json:"skip_existing,omitempty" jsonschema:"skip existing IDs only when intentionally reusing a previewed batch; default rejects conflicts"`
++}
++
++type createRobotBatchInput struct {
++	Batch   robotBatchInput `json:"batch" jsonschema:"the same batch parameters checked by preview_robot_batch"`
++	Confirm bool            `json:"confirm" jsonschema:"must be true to create robot master records within the authorized environment"`
++}
++
++// 只暴露已有接口；创建主档不等于角色已创建、登录或业务前置条件已满足。
++func registerRobotBatchTools(server *mcp.Server, controller RobotManagerController) {
++	mcp.AddTool(server, &mcp.Tool{
++		Name:        "preview_robot_batch",
++		Description: "Preview the existing robot batch-create API without writing. Returns create/existing IDs. Use only the intended test environment and the smallest needed batch; preview does not reserve IDs.",
++	}, func(ctx context.Context, _ *mcp.CallToolRequest, input robotBatchInput) (*mcp.CallToolResult, robotResourceOutput, error) {
++		return callRobotManager(ctx, controller, RobotManagerRequest{Method: http.MethodPost, Path: "/robots/batch-preview", Body: input})
++	})
++	mcp.AddTool(server, &mcp.Tool{
++		Name:        "create_robot_batch",
++		Description: "Create robot master records through the existing batch-create API after preview. Requires confirm=true. Does not log in, bind a profile or prepare game state. Afterwards call list_test_targets for these exact IDs and run an appropriate login/preparation Block. On conflicts re-preview; do not overwrite existing robots or blindly retry a changed batch.",
++	}, func(ctx context.Context, _ *mcp.CallToolRequest, input createRobotBatchInput) (*mcp.CallToolResult, robotResourceOutput, error) {
++		if !input.Confirm {
++			return nil, robotResourceOutput{}, errors.New("confirm=true is required")
++		}
++		return callRobotManager(ctx, controller, RobotManagerRequest{Method: http.MethodPost, Path: "/robots/batch-create", Body: input.Batch})
++	})
++}
+diff --git a/benchmark/backend/internal/blockmcp/robot_manager.go b/benchmark/backend/internal/blockmcp/robot_manager.go
+index 043942f999..b087d1c5f5 100644
+--- a/benchmark/backend/internal/blockmcp/robot_manager.go
++++ b/benchmark/backend/internal/blockmcp/robot_manager.go
+@@ -192,6 +192,7 @@ type getRobotManagementSpecOutput struct {
+ }
+ 
+ func registerRobotManagerTools(server *mcp.Server, controller RobotManagerController) {
++	registerRobotBatchTools(server, controller)
+ 	mcp.AddTool(server, &mcp.Tool{
+ 		Name:        "get_robot_management_spec",
+ 		Description: "Read the authoritative workflow, lifecycle, references, safety rules, and JSON authoring guidance for robot profiles, selectors, and delivery plans. Call this before using any robot-management write tool.",
+@@ -341,6 +342,13 @@ func callRobotManager(ctx context.Context, controller RobotManagerController, re
+ 
+ const robotManagementSpec = `RobotManager MCP authoring workflow
+ 
++Robot supply and test preparation:
++- Reuse an available target from list_test_targets first. If a new robot is needed within the authorized test scope, use preview_robot_batch then create_robot_batch with the same environment, IDs, country and language. The existing backend validates ranges and handles conflicts; preview does not reserve IDs.
++- Creation only writes a robot master record; the game character is created through the existing login flow when applicable. Recheck the exact IDs with list_test_targets before running. An existing-ID conflict is not permission to take over another active robot.
++- Game-state prerequisites belong to the agent's Block planning, not to robot profiles. Inspect get_flow_spec/search_context/get_protocol and the current game code/configuration for available preparation paths.
++- Existing exec_gm_commands reads gm_commands (an array of exact command strings) and optional gm_sleep_ms from Block context. Resolve actual command syntax from current code or validated examples; do not invent commands. It requires a real logged-in player and the existing environment/GM policy. Prepare through existing Blocks/GM/business protocols, then query and assert actual state before the target operation.
++- GM/backend policy rejection is a capability gap, not permission to change service settings, write arbitrary storage or bypass test limits. No existing mechanism can prepare every arbitrary game state automatically.
++
+ Objects and references:
+ 1. RobotProfile changes long-lived behavior modifiers. Create/update a draft, validate it, then publish an immutable version. Profiles do not select robots or start runs.
+ 2. RobotSelector defines reusable qualification rules plus ordering, conflict_policy=skip, and reuse cooldown. Preview against an explicit environment/server/count/seed before publishing.
+diff --git a/benchmark/backend/internal/blockmcp/robot_manager_test.go b/benchmark/backend/internal/blockmcp/robot_manager_test.go
+index fe5ce5328f..f85052726f 100644
+--- a/benchmark/backend/internal/blockmcp/robot_manager_test.go
++++ b/benchmark/backend/internal/blockmcp/robot_manager_test.go
+@@ -38,6 +38,7 @@ func TestServerListsRobotManagerToolsWhenControllerIsConfigured(t *testing.T) {
+ 	}
+ 	sort.Strings(got)
+ 	want := []string{
++		"create_robot_batch",
+ 		"get_robot_delivery_plan",
+ 		"get_robot_management_spec",
+ 		"get_robot_profile",
+@@ -45,6 +46,7 @@ func TestServerListsRobotManagerToolsWhenControllerIsConfigured(t *testing.T) {
+ 		"list_robot_delivery_plans",
+ 		"list_robot_profiles",
+ 		"list_robot_selectors",
++		"preview_robot_batch",
+ 		"preview_robot_delivery_plan",
+ 		"preview_robot_selector",
+ 		"publish_robot_delivery_plan",

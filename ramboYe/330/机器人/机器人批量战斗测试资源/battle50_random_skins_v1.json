@@ -1,0 +1,778 @@
+{
+  "record": {
+    "block": {
+      "ID": "battle50_random_skins_v1",
+      "Name": "批量战斗_高品质多皮肤随机穿戴",
+      "StartAt": "LoginChoice",
+      "States": {
+        "AddSkin0": {
+          "Ack": "GMAck",
+          "Next": "CheckOwned1",
+          "Parameters": {
+            "args": [
+              "addskin",
+              "{{string session.playerID}}",
+              "2004"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "AddSkin1": {
+          "Ack": "GMAck",
+          "Next": "CheckOwned2",
+          "Parameters": {
+            "args": [
+              "addskin",
+              "{{string session.playerID}}",
+              "2002"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "AddSkin2": {
+          "Ack": "GMAck",
+          "Next": "CheckOwned3",
+          "Parameters": {
+            "args": [
+              "addskin",
+              "{{string session.playerID}}",
+              "1191"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "AddSkin3": {
+          "Ack": "GMAck",
+          "Next": "CheckOwned4",
+          "Parameters": {
+            "args": [
+              "addskin",
+              "{{string session.playerID}}",
+              "1189"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "AddSkin4": {
+          "Ack": "GMAck",
+          "Next": "CheckOwned5",
+          "Parameters": {
+            "args": [
+              "addskin",
+              "{{string session.playerID}}",
+              "110071"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "AddSkin5": {
+          "Ack": "GMAck",
+          "Next": "CheckOwned6",
+          "Parameters": {
+            "args": [
+              "addskin",
+              "{{string session.playerID}}",
+              "110070"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "AddSkin6": {
+          "Ack": "GMAck",
+          "Next": "CheckOwned7",
+          "Parameters": {
+            "args": [
+              "addskin",
+              "{{string session.playerID}}",
+              "110069"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "AddSkin7": {
+          "Ack": "GMAck",
+          "Next": "ReadReadySkins",
+          "Parameters": {
+            "args": [
+              "addskin",
+              "{{string session.playerID}}",
+              "110068"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "CallLogin": {
+          "CallChain": "login_no_init_v1",
+          "Next": "ReadLineupsBefore",
+          "Type": "Call"
+        },
+        "CheckOwned0": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.skin_info_before, 'item.skinID == 2004 && to_int(item.invalidTime) == -1')) == 1",
+              "Next": "CheckOwned1"
+            }
+          ],
+          "Default": "AddSkin0",
+          "Type": "Choice"
+        },
+        "CheckOwned1": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.skin_info_before, 'item.skinID == 2002 && to_int(item.invalidTime) == -1')) == 1",
+              "Next": "CheckOwned2"
+            }
+          ],
+          "Default": "AddSkin1",
+          "Type": "Choice"
+        },
+        "CheckOwned2": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.skin_info_before, 'item.skinID == 1191 && to_int(item.invalidTime) == -1')) == 1",
+              "Next": "CheckOwned3"
+            }
+          ],
+          "Default": "AddSkin2",
+          "Type": "Choice"
+        },
+        "CheckOwned3": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.skin_info_before, 'item.skinID == 1189 && to_int(item.invalidTime) == -1')) == 1",
+              "Next": "CheckOwned4"
+            }
+          ],
+          "Default": "AddSkin3",
+          "Type": "Choice"
+        },
+        "CheckOwned4": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.skin_info_before, 'item.skinID == 110071 && to_int(item.invalidTime) == -1')) == 1",
+              "Next": "CheckOwned5"
+            }
+          ],
+          "Default": "AddSkin4",
+          "Type": "Choice"
+        },
+        "CheckOwned5": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.skin_info_before, 'item.skinID == 110070 && to_int(item.invalidTime) == -1')) == 1",
+              "Next": "CheckOwned6"
+            }
+          ],
+          "Default": "AddSkin5",
+          "Type": "Choice"
+        },
+        "CheckOwned6": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.skin_info_before, 'item.skinID == 110069 && to_int(item.invalidTime) == -1')) == 1",
+              "Next": "CheckOwned7"
+            }
+          ],
+          "Default": "AddSkin6",
+          "Type": "Choice"
+        },
+        "CheckOwned7": {
+          "Choices": [
+            {
+              "Condition": "len(filter(session.skin_info_before, 'item.skinID == 110068 && to_int(item.invalidTime) == -1')) == 1",
+              "Next": "ReadReadySkins"
+            }
+          ],
+          "Default": "AddSkin7",
+          "Type": "Choice"
+        },
+        "CityChoice": {
+          "Choices": [
+            {
+              "Condition": "session.skin_outer_before == session.skin_selected_city",
+              "Next": "LineupChoice0"
+            }
+          ],
+          "Default": "WearCity",
+          "Type": "Choice"
+        },
+        "ExistingSkinChoice": {
+          "Choices": [
+            {
+              "Condition": "has_path('global.reroll_skins') && global.reroll_skins == true",
+              "Next": "PickSkins"
+            },
+            {
+              "Condition": "session.skin_outer_before in [2004,2002,1191,1189] && session.skin_lineups_before[0].lineups[0].skinCfgId in [110071,110070,110069,110068] && session.skin_lineups_before[0].lineups[1].skinCfgId in [110071,110070,110069,110068] && session.skin_lineups_before[0].lineups[2].skinCfgId in [110071,110070,110069,110068] && session.skin_lineups_before[0].lineups[3].skinCfgId in [110071,110070,110069,110068] && session.skin_lineups_before[0].lineups[4].skinCfgId in [110071,110070,110069,110068] && session.skin_lineups_before[0].lineups[5].skinCfgId in [110071,110070,110069,110068] && session.skin_lineups_before[0].lineups[6].skinCfgId in [110071,110070,110069,110068] && session.skin_lineups_before[0].lineups[7].skinCfgId in [110071,110070,110069,110068]",
+              "Next": "KeepSelections"
+            }
+          ],
+          "Default": "PickSkins",
+          "Type": "Choice"
+        },
+        "KeepSelections": {
+          "Compute": [
+            {
+              "expr": "session.skin_outer_before",
+              "save": "session.skin_selected_city"
+            },
+            {
+              "expr": "session.skin_lineups_before[0].lineups[0].skinCfgId",
+              "save": "session.skin_selected_0"
+            },
+            {
+              "expr": "session.skin_lineups_before[0].lineups[1].skinCfgId",
+              "save": "session.skin_selected_1"
+            },
+            {
+              "expr": "session.skin_lineups_before[0].lineups[2].skinCfgId",
+              "save": "session.skin_selected_2"
+            },
+            {
+              "expr": "session.skin_lineups_before[0].lineups[3].skinCfgId",
+              "save": "session.skin_selected_3"
+            },
+            {
+              "expr": "session.skin_lineups_before[0].lineups[4].skinCfgId",
+              "save": "session.skin_selected_4"
+            },
+            {
+              "expr": "session.skin_lineups_before[0].lineups[5].skinCfgId",
+              "save": "session.skin_selected_5"
+            },
+            {
+              "expr": "session.skin_lineups_before[0].lineups[6].skinCfgId",
+              "save": "session.skin_selected_6"
+            },
+            {
+              "expr": "session.skin_lineups_before[0].lineups[7].skinCfgId",
+              "save": "session.skin_selected_7"
+            }
+          ],
+          "Next": "ReadSkinsAfter",
+          "Type": "Local"
+        },
+        "LineupChoice0": {
+          "Choices": [
+            {
+              "Condition": "session.skin_lineups_before[0].lineups[0].skinCfgId == session.skin_selected_0",
+              "Next": "LineupChoice1"
+            }
+          ],
+          "Default": "WearLineup0",
+          "Type": "Choice"
+        },
+        "LineupChoice1": {
+          "Choices": [
+            {
+              "Condition": "session.skin_lineups_before[0].lineups[1].skinCfgId == session.skin_selected_1",
+              "Next": "LineupChoice2"
+            }
+          ],
+          "Default": "WearLineup1",
+          "Type": "Choice"
+        },
+        "LineupChoice2": {
+          "Choices": [
+            {
+              "Condition": "session.skin_lineups_before[0].lineups[2].skinCfgId == session.skin_selected_2",
+              "Next": "LineupChoice3"
+            }
+          ],
+          "Default": "WearLineup2",
+          "Type": "Choice"
+        },
+        "LineupChoice3": {
+          "Choices": [
+            {
+              "Condition": "session.skin_lineups_before[0].lineups[3].skinCfgId == session.skin_selected_3",
+              "Next": "LineupChoice4"
+            }
+          ],
+          "Default": "WearLineup3",
+          "Type": "Choice"
+        },
+        "LineupChoice4": {
+          "Choices": [
+            {
+              "Condition": "session.skin_lineups_before[0].lineups[4].skinCfgId == session.skin_selected_4",
+              "Next": "LineupChoice5"
+            }
+          ],
+          "Default": "WearLineup4",
+          "Type": "Choice"
+        },
+        "LineupChoice5": {
+          "Choices": [
+            {
+              "Condition": "session.skin_lineups_before[0].lineups[5].skinCfgId == session.skin_selected_5",
+              "Next": "LineupChoice6"
+            }
+          ],
+          "Default": "WearLineup5",
+          "Type": "Choice"
+        },
+        "LineupChoice6": {
+          "Choices": [
+            {
+              "Condition": "session.skin_lineups_before[0].lineups[6].skinCfgId == session.skin_selected_6",
+              "Next": "LineupChoice7"
+            }
+          ],
+          "Default": "WearLineup6",
+          "Type": "Choice"
+        },
+        "LineupChoice7": {
+          "Choices": [
+            {
+              "Condition": "session.skin_lineups_before[0].lineups[7].skinCfgId == session.skin_selected_7",
+              "Next": "ReadSkinsAfter"
+            }
+          ],
+          "Default": "WearLineup7",
+          "Type": "Choice"
+        },
+        "Log": {
+          "End": true,
+          "LocalLogic": "log",
+          "Type": "Local"
+        },
+        "LoginChoice": {
+          "Choices": [
+            {
+              "Condition": "has_path('session.playerID') && session.playerID > 0",
+              "Next": "ReadLineupsBefore"
+            }
+          ],
+          "Default": "CallLogin",
+          "Type": "Choice"
+        },
+        "MakeLog": {
+          "Compute": [
+            {
+              "expr": "\"BATTLE50_SKINS_JSON=\" + toJSON({\"robot_id\":global.robot_id,\"player_id\":session.playerID,\"castle_skin\":session.skin_outer_after,\"lineup_skins\":[session.skin_lineups_after[0].lineups[0].skinCfgId,session.skin_lineups_after[0].lineups[1].skinCfgId,session.skin_lineups_after[0].lineups[2].skinCfgId,session.skin_lineups_after[0].lineups[3].skinCfgId,session.skin_lineups_after[0].lineups[4].skinCfgId,session.skin_lineups_after[0].lineups[5].skinCfgId,session.skin_lineups_after[0].lineups[6].skinCfgId,session.skin_lineups_after[0].lineups[7].skinCfgId],\"x\":session.skin_city_x,\"z\":session.skin_city_z})",
+              "save": "session.log_message"
+            }
+          ],
+          "Next": "Log",
+          "Type": "Local"
+        },
+        "PickSkins": {
+          "Compute": [
+            {
+              "expr": "random_one([2004, 2002, 1191, 1189])",
+              "save": "session.skin_selected_city"
+            },
+            {
+              "expr": "random_one([110071, 110070, 110069, 110068])",
+              "save": "session.skin_selected_0"
+            },
+            {
+              "expr": "random_one([110071, 110070, 110069, 110068])",
+              "save": "session.skin_selected_1"
+            },
+            {
+              "expr": "random_one([110071, 110070, 110069, 110068])",
+              "save": "session.skin_selected_2"
+            },
+            {
+              "expr": "random_one([110071, 110070, 110069, 110068])",
+              "save": "session.skin_selected_3"
+            },
+            {
+              "expr": "random_one([110071, 110070, 110069, 110068])",
+              "save": "session.skin_selected_4"
+            },
+            {
+              "expr": "random_one([110071, 110070, 110069, 110068])",
+              "save": "session.skin_selected_5"
+            },
+            {
+              "expr": "random_one([110071, 110070, 110069, 110068])",
+              "save": "session.skin_selected_6"
+            },
+            {
+              "expr": "random_one([110071, 110070, 110069, 110068])",
+              "save": "session.skin_selected_7"
+            }
+          ],
+          "Next": "CityChoice",
+          "Type": "Local"
+        },
+        "ReadCity": {
+          "Assert": [
+            {
+              "Expr": "has_path('session.city.cityID') && to_int(session.city.cityID) > 0",
+              "Message": "必须已有大地图城堡"
+            }
+          ],
+          "Compute": [
+            {
+              "expr": "to_int(session.city.coord.X)",
+              "save": "session.skin_city_x"
+            },
+            {
+              "expr": "to_int(session.city.coord.Z)",
+              "save": "session.skin_city_z"
+            }
+          ],
+          "LocalLogic": "get_local_city",
+          "Next": "ReadOwned",
+          "Type": "Local"
+        },
+        "ReadLineupsAfter": {
+          "Ack": "LineupsInfoAck",
+          "Assert": [
+            {
+              "Expr": "len(session.skin_lineups_after[0].lineups) == 8",
+              "Message": "必须保留8支编队"
+            },
+            {
+              "Expr": "session.skin_lineups_after[0].lineups[0].index == 0 && session.skin_lineups_after[0].lineups[0].skinCfgId == session.skin_selected_0",
+              "Message": "第1队实际皮肤必须等于独立随机选择结果"
+            },
+            {
+              "Expr": "session.skin_lineups_after[0].lineups[1].index == 1 && session.skin_lineups_after[0].lineups[1].skinCfgId == session.skin_selected_1",
+              "Message": "第2队实际皮肤必须等于独立随机选择结果"
+            },
+            {
+              "Expr": "session.skin_lineups_after[0].lineups[2].index == 2 && session.skin_lineups_after[0].lineups[2].skinCfgId == session.skin_selected_2",
+              "Message": "第3队实际皮肤必须等于独立随机选择结果"
+            },
+            {
+              "Expr": "session.skin_lineups_after[0].lineups[3].index == 3 && session.skin_lineups_after[0].lineups[3].skinCfgId == session.skin_selected_3",
+              "Message": "第4队实际皮肤必须等于独立随机选择结果"
+            },
+            {
+              "Expr": "session.skin_lineups_after[0].lineups[4].index == 4 && session.skin_lineups_after[0].lineups[4].skinCfgId == session.skin_selected_4",
+              "Message": "第5队实际皮肤必须等于独立随机选择结果"
+            },
+            {
+              "Expr": "session.skin_lineups_after[0].lineups[5].index == 5 && session.skin_lineups_after[0].lineups[5].skinCfgId == session.skin_selected_5",
+              "Message": "第6队实际皮肤必须等于独立随机选择结果"
+            },
+            {
+              "Expr": "session.skin_lineups_after[0].lineups[6].index == 6 && session.skin_lineups_after[0].lineups[6].skinCfgId == session.skin_selected_6",
+              "Message": "第7队实际皮肤必须等于独立随机选择结果"
+            },
+            {
+              "Expr": "session.skin_lineups_after[0].lineups[7].index == 7 && session.skin_lineups_after[0].lineups[7].skinCfgId == session.skin_selected_7",
+              "Message": "第8队实际皮肤必须等于独立随机选择结果"
+            }
+          ],
+          "Extract": {
+            "session.skin_lineups_after": "$.lineupTypeDatas"
+          },
+          "Next": "ReadMap",
+          "Parameters": {
+            "lineupTyp": [
+              0
+            ]
+          },
+          "Request": "LineupsInfoReq",
+          "Type": "Request"
+        },
+        "ReadLineupsBefore": {
+          "Ack": "LineupsInfoAck",
+          "Assert": [
+            {
+              "Expr": "len(session.skin_lineups_before[0].lineups) == 8 && len(filter(session.skin_lineups_before[0].lineups, 'item.state != 1 || len(item.heroes) != 4')) == 0",
+              "Message": "穿戴前8队必须在城内且每队4英雄"
+            }
+          ],
+          "Extract": {
+            "session.skin_lineups_before": "$.lineupTypeDatas"
+          },
+          "Next": "ReadCity",
+          "Parameters": {
+            "lineupTyp": [
+              0
+            ]
+          },
+          "Request": "LineupsInfoReq",
+          "Type": "Request"
+        },
+        "ReadMap": {
+          "Ack": "WildMapViewAck",
+          "Assert": [
+            {
+              "Expr": "len(session.skin_map_city) == 1",
+              "Message": "地图回读必须唯一找到本人城堡"
+            }
+          ],
+          "Compute": [
+            {
+              "expr": "filter(session.skin_map_entities, '(item.type == 2 || item.type == \"MapUnitPlayerCity\") && to_int(item.owner.ID) == session.playerID')",
+              "save": "session.skin_map_city"
+            }
+          ],
+          "Extract": {
+            "session.skin_map_entities": "$.entities"
+          },
+          "Next": "VerifyMap",
+          "Parameters": {
+            "centerPos": {
+              "X": "{{session.skin_city_x}}",
+              "Z": "{{session.skin_city_z}}"
+            },
+            "lod": 0,
+            "map_type": 0,
+            "reconnect": true,
+            "xSpan": 40000,
+            "zSpan": 40000
+          },
+          "Request": "WildMapViewReq",
+          "Type": "Request"
+        },
+        "ReadOwned": {
+          "Ack": "GetAllSkinAck",
+          "Extract": {
+            "session.skin_info_before": "$.skinInfo"
+          },
+          "Next": "CheckOwned0",
+          "Request": "GetAllSkinReq",
+          "Type": "Request"
+        },
+        "ReadReadySkins": {
+          "Ack": "GetAllSkinAck",
+          "Assert": [
+            {
+              "Expr": "len(filter(session.skin_info_ready, 'item.skinID == 2004 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_ready, 'item.skinID == 2002 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_ready, 'item.skinID == 1191 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_ready, 'item.skinID == 1189 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_ready, 'item.skinID == 110071 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_ready, 'item.skinID == 110070 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_ready, 'item.skinID == 110069 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_ready, 'item.skinID == 110068 && to_int(item.invalidTime) == -1')) == 1",
+              "Message": "4款城堡及4款编队皮肤均须永久拥有"
+            }
+          ],
+          "Extract": {
+            "session.skin_info_ready": "$.skinInfo",
+            "session.skin_outer_before": "$.curOuterSkin"
+          },
+          "Next": "ExistingSkinChoice",
+          "Request": "GetAllSkinReq",
+          "Type": "Request"
+        },
+        "ReadSkinsAfter": {
+          "Ack": "GetAllSkinAck",
+          "Assert": [
+            {
+              "Expr": "session.skin_outer_after == session.skin_selected_city",
+              "Message": "回读城堡皮肤必须等于随机选择结果"
+            },
+            {
+              "Expr": "len(filter(session.skin_info_after, 'item.skinID == 2004 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_after, 'item.skinID == 2002 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_after, 'item.skinID == 1191 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_after, 'item.skinID == 1189 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_after, 'item.skinID == 110071 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_after, 'item.skinID == 110070 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_after, 'item.skinID == 110069 && to_int(item.invalidTime) == -1')) == 1 && len(filter(session.skin_info_after, 'item.skinID == 110068 && to_int(item.invalidTime) == -1')) == 1",
+              "Message": "穿戴后仍永久拥有全部8款候选"
+            }
+          ],
+          "Extract": {
+            "session.skin_info_after": "$.skinInfo",
+            "session.skin_outer_after": "$.curOuterSkin"
+          },
+          "Next": "ReadLineupsAfter",
+          "Request": "GetAllSkinReq",
+          "Type": "Request"
+        },
+        "VerifyMap": {
+          "Assert": [
+            {
+              "Expr": "session.skin_map_city[0].property.mapCity.d2SkinID == session.skin_selected_city",
+              "Message": "大地图城堡展示皮肤必须已同步"
+            },
+            {
+              "Expr": "session.skin_map_city[0].position.position.X == session.skin_city_x && session.skin_map_city[0].position.position.Z == session.skin_city_z",
+              "Message": "换装不能改变已验证城堡坐标"
+            }
+          ],
+          "Next": "MakeLog",
+          "Type": "Pass"
+        },
+        "WearCity": {
+          "Ack": "ChangeSkinAck",
+          "Assert": [
+            {
+              "Expr": "session.skin_change_err == 0 || session.skin_change_err == 'ErrCodeSuccess'",
+              "Message": "城堡皮肤穿戴必须成功"
+            }
+          ],
+          "Extract": {
+            "session.skin_change_err": "$.errCode"
+          },
+          "Next": "LineupChoice0",
+          "Parameters": {
+            "cfgID": "{{session.skin_selected_city}}"
+          },
+          "Request": "ChangeSkinReq",
+          "Type": "Request"
+        },
+        "WearLineup0": {
+          "Ack": "ChangeSkinAck",
+          "Assert": [
+            {
+              "Expr": "session.skin_change_err == 0 || session.skin_change_err == 'ErrCodeSuccess'",
+              "Message": "第1队皮肤穿戴必须成功"
+            }
+          ],
+          "Extract": {
+            "session.skin_change_err": "$.errCode"
+          },
+          "Next": "LineupChoice1",
+          "Parameters": {
+            "cfgID": "{{session.skin_selected_0}}",
+            "index": 0,
+            "lineupType": 0
+          },
+          "Request": "ChangeSkinReq",
+          "Type": "Request"
+        },
+        "WearLineup1": {
+          "Ack": "ChangeSkinAck",
+          "Assert": [
+            {
+              "Expr": "session.skin_change_err == 0 || session.skin_change_err == 'ErrCodeSuccess'",
+              "Message": "第2队皮肤穿戴必须成功"
+            }
+          ],
+          "Extract": {
+            "session.skin_change_err": "$.errCode"
+          },
+          "Next": "LineupChoice2",
+          "Parameters": {
+            "cfgID": "{{session.skin_selected_1}}",
+            "index": 1,
+            "lineupType": 0
+          },
+          "Request": "ChangeSkinReq",
+          "Type": "Request"
+        },
+        "WearLineup2": {
+          "Ack": "ChangeSkinAck",
+          "Assert": [
+            {
+              "Expr": "session.skin_change_err == 0 || session.skin_change_err == 'ErrCodeSuccess'",
+              "Message": "第3队皮肤穿戴必须成功"
+            }
+          ],
+          "Extract": {
+            "session.skin_change_err": "$.errCode"
+          },
+          "Next": "LineupChoice3",
+          "Parameters": {
+            "cfgID": "{{session.skin_selected_2}}",
+            "index": 2,
+            "lineupType": 0
+          },
+          "Request": "ChangeSkinReq",
+          "Type": "Request"
+        },
+        "WearLineup3": {
+          "Ack": "ChangeSkinAck",
+          "Assert": [
+            {
+              "Expr": "session.skin_change_err == 0 || session.skin_change_err == 'ErrCodeSuccess'",
+              "Message": "第4队皮肤穿戴必须成功"
+            }
+          ],
+          "Extract": {
+            "session.skin_change_err": "$.errCode"
+          },
+          "Next": "LineupChoice4",
+          "Parameters": {
+            "cfgID": "{{session.skin_selected_3}}",
+            "index": 3,
+            "lineupType": 0
+          },
+          "Request": "ChangeSkinReq",
+          "Type": "Request"
+        },
+        "WearLineup4": {
+          "Ack": "ChangeSkinAck",
+          "Assert": [
+            {
+              "Expr": "session.skin_change_err == 0 || session.skin_change_err == 'ErrCodeSuccess'",
+              "Message": "第5队皮肤穿戴必须成功"
+            }
+          ],
+          "Extract": {
+            "session.skin_change_err": "$.errCode"
+          },
+          "Next": "LineupChoice5",
+          "Parameters": {
+            "cfgID": "{{session.skin_selected_4}}",
+            "index": 4,
+            "lineupType": 0
+          },
+          "Request": "ChangeSkinReq",
+          "Type": "Request"
+        },
+        "WearLineup5": {
+          "Ack": "ChangeSkinAck",
+          "Assert": [
+            {
+              "Expr": "session.skin_change_err == 0 || session.skin_change_err == 'ErrCodeSuccess'",
+              "Message": "第6队皮肤穿戴必须成功"
+            }
+          ],
+          "Extract": {
+            "session.skin_change_err": "$.errCode"
+          },
+          "Next": "LineupChoice6",
+          "Parameters": {
+            "cfgID": "{{session.skin_selected_5}}",
+            "index": 5,
+            "lineupType": 0
+          },
+          "Request": "ChangeSkinReq",
+          "Type": "Request"
+        },
+        "WearLineup6": {
+          "Ack": "ChangeSkinAck",
+          "Assert": [
+            {
+              "Expr": "session.skin_change_err == 0 || session.skin_change_err == 'ErrCodeSuccess'",
+              "Message": "第7队皮肤穿戴必须成功"
+            }
+          ],
+          "Extract": {
+            "session.skin_change_err": "$.errCode"
+          },
+          "Next": "LineupChoice7",
+          "Parameters": {
+            "cfgID": "{{session.skin_selected_6}}",
+            "index": 6,
+            "lineupType": 0
+          },
+          "Request": "ChangeSkinReq",
+          "Type": "Request"
+        },
+        "WearLineup7": {
+          "Ack": "ChangeSkinAck",
+          "Assert": [
+            {
+              "Expr": "session.skin_change_err == 0 || session.skin_change_err == 'ErrCodeSuccess'",
+              "Message": "第8队皮肤穿戴必须成功"
+            }
+          ],
+          "Extract": {
+            "session.skin_change_err": "$.errCode"
+          },
+          "Next": "ReadSkinsAfter",
+          "Parameters": {
+            "cfgID": "{{session.skin_selected_7}}",
+            "index": 7,
+            "lineupType": 0
+          },
+          "Request": "ChangeSkinReq",
+          "Type": "Request"
+        }
+      }
+    },
+    "readonly": false,
+    "source": "database"
+  },
+  "revision": "43502a841b7ee47548afeff685bbaca547601ef8771d972955a58bd2889071cb"
+}

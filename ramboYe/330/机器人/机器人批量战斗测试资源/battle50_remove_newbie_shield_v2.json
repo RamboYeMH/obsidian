@@ -1,0 +1,282 @@
+{
+  "record": {
+    "block": {
+      "ID": "battle50_remove_newbie_shield_v2",
+      "Name": "批量战斗_已授权时代26解除新手盾",
+      "StartAt": "LoginChoice",
+      "States": {
+        "AdvanceEra": {
+          "Ack": "GMAck",
+          "Next": "MarkAdvanced",
+          "Parameters": {
+            "args": [
+              "tochapter",
+              "{{string session.playerID}}",
+              "26"
+            ]
+          },
+          "Request": "GMReq",
+          "TimeoutMs": 20000,
+          "Type": "Request"
+        },
+        "CallLogin": {
+          "CallChain": "login_no_init_v1",
+          "Next": "ReadCity",
+          "Type": "Call"
+        },
+        "EraChoice": {
+          "Choices": [
+            {
+              "Condition": "session.shield_era_before == 25",
+              "Next": "AdvanceEra"
+            },
+            {
+              "Condition": "session.shield_era_before == 26",
+              "Next": "ReadAfter"
+            }
+          ],
+          "Default": "UnexpectedEra",
+          "Type": "Choice"
+        },
+        "InspectAfter": {
+          "Compute": [
+            {
+              "expr": "to_int(session.shield_city[0].property.mapCity.onShield)",
+              "save": "session.shield_current"
+            }
+          ],
+          "Next": "VerifyChoice",
+          "Type": "Local"
+        },
+        "InspectBefore": {
+          "Compute": [
+            {
+              "expr": "to_int(session.shield_city[0].property.mapCity.onShield)",
+              "save": "session.shield_before"
+            },
+            {
+              "expr": "session.shield_before",
+              "save": "session.shield_current"
+            }
+          ],
+          "Next": "ShieldChoice",
+          "Type": "Local"
+        },
+        "Log": {
+          "End": true,
+          "LocalLogic": "log",
+          "Type": "Local"
+        },
+        "LoginChoice": {
+          "Choices": [
+            {
+              "Condition": "has_path('session.playerID') && session.playerID > 0",
+              "Next": "ReadCity"
+            }
+          ],
+          "Default": "CallLogin",
+          "Type": "Choice"
+        },
+        "MakeLog": {
+          "Assert": [
+            {
+              "Expr": "session.shield_current <= 0",
+              "Message": "最终地图必须显示自身城堡无盾"
+            }
+          ],
+          "Compute": [
+            {
+              "expr": "\"BATTLE50_SHIELD_JSON=\" + toJSON({\"robot_id\":global.robot_id,\"player_id\":session.playerID,\"shield_before\":session.shield_before,\"shield_after\":session.shield_current,\"era_before\":session.shield_era_before,\"era_after\":session.shield_era_after,\"era_advanced\":session.shield_era_advanced,\"x\":session.shield_city_x,\"z\":session.shield_city_z})",
+              "save": "session.log_message"
+            }
+          ],
+          "Next": "Log",
+          "Type": "Local"
+        },
+        "MarkAdvanced": {
+          "Compute": [
+            {
+              "expr": "true",
+              "save": "session.shield_era_advanced"
+            }
+          ],
+          "Next": "ReadAfter",
+          "Type": "Local"
+        },
+        "NextPoll": {
+          "Compute": [
+            {
+              "expr": "session.shield_poll + 1",
+              "save": "session.shield_poll"
+            }
+          ],
+          "Next": "ReadAfter",
+          "Type": "Local"
+        },
+        "ReadAfter": {
+          "Ack": "WildMapViewAck",
+          "Assert": [
+            {
+              "Expr": "len(session.shield_city) == 1",
+              "Message": "必须唯一读取本人的地图城堡"
+            }
+          ],
+          "Compute": [
+            {
+              "expr": "filter(session.shield_entities, '(item.type == 2 || item.type == \"MapUnitPlayerCity\") && to_int(item.owner.ID) == session.playerID')",
+              "save": "session.shield_city"
+            }
+          ],
+          "Extract": {
+            "session.shield_entities": "$.entities"
+          },
+          "Next": "InspectAfter",
+          "Parameters": {
+            "centerPos": {
+              "X": "{{session.shield_city_x}}",
+              "Z": "{{session.shield_city_z}}"
+            },
+            "lod": 0,
+            "map_type": 0,
+            "reconnect": true,
+            "xSpan": 40000,
+            "zSpan": 40000
+          },
+          "Request": "WildMapViewReq",
+          "Type": "Request"
+        },
+        "ReadBefore": {
+          "Ack": "WildMapViewAck",
+          "Assert": [
+            {
+              "Expr": "len(session.shield_city) == 1",
+              "Message": "必须唯一读取本人的地图城堡"
+            }
+          ],
+          "Compute": [
+            {
+              "expr": "filter(session.shield_entities, '(item.type == 2 || item.type == \"MapUnitPlayerCity\") && to_int(item.owner.ID) == session.playerID')",
+              "save": "session.shield_city"
+            }
+          ],
+          "Extract": {
+            "session.shield_entities": "$.entities"
+          },
+          "Next": "InspectBefore",
+          "Parameters": {
+            "centerPos": {
+              "X": "{{session.shield_city_x}}",
+              "Z": "{{session.shield_city_z}}"
+            },
+            "lod": 0,
+            "map_type": 0,
+            "reconnect": true,
+            "xSpan": 40000,
+            "zSpan": 40000
+          },
+          "Request": "WildMapViewReq",
+          "Type": "Request"
+        },
+        "ReadCity": {
+          "Assert": [
+            {
+              "Expr": "has_path('session.city.cityID') && to_int(session.city.cityID)>0",
+              "Message": "取消护盾前必须已有地图城堡"
+            }
+          ],
+          "Compute": [
+            {
+              "expr": "to_int(session.city.coord.X)",
+              "save": "session.shield_city_x"
+            },
+            {
+              "expr": "to_int(session.city.coord.Z)",
+              "save": "session.shield_city_z"
+            },
+            {
+              "expr": "0",
+              "save": "session.shield_poll"
+            },
+            {
+              "expr": "false",
+              "save": "session.shield_era_advanced"
+            },
+            {
+              "expr": "-1",
+              "save": "session.shield_era_before"
+            }
+          ],
+          "LocalLogic": "get_local_city",
+          "Next": "ReadBefore",
+          "Type": "Local"
+        },
+        "ReadEraBefore": {
+          "Ack": "QuestInfoAck",
+          "Extract": {
+            "session.shield_era_before": "$.eraInfo.curID"
+          },
+          "Next": "EraChoice",
+          "Request": "QuestInfoReq",
+          "Type": "Request"
+        },
+        "ReadFinalEra": {
+          "Ack": "QuestInfoAck",
+          "Assert": [
+            {
+              "Expr": "!session.shield_era_advanced || session.shield_era_after == 26",
+              "Message": "执行升级后时代必须为26"
+            }
+          ],
+          "Extract": {
+            "session.shield_era_after": "$.eraInfo.curID"
+          },
+          "Next": "MakeLog",
+          "Request": "QuestInfoReq",
+          "Type": "Request"
+        },
+        "ShieldChoice": {
+          "Choices": [
+            {
+              "Condition": "session.shield_current <= 0",
+              "Next": "ReadFinalEra"
+            }
+          ],
+          "Default": "ReadEraBefore",
+          "Type": "Choice"
+        },
+        "ShieldStillOn": {
+          "Comment": "删除护盾Buff后地图仍显示护盾，不能判为完成",
+          "Type": "Fail"
+        },
+        "UnexpectedEra": {
+          "Comment": "时代不是已授权的25或26，停止，不扩大升级范围",
+          "Type": "Fail"
+        },
+        "VerifyChoice": {
+          "Choices": [
+            {
+              "Condition": "session.shield_current <= 0",
+              "Next": "ReadFinalEra"
+            },
+            {
+              "Condition": "session.shield_poll < 10",
+              "Next": "WaitSync"
+            }
+          ],
+          "Default": "ShieldStillOn",
+          "Type": "Choice"
+        },
+        "WaitSync": {
+          "Next": "NextPoll",
+          "Parameters": {
+            "wait_duration": 250
+          },
+          "Type": "Wait"
+        }
+      }
+    },
+    "readonly": false,
+    "source": "database"
+  },
+  "revision": "c57fa204b8c2546727306c0278f792de42ab1e2ce3e0c49452e2734bb8d3ed40"
+}

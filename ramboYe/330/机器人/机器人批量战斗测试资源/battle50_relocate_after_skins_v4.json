@@ -1,0 +1,325 @@
+{
+  "record": {
+    "block": {
+      "ID": "battle50_relocate_after_skins_v4",
+      "Name": "批量战斗_换装后按独立单元重新迁城",
+      "StartAt": "LoginChoice",
+      "States": {
+        "AddTeleportItem": {
+          "Ack": "GMAck",
+          "Next": "AttemptTarget",
+          "Parameters": {
+            "args": [
+              "addasset",
+              "{{string session.playerID}}",
+              "item",
+              "11114417",
+              "1"
+            ]
+          },
+          "Request": "GMReq",
+          "Type": "Request"
+        },
+        "AtTarget": {
+          "Compute": [
+            {
+              "expr": "filter(session.migrate_candidates, 'item.x == session.city.coord.X && item.z == session.city.coord.Z')",
+              "save": "session.migrate_matching"
+            }
+          ],
+          "Next": "PlacedChoice",
+          "Type": "Local"
+        },
+        "AttemptTarget": {
+          "Compute": [
+            {
+              "expr": "to_int(session.migrate_candidates[session.migrate_attempt].x)",
+              "save": "session.migrate_base_x"
+            },
+            {
+              "expr": "to_int(session.migrate_candidates[session.migrate_attempt].z)",
+              "save": "session.migrate_base_z"
+            },
+            {
+              "expr": "session.migrate_base_x",
+              "save": "session.migrate_x"
+            },
+            {
+              "expr": "session.migrate_base_z",
+              "save": "session.migrate_z"
+            }
+          ],
+          "Next": "Teleport",
+          "Type": "Local"
+        },
+        "CallLogin": {
+          "CallChain": "login_no_init_v1",
+          "Next": "SetTarget",
+          "Type": "Call"
+        },
+        "CityChoice": {
+          "Choices": [
+            {
+              "Condition": "has_path('session.city.cityID') && to_int(session.city.cityID) > 0",
+              "Next": "AtTarget"
+            }
+          ],
+          "Default": "CreateCity",
+          "Type": "Choice"
+        },
+        "CreateCity": {
+          "Ack": "NewMapCityAck",
+          "Assert": [
+            {
+              "Expr": "session.migrate_create_err == 'ErrCodeSuccess' || session.migrate_create_err == 0",
+              "Message": "首次入图建城必须成功"
+            }
+          ],
+          "Extract": {
+            "session.migrate_create_err": "$.errCode"
+          },
+          "Next": "ReadCity",
+          "Notify": [
+            "CityNtf"
+          ],
+          "Request": "NewMapCityReq",
+          "TimeoutMs": 20000,
+          "Type": "Request"
+        },
+        "ItemChoice": {
+          "Choices": [
+            {
+              "Condition": "to_int(get_map(state.core.asset.items, '11114417')) > 0 || to_int(get_map(state.core.asset.items, '11114420')) > 0",
+              "Next": "AttemptTarget"
+            }
+          ],
+          "Default": "AddTeleportItem",
+          "Type": "Choice"
+        },
+        "LoginChoice": {
+          "Choices": [
+            {
+              "Condition": "has_path('session.playerID') && session.playerID > 0",
+              "Next": "SetTarget"
+            }
+          ],
+          "Default": "CallLogin",
+          "Type": "Choice"
+        },
+        "MakeRelocateLog": {
+          "Compute": [
+            {
+              "expr": "\"BATTLE50_RELOCATE_JSON=\" + toJSON({\"robot_id\":global.robot_id,\"player_id\":session.playerID,\"x\":session.migrate_own_city[0].position.position.X,\"z\":session.migrate_own_city[0].position.position.Z,\"castle_skin\":session.relocate_castle_skin,\"city_id\":session.migrate_own_city[0].ID})",
+              "save": "session.log_message"
+            }
+          ],
+          "Next": "RelocateLog",
+          "Type": "Local"
+        },
+        "NextOffset": {
+          "Compute": [
+            {
+              "expr": "session.migrate_attempt + 1",
+              "save": "session.migrate_attempt"
+            }
+          ],
+          "Next": "AttemptTarget",
+          "Type": "Local"
+        },
+        "PlacedChoice": {
+          "Choices": [
+            {
+              "Condition": "len(session.migrate_matching) > 0",
+              "Next": "UseCurrent"
+            }
+          ],
+          "Default": "ReadItems",
+          "Type": "Choice"
+        },
+        "ReadCity": {
+          "LocalLogic": "get_local_city",
+          "Next": "CityChoice",
+          "Type": "Local"
+        },
+        "ReadItems": {
+          "Ack": "AssetAck",
+          "Next": "ItemChoice",
+          "Notify": [
+            "AssetNtf"
+          ],
+          "Parameters": {
+            "typ": [
+              "item"
+            ]
+          },
+          "Request": "AssetReq",
+          "Type": "Request"
+        },
+        "ReadLineups": {
+          "Ack": "LineupsInfoAck",
+          "Assert": [
+            {
+              "Expr": "len(session.migrate_lineups[0].lineups) == 8 && len(filter(session.migrate_lineups[0].lineups, 'item.state != 1')) == 0",
+              "Message": "迁城前8队必须全部在城内"
+            },
+            {
+              "Expr": "session.migrate_lineups[0].lineups[0].skinCfgId in [110071,110070,110069,110068] && session.migrate_lineups[0].lineups[1].skinCfgId in [110071,110070,110069,110068] && session.migrate_lineups[0].lineups[2].skinCfgId in [110071,110070,110069,110068] && session.migrate_lineups[0].lineups[3].skinCfgId in [110071,110070,110069,110068] && session.migrate_lineups[0].lineups[4].skinCfgId in [110071,110070,110069,110068] && session.migrate_lineups[0].lineups[5].skinCfgId in [110071,110070,110069,110068] && session.migrate_lineups[0].lineups[6].skinCfgId in [110071,110070,110069,110068] && session.migrate_lineups[0].lineups[7].skinCfgId in [110071,110070,110069,110068]",
+              "Message": "8队皮肤须在迁城前完成"
+            }
+          ],
+          "Extract": {
+            "session.migrate_lineups": "$.lineupTypeDatas"
+          },
+          "Next": "SkinPrerequisite",
+          "Parameters": {
+            "lineupTyp": [
+              0
+            ]
+          },
+          "Request": "LineupsInfoReq",
+          "Type": "Request"
+        },
+        "ReadMap": {
+          "Ack": "WildMapViewAck",
+          "Assert": [
+            {
+              "Expr": "len(session.migrate_own_city) == 1",
+              "Message": "目标区域完整地图视野必须唯一找到本人城堡"
+            }
+          ],
+          "Compute": [
+            {
+              "expr": "filter(session.migrate_entities, '(item.type == \"MapUnitPlayerCity\" || item.type == 2) && to_int(item.owner.ID) == session.playerID')",
+              "save": "session.migrate_own_city"
+            }
+          ],
+          "Extract": {
+            "session.migrate_entities": "$.entities"
+          },
+          "Next": "VerifyPosition",
+          "Parameters": {
+            "centerPos": {
+              "X": "{{session.migrate_base_x}}",
+              "Z": "{{session.migrate_base_z}}"
+            },
+            "lod": 0,
+            "map_type": 0,
+            "reconnect": true,
+            "xSpan": 40000,
+            "zSpan": 40000
+          },
+          "Request": "WildMapViewReq",
+          "Type": "Request"
+        },
+        "RelocateLog": {
+          "End": true,
+          "LocalLogic": "log",
+          "Type": "Local"
+        },
+        "SetTarget": {
+          "Assert": [
+            {
+              "Expr": "len(session.migrate_candidates) > 0 && len(session.migrate_candidates) <= 80",
+              "Message": "必须有1至80个已规划区域内候选点"
+            }
+          ],
+          "Compute": [
+            {
+              "expr": "get_map(fromJSON(global.city_candidates_json), global.robot_id)",
+              "save": "session.migrate_candidates"
+            },
+            {
+              "expr": "0",
+              "save": "session.migrate_attempt"
+            }
+          ],
+          "Next": "ReadLineups",
+          "Type": "Local"
+        },
+        "SkinPrerequisite": {
+          "Ack": "GetAllSkinAck",
+          "Assert": [
+            {
+              "Expr": "session.relocate_castle_skin in [2004,2002,1191,1189]",
+              "Message": "城堡皮肤须在迁城前完成"
+            }
+          ],
+          "Extract": {
+            "session.relocate_castle_skin": "$.curOuterSkin"
+          },
+          "Next": "ReadCity",
+          "Request": "GetAllSkinReq",
+          "Type": "Request"
+        },
+        "Teleport": {
+          "Ack": "TeleportCityAck",
+          "Extract": {
+            "session.migrate_err": "$.errCode"
+          },
+          "Next": "TeleportResult",
+          "Parameters": {
+            "pos": {
+              "position": {
+                "X": "{{session.migrate_x}}",
+                "Z": "{{session.migrate_z}}"
+              }
+            },
+            "type": 1
+          },
+          "Request": "TeleportCityReq",
+          "TimeoutMs": 20000,
+          "Type": "Request"
+        },
+        "TeleportFailed": {
+          "Comment": "迁城未获成功回执，保留错误码；不得当作迁城完成",
+          "Type": "Fail"
+        },
+        "TeleportResult": {
+          "Choices": [
+            {
+              "Condition": "session.migrate_err == 'ErrCodeSuccess' || session.migrate_err == 0",
+              "Next": "ReadMap"
+            },
+            {
+              "Condition": "(session.migrate_err == 'ErrCodeCantTeleportBlockArea' || session.migrate_err == 5002) && session.migrate_attempt + 1 < len(session.migrate_candidates)",
+              "Next": "NextOffset"
+            }
+          ],
+          "Default": "TeleportFailed",
+          "Type": "Choice"
+        },
+        "UseCurrent": {
+          "Compute": [
+            {
+              "expr": "to_int(session.city.coord.X)",
+              "save": "session.migrate_base_x"
+            },
+            {
+              "expr": "to_int(session.city.coord.Z)",
+              "save": "session.migrate_base_z"
+            }
+          ],
+          "Next": "ReadMap",
+          "Type": "Local"
+        },
+        "VerifyPosition": {
+          "Assert": [
+            {
+              "Expr": "session.migrate_own_city[0].position.position.X == session.migrate_base_x && session.migrate_own_city[0].position.position.Z == session.migrate_base_z",
+              "Message": "本人城堡实际坐标必须精确等于已分配落点"
+            },
+            {
+              "Expr": "session.migrate_own_city[0].property.mapCity.d2SkinID == session.relocate_castle_skin",
+              "Message": "迁城后地图展示皮肤必须保持已穿戴皮肤"
+            }
+          ],
+          "Next": "MakeRelocateLog",
+          "Type": "Pass"
+        }
+      }
+    },
+    "readonly": false,
+    "source": "database"
+  },
+  "revision": "857ec4d9e45fc8649ad51bb76992f715d6026c0fde043fe7e2eb8a90237a46c8"
+}

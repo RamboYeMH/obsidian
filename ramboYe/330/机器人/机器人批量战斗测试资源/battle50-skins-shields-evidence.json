@@ -1,0 +1,1802 @@
+[
+  {
+    "time": "2026-10-29T11:44:09.073000+08:00",
+    "task_id": "mongo-df5900d1ff2ccd534bf5cac0b871ac513eb86af07b0bc9782fd2161086cc1d6b-block-000001",
+    "record": {
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110070,
+        110069,
+        110068,
+        110069,
+        110070,
+        110071,
+        110068,
+        110068
+      ],
+      "player_id": 33824,
+      "robot_id": 900004,
+      "x": 1622000,
+      "z": 1698000
+    }
+  },
+  {
+    "time": "2026-10-29T11:44:10.748000+08:00",
+    "task_id": "mongo-df5900d1ff2ccd534bf5cac0b871ac513eb86af07b0bc9782fd2161086cc1d6b-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33824,
+      "robot_id": 900004,
+      "shield_after": -1,
+      "shield_before": 1796184974938,
+      "x": 1622000,
+      "z": 1698000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:40.862000+08:00",
+    "task_id": "mongo-debe2d2beb8d13f511a675893ab6de967a34e89da8f88d6fbc2d9419f91e08b9-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110068,
+        110070,
+        110071,
+        110069,
+        110070,
+        110070,
+        110068,
+        110070
+      ],
+      "player_id": 33833,
+      "robot_id": 900037,
+      "x": 1588000,
+      "z": 1774000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:42.198000+08:00",
+    "task_id": "mongo-cabd2d9c44f15f6e451169f037dc799445248fa3b101fd8ea14940c2f22927eb-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110068,
+        110069,
+        110071,
+        110069,
+        110071,
+        110068,
+        110068,
+        110071
+      ],
+      "player_id": 33840,
+      "robot_id": 900006,
+      "x": 1594000,
+      "z": 1704000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:42.725000+08:00",
+    "task_id": "mongo-debe2d2beb8d13f511a675893ab6de967a34e89da8f88d6fbc2d9419f91e08b9-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33833,
+      "robot_id": 900037,
+      "shield_after": -1,
+      "shield_before": 1796187195168,
+      "x": 1588000,
+      "z": 1774000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:43.730000+08:00",
+    "task_id": "mongo-4f8ee698a13b9beca38faedc9918cd345c995532c758ddebeddc22d267a1248b-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110068,
+        110069,
+        110069,
+        110069,
+        110071,
+        110068,
+        110068,
+        110071
+      ],
+      "player_id": 33832,
+      "robot_id": 900007,
+      "x": 1646000,
+      "z": 1704000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:43.829000+08:00",
+    "task_id": "mongo-cabd2d9c44f15f6e451169f037dc799445248fa3b101fd8ea14940c2f22927eb-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33840,
+      "robot_id": 900006,
+      "shield_after": -1,
+      "shield_before": 1796187206493,
+      "x": 1594000,
+      "z": 1704000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:45.145000+08:00",
+    "task_id": "mongo-4b0ec84cab5686ba591648d9e3f0b6e8ced6417692cb12eb84b2dd2372962c56-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110068,
+        110071,
+        110070,
+        110068,
+        110071,
+        110069,
+        110071,
+        110069
+      ],
+      "player_id": 33860,
+      "robot_id": 900015,
+      "x": 1520000,
+      "z": 1720000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:45.503000+08:00",
+    "task_id": "mongo-fd74f4dc3b95b1e89bab914da62a38075ce093679869e829e16e98a797281b45-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110070,
+        110071,
+        110068,
+        110068,
+        110068,
+        110071,
+        110068,
+        110069
+      ],
+      "player_id": 33736,
+      "robot_id": 900010,
+      "x": 1580000,
+      "z": 1704000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:45.527000+08:00",
+    "task_id": "mongo-4f8ee698a13b9beca38faedc9918cd345c995532c758ddebeddc22d267a1248b-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33832,
+      "robot_id": 900007,
+      "shield_after": -1,
+      "shield_before": 1796187195322,
+      "x": 1646000,
+      "z": 1704000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:46.402000+08:00",
+    "task_id": "mongo-41bfc7f28a74aee06e21f283b1838bf8dc16d045256a808a5efdeed6ffe8889d-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110071,
+        110071,
+        110071,
+        110070,
+        110070,
+        110070,
+        110071,
+        110069
+      ],
+      "player_id": 33842,
+      "robot_id": 900016,
+      "x": 1534000,
+      "z": 1720000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:46.794000+08:00",
+    "task_id": "mongo-4b0ec84cab5686ba591648d9e3f0b6e8ced6417692cb12eb84b2dd2372962c56-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33860,
+      "robot_id": 900015,
+      "shield_after": -1,
+      "shield_before": 1796187211484,
+      "x": 1520000,
+      "z": 1720000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:46.796000+08:00",
+    "task_id": "mongo-fd74f4dc3b95b1e89bab914da62a38075ce093679869e829e16e98a797281b45-block-000002",
+    "record": {
+      "era_advanced": false,
+      "era_after": 25,
+      "era_before": -1,
+      "player_id": 33736,
+      "robot_id": 900010,
+      "shield_after": -1,
+      "shield_before": -1,
+      "x": 1580000,
+      "z": 1704000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:46.873000+08:00",
+    "task_id": "mongo-87b1485801198b6eae74c46e6feedbb1eb64f6e95b07a5f0f21bf896fe037991-block-000001",
+    "record": {
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110070,
+        110068,
+        110068,
+        110071,
+        110071,
+        110069,
+        110068,
+        110070
+      ],
+      "player_id": 33862,
+      "robot_id": 900023,
+      "x": 1690000,
+      "z": 1734000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:47.848000+08:00",
+    "task_id": "mongo-00499dac805eecc030dd7f37a73a604712a7a73ca6111b1ef57b886155ec7c57-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110070,
+        110070,
+        110071,
+        110068,
+        110069,
+        110069,
+        110068,
+        110071
+      ],
+      "player_id": 33852,
+      "robot_id": 900019,
+      "x": 1510000,
+      "z": 1730000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:48.007000+08:00",
+    "task_id": "mongo-41bfc7f28a74aee06e21f283b1838bf8dc16d045256a808a5efdeed6ffe8889d-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33842,
+      "robot_id": 900016,
+      "shield_after": -1,
+      "shield_before": 1796187200220,
+      "x": 1534000,
+      "z": 1720000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:48.621000+08:00",
+    "task_id": "mongo-87b1485801198b6eae74c46e6feedbb1eb64f6e95b07a5f0f21bf896fe037991-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33862,
+      "robot_id": 900023,
+      "shield_after": -1,
+      "shield_before": 1796187201585,
+      "x": 1690000,
+      "z": 1734000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:48.733000+08:00",
+    "task_id": "mongo-711785d866018aa5482caa0a2dd916e2d464ef99c4ab487e730f75f90d7c30a4-block-000001",
+    "record": {
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110068,
+        110070,
+        110068,
+        110071,
+        110070,
+        110068,
+        110071,
+        110070
+      ],
+      "player_id": 33843,
+      "robot_id": 900013,
+      "x": 1642000,
+      "z": 1716000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:48.848000+08:00",
+    "task_id": "mongo-81ed3e0ff35cbd33640f6f5a9ac8676ea07f534059ade4b5a2a066d77b69310e-block-000001",
+    "record": {
+      "castle_skin": 1191,
+      "lineup_skins": [
+        110070,
+        110070,
+        110069,
+        110069,
+        110071,
+        110071,
+        110071,
+        110069
+      ],
+      "player_id": 33721,
+      "robot_id": 900002,
+      "x": 1652000,
+      "z": 1754000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:49.571000+08:00",
+    "task_id": "mongo-00499dac805eecc030dd7f37a73a604712a7a73ca6111b1ef57b886155ec7c57-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33852,
+      "robot_id": 900019,
+      "shield_after": -1,
+      "shield_before": 1796187201417,
+      "x": 1510000,
+      "z": 1730000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:49.801000+08:00",
+    "task_id": "mongo-23973dbfa591c374825cf765d49389a5ecac7a46fa4b674eb3ef89a626cc295e-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110070,
+        110071,
+        110069,
+        110070,
+        110068,
+        110068,
+        110071,
+        110070
+      ],
+      "player_id": 33853,
+      "robot_id": 900024,
+      "x": 1626000,
+      "z": 1736000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:49.883000+08:00",
+    "task_id": "mongo-1e23df0ba70f9fa8dc16f6610e74beb4ed3c884429788b3764a9dc64afb27c70-block-000001",
+    "record": {
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110068,
+        110070,
+        110069,
+        110071,
+        110071,
+        110070,
+        110068,
+        110068
+      ],
+      "player_id": 33827,
+      "robot_id": 900021,
+      "x": 1638000,
+      "z": 1730000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:50.138000+08:00",
+    "task_id": "mongo-81ed3e0ff35cbd33640f6f5a9ac8676ea07f534059ade4b5a2a066d77b69310e-block-000002",
+    "record": {
+      "era_advanced": false,
+      "era_after": 25,
+      "era_before": -1,
+      "player_id": 33721,
+      "robot_id": 900002,
+      "shield_after": -1,
+      "shield_before": -1,
+      "x": 1652000,
+      "z": 1754000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:50.248000+08:00",
+    "task_id": "mongo-551a5d551f9b1f34cea6761fcde246419c115e2e51113956ef35926d39f51261-block-000001",
+    "record": {
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110071,
+        110068,
+        110069,
+        110071,
+        110071,
+        110070,
+        110071,
+        110068
+      ],
+      "player_id": 33835,
+      "robot_id": 900028,
+      "x": 1502000,
+      "z": 1758000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:50.429000+08:00",
+    "task_id": "mongo-711785d866018aa5482caa0a2dd916e2d464ef99c4ab487e730f75f90d7c30a4-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33843,
+      "robot_id": 900013,
+      "shield_after": -1,
+      "shield_before": 1796187195202,
+      "x": 1642000,
+      "z": 1716000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:50.787000+08:00",
+    "task_id": "mongo-4cdff520fff91d3cd4c10aba11c2906f9150d4b6aafb601cfd1be0f0138506b1-block-000001",
+    "record": {
+      "castle_skin": 1191,
+      "lineup_skins": [
+        110069,
+        110068,
+        110070,
+        110070,
+        110069,
+        110070,
+        110071,
+        110069
+      ],
+      "player_id": 33846,
+      "robot_id": 900026,
+      "x": 1638000,
+      "z": 1744000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:51.271000+08:00",
+    "task_id": "mongo-f3b8b977d1e079ec62550d1835a362ab29ffa40d25cb62ac96eb8a4dd0c0fe5a-block-000001",
+    "record": {
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110070,
+        110068,
+        110070,
+        110071,
+        110069,
+        110068,
+        110068,
+        110071
+      ],
+      "player_id": 33722,
+      "robot_id": 900003,
+      "x": 1606000,
+      "z": 1756000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:51.524000+08:00",
+    "task_id": "mongo-23973dbfa591c374825cf765d49389a5ecac7a46fa4b674eb3ef89a626cc295e-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33853,
+      "robot_id": 900024,
+      "shield_after": -1,
+      "shield_before": 1796187203996,
+      "x": 1626000,
+      "z": 1736000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:51.860000+08:00",
+    "task_id": "mongo-1e23df0ba70f9fa8dc16f6610e74beb4ed3c884429788b3764a9dc64afb27c70-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33827,
+      "robot_id": 900021,
+      "shield_after": -1,
+      "shield_before": 1796187197506,
+      "x": 1638000,
+      "z": 1730000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:52.183000+08:00",
+    "task_id": "mongo-4c294478c989b8167d5ce17a6ace1cc0c34398ead7944e18e607e6c0df9656c5-block-000001",
+    "record": {
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110071,
+        110071,
+        110068,
+        110069,
+        110070,
+        110071,
+        110068,
+        110068
+      ],
+      "player_id": 33861,
+      "robot_id": 900029,
+      "x": 1626000,
+      "z": 1754000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:52.475000+08:00",
+    "task_id": "mongo-551a5d551f9b1f34cea6761fcde246419c115e2e51113956ef35926d39f51261-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33835,
+      "robot_id": 900028,
+      "shield_after": -1,
+      "shield_before": 1796187195326,
+      "x": 1502000,
+      "z": 1758000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:52.740000+08:00",
+    "task_id": "mongo-4cdff520fff91d3cd4c10aba11c2906f9150d4b6aafb601cfd1be0f0138506b1-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33846,
+      "robot_id": 900026,
+      "shield_after": -1,
+      "shield_before": 1796187199125,
+      "x": 1638000,
+      "z": 1744000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:52.991000+08:00",
+    "task_id": "mongo-54f324e484ae10d20e00ee55f26165766bdebb4fdc3e8f8a84d79273a5fb37d9-block-000001",
+    "record": {
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110068,
+        110069,
+        110068,
+        110069,
+        110071,
+        110071,
+        110068,
+        110071
+      ],
+      "player_id": 33845,
+      "robot_id": 900030,
+      "x": 1652000,
+      "z": 1692000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:53.082000+08:00",
+    "task_id": "mongo-f3b8b977d1e079ec62550d1835a362ab29ffa40d25cb62ac96eb8a4dd0c0fe5a-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33722,
+      "robot_id": 900003,
+      "shield_after": -1,
+      "shield_before": 1796187195203,
+      "x": 1606000,
+      "z": 1756000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:53.686000+08:00",
+    "task_id": "mongo-1eacfb55fe0a831d75be73bf31ee81bcc5f5baba164f66aa9420958dd3906e37-block-000001",
+    "record": {
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110068,
+        110069,
+        110069,
+        110069,
+        110069,
+        110071,
+        110068,
+        110071
+      ],
+      "player_id": 33826,
+      "robot_id": 900014,
+      "x": 1500000,
+      "z": 1720000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:53.686000+08:00",
+    "task_id": "mongo-b2db178e0d055592849198f33e45c93b3cbf27e0b7fb040c9c1701ef153d90d8-block-000001",
+    "record": {
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110070,
+        110069,
+        110070,
+        110071,
+        110070,
+        110068,
+        110069,
+        110069
+      ],
+      "player_id": 33856,
+      "robot_id": 900039,
+      "x": 1674000,
+      "z": 1776000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:54.038000+08:00",
+    "task_id": "mongo-4c294478c989b8167d5ce17a6ace1cc0c34398ead7944e18e607e6c0df9656c5-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33861,
+      "robot_id": 900029,
+      "shield_after": -1,
+      "shield_before": 1796187202422,
+      "x": 1626000,
+      "z": 1754000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:54.692000+08:00",
+    "task_id": "mongo-54f324e484ae10d20e00ee55f26165766bdebb4fdc3e8f8a84d79273a5fb37d9-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33845,
+      "robot_id": 900030,
+      "shield_after": -1,
+      "shield_before": 1796187214150,
+      "x": 1652000,
+      "z": 1692000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:54.873000+08:00",
+    "task_id": "mongo-0a9564aea65b67b78901de48db5a7739052d5ddd9335893edea66eee78dd7031-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110068,
+        110069,
+        110070,
+        110069,
+        110070,
+        110068,
+        110071,
+        110071
+      ],
+      "player_id": 33836,
+      "robot_id": 900027,
+      "x": 1524000,
+      "z": 1758000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:55.258000+08:00",
+    "task_id": "mongo-7796fecea18507e9a1218d0816f2aef4e7f753eb205476dbecda2b5b895302d9-block-000001",
+    "record": {
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110069,
+        110071,
+        110069,
+        110071,
+        110071,
+        110069,
+        110069,
+        110070
+      ],
+      "player_id": 33838,
+      "robot_id": 900036,
+      "x": 1530000,
+      "z": 1774000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:55.303000+08:00",
+    "task_id": "mongo-b2db178e0d055592849198f33e45c93b3cbf27e0b7fb040c9c1701ef153d90d8-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33856,
+      "robot_id": 900039,
+      "shield_after": -1,
+      "shield_before": 1796187195455,
+      "x": 1674000,
+      "z": 1776000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:55.362000+08:00",
+    "task_id": "mongo-1eacfb55fe0a831d75be73bf31ee81bcc5f5baba164f66aa9420958dd3906e37-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33826,
+      "robot_id": 900014,
+      "shield_after": -1,
+      "shield_before": 1796187211074,
+      "x": 1500000,
+      "z": 1720000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:55.663000+08:00",
+    "task_id": "mongo-99849f06b72f10b94a4b8feb687e4ecd19584d4de1c4350bb3f7c5aa346227ec-block-000001",
+    "record": {
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110069,
+        110068,
+        110071,
+        110070,
+        110071,
+        110068,
+        110069,
+        110069
+      ],
+      "player_id": 33700,
+      "robot_id": 900001,
+      "x": 1542000,
+      "z": 1756000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:56.244000+08:00",
+    "task_id": "mongo-4d99e946c5940e7a0fbcd1cc5a320d3cbd4db05fdd5a84d482165e667d7987b4-block-000001",
+    "record": {
+      "castle_skin": 1191,
+      "lineup_skins": [
+        110069,
+        110070,
+        110069,
+        110070,
+        110069,
+        110070,
+        110069,
+        110070
+      ],
+      "player_id": 33859,
+      "robot_id": 900043,
+      "x": 1660000,
+      "z": 1780000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:56.489000+08:00",
+    "task_id": "mongo-0a9564aea65b67b78901de48db5a7739052d5ddd9335893edea66eee78dd7031-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33836,
+      "robot_id": 900027,
+      "shield_after": -1,
+      "shield_before": 1796187212905,
+      "x": 1524000,
+      "z": 1758000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:56.909000+08:00",
+    "task_id": "mongo-7796fecea18507e9a1218d0816f2aef4e7f753eb205476dbecda2b5b895302d9-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33838,
+      "robot_id": 900036,
+      "shield_after": -1,
+      "shield_before": 1796187215365,
+      "x": 1530000,
+      "z": 1774000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:56.917000+08:00",
+    "task_id": "mongo-c1331c5245c1a854bccc7feb2520c58eb71790148fd3a511d8d484d74564dd81-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110070,
+        110069,
+        110069,
+        110070,
+        110069,
+        110068,
+        110071,
+        110070
+      ],
+      "player_id": 33839,
+      "robot_id": 900047,
+      "x": 1576000,
+      "z": 1786000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:56.945000+08:00",
+    "task_id": "mongo-99849f06b72f10b94a4b8feb687e4ecd19584d4de1c4350bb3f7c5aa346227ec-block-000002",
+    "record": {
+      "era_advanced": false,
+      "era_after": 25,
+      "era_before": -1,
+      "player_id": 33700,
+      "robot_id": 900001,
+      "shield_after": -1,
+      "shield_before": -1,
+      "x": 1542000,
+      "z": 1756000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:57.265000+08:00",
+    "task_id": "mongo-da83e8c73dea04eaf2abeb881bbbe0bd486b38e9ace01bf8e33f2da0b7acb816-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110069,
+        110070,
+        110068,
+        110068,
+        110071,
+        110070,
+        110069,
+        110070
+      ],
+      "player_id": 33864,
+      "robot_id": 900049,
+      "x": 1614000,
+      "z": 1790000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:57.705000+08:00",
+    "task_id": "mongo-483cb6d9dbdb798e87092573c80950de396f917842207453bafa314ecee00da6-block-000001",
+    "record": {
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110070,
+        110069,
+        110069,
+        110070,
+        110069,
+        110070,
+        110069,
+        110070
+      ],
+      "player_id": 33857,
+      "robot_id": 900008,
+      "x": 1526000,
+      "z": 1708000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:57.989000+08:00",
+    "task_id": "mongo-4d99e946c5940e7a0fbcd1cc5a320d3cbd4db05fdd5a84d482165e667d7987b4-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33859,
+      "robot_id": 900043,
+      "shield_after": -1,
+      "shield_before": 1796187205979,
+      "x": 1660000,
+      "z": 1780000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:58.554000+08:00",
+    "task_id": "mongo-c1331c5245c1a854bccc7feb2520c58eb71790148fd3a511d8d484d74564dd81-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33839,
+      "robot_id": 900047,
+      "shield_after": -1,
+      "shield_before": 1796187210884,
+      "x": 1576000,
+      "z": 1786000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:58.880000+08:00",
+    "task_id": "mongo-da83e8c73dea04eaf2abeb881bbbe0bd486b38e9ace01bf8e33f2da0b7acb816-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33864,
+      "robot_id": 900049,
+      "shield_after": -1,
+      "shield_before": 1796187195169,
+      "x": 1614000,
+      "z": 1790000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:59.312000+08:00",
+    "task_id": "mongo-483cb6d9dbdb798e87092573c80950de396f917842207453bafa314ecee00da6-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33857,
+      "robot_id": 900008,
+      "shield_after": -1,
+      "shield_before": 1796187195323,
+      "x": 1526000,
+      "z": 1708000
+    }
+  },
+  {
+    "time": "2026-10-29T11:46:59.514000+08:00",
+    "task_id": "mongo-6e190e0cedc593dc8cd95ddec78fc93050f197fcf2ff212e54a5a67390720664-block-000001",
+    "record": {
+      "castle_skin": 1191,
+      "lineup_skins": [
+        110069,
+        110071,
+        110070,
+        110071,
+        110068,
+        110068,
+        110071,
+        110071
+      ],
+      "player_id": 33831,
+      "robot_id": 900020,
+      "x": 1558000,
+      "z": 1730000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:00.214000+08:00",
+    "task_id": "mongo-0c904391f3c970fe31625acd05ed6a12b8b4b85c87a35fce0edbd8771c3be71f-block-000001",
+    "record": {
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110070,
+        110068,
+        110069,
+        110069,
+        110071,
+        110069,
+        110071,
+        110069
+      ],
+      "player_id": 33844,
+      "robot_id": 900022,
+      "x": 1492000,
+      "z": 1732000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:01.099000+08:00",
+    "task_id": "mongo-8168d7b741e85b546142dcb916093e37ac97afa96bfebb79028ca0a1d5ca29fb-block-000001",
+    "record": {
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110070,
+        110069,
+        110071,
+        110068,
+        110069,
+        110069,
+        110069,
+        110070
+      ],
+      "player_id": 33869,
+      "robot_id": 900048,
+      "x": 1546000,
+      "z": 1790000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:01.124000+08:00",
+    "task_id": "mongo-6e190e0cedc593dc8cd95ddec78fc93050f197fcf2ff212e54a5a67390720664-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33831,
+      "robot_id": 900020,
+      "shield_after": -1,
+      "shield_before": 1796187207931,
+      "x": 1558000,
+      "z": 1730000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:01.447000+08:00",
+    "task_id": "mongo-39e12368368d69066b70e6b0ff7bf58a2829a4cb93ab081c813e47ec2c88fc54-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110069,
+        110069,
+        110071,
+        110070,
+        110069,
+        110071,
+        110068,
+        110068
+      ],
+      "player_id": 33851,
+      "robot_id": 900009,
+      "x": 1680000,
+      "z": 1710000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:01.901000+08:00",
+    "task_id": "mongo-0c904391f3c970fe31625acd05ed6a12b8b4b85c87a35fce0edbd8771c3be71f-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33844,
+      "robot_id": 900022,
+      "shield_after": -1,
+      "shield_before": 1796187209043,
+      "x": 1492000,
+      "z": 1732000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:02.038000+08:00",
+    "task_id": "mongo-10c2ca9efb1e9809a860772e5922bf7aa3a38bb0ef492d544b39fe29516c2ae2-block-000001",
+    "record": {
+      "castle_skin": 1191,
+      "lineup_skins": [
+        110068,
+        110070,
+        110071,
+        110069,
+        110070,
+        110071,
+        110070,
+        110068
+      ],
+      "player_id": 33854,
+      "robot_id": 900033,
+      "x": 1574000,
+      "z": 1766000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:02.752000+08:00",
+    "task_id": "mongo-8168d7b741e85b546142dcb916093e37ac97afa96bfebb79028ca0a1d5ca29fb-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33869,
+      "robot_id": 900048,
+      "shield_after": -1,
+      "shield_before": 1796187194994,
+      "x": 1546000,
+      "z": 1790000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:03.082000+08:00",
+    "task_id": "mongo-39e12368368d69066b70e6b0ff7bf58a2829a4cb93ab081c813e47ec2c88fc54-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33851,
+      "robot_id": 900009,
+      "shield_after": -1,
+      "shield_before": 1796187206390,
+      "x": 1680000,
+      "z": 1710000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:03.640000+08:00",
+    "task_id": "mongo-10c2ca9efb1e9809a860772e5922bf7aa3a38bb0ef492d544b39fe29516c2ae2-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33854,
+      "robot_id": 900033,
+      "shield_after": -1,
+      "shield_before": 1796187204743,
+      "x": 1574000,
+      "z": 1766000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:03.864000+08:00",
+    "task_id": "mongo-3e188d0d9444eecd3abda3ba0dc3d2012e796b2263f7ecff0e94fb564b5a073c-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110071,
+        110070,
+        110068,
+        110069,
+        110071,
+        110071,
+        110068,
+        110071
+      ],
+      "player_id": 33858,
+      "robot_id": 900011,
+      "x": 1610000,
+      "z": 1714000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:04.707000+08:00",
+    "task_id": "mongo-fede4b47ae426d8058d8d0d80b8d0717ee8078b88addddb0b2d27f4cecb6ec3c-block-000001",
+    "record": {
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110068,
+        110069,
+        110071,
+        110071,
+        110068,
+        110070,
+        110069,
+        110068
+      ],
+      "player_id": 33834,
+      "robot_id": 900017,
+      "x": 1548000,
+      "z": 1722000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:05.472000+08:00",
+    "task_id": "mongo-3e188d0d9444eecd3abda3ba0dc3d2012e796b2263f7ecff0e94fb564b5a073c-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33858,
+      "robot_id": 900011,
+      "shield_after": -1,
+      "shield_before": 1796187200221,
+      "x": 1610000,
+      "z": 1714000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:05.716000+08:00",
+    "task_id": "mongo-47de180f4d227011d03cfab0b3b1d1176360cb40f0781111149782dd9533f3ee-block-000001",
+    "record": {
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110068,
+        110071,
+        110071,
+        110068,
+        110071,
+        110070,
+        110070,
+        110068
+      ],
+      "player_id": 33863,
+      "robot_id": 900044,
+      "x": 1634000,
+      "z": 1786000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:06.204000+08:00",
+    "task_id": "mongo-3bac224f2eec098cbb90be2584781ec746f0350c502a0f6b77d735c9ec1e3aab-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110068,
+        110071,
+        110068,
+        110069,
+        110071,
+        110070,
+        110071,
+        110070
+      ],
+      "player_id": 33867,
+      "robot_id": 900040,
+      "x": 1550000,
+      "z": 1778000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:06.323000+08:00",
+    "task_id": "mongo-fede4b47ae426d8058d8d0d80b8d0717ee8078b88addddb0b2d27f4cecb6ec3c-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33834,
+      "robot_id": 900017,
+      "shield_after": -1,
+      "shield_before": 1796187206859,
+      "x": 1548000,
+      "z": 1722000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:07.197000+08:00",
+    "task_id": "mongo-e1e5bacf47092a9071876512683f74261e550f3e8e41b5ab9e2e831af6fba1ef-block-000001",
+    "record": {
+      "castle_skin": 2002,
+      "lineup_skins": [
+        110068,
+        110070,
+        110071,
+        110069,
+        110069,
+        110069,
+        110069,
+        110071
+      ],
+      "player_id": 33825,
+      "robot_id": 900018,
+      "x": 1672000,
+      "z": 1724000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:07.399000+08:00",
+    "task_id": "mongo-47de180f4d227011d03cfab0b3b1d1176360cb40f0781111149782dd9533f3ee-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33863,
+      "robot_id": 900044,
+      "shield_after": -1,
+      "shield_before": 1796187217285,
+      "x": 1634000,
+      "z": 1786000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:07.799000+08:00",
+    "task_id": "mongo-3bac224f2eec098cbb90be2584781ec746f0350c502a0f6b77d735c9ec1e3aab-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33867,
+      "robot_id": 900040,
+      "shield_after": -1,
+      "shield_before": 1796187200093,
+      "x": 1550000,
+      "z": 1778000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:08.258000+08:00",
+    "task_id": "mongo-c95e9c966dc836608087c4e3e4629324f058610454ce5d22dcc2ba70bf40f042-block-000001",
+    "record": {
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110071,
+        110071,
+        110070,
+        110069,
+        110069,
+        110070,
+        110070,
+        110071
+      ],
+      "player_id": 33865,
+      "robot_id": 900050,
+      "x": 1674000,
+      "z": 1790000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:08.791000+08:00",
+    "task_id": "mongo-e1e5bacf47092a9071876512683f74261e550f3e8e41b5ab9e2e831af6fba1ef-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33825,
+      "robot_id": 900018,
+      "shield_after": -1,
+      "shield_before": 1796187201019,
+      "x": 1672000,
+      "z": 1724000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:10.088000+08:00",
+    "task_id": "mongo-c95e9c966dc836608087c4e3e4629324f058610454ce5d22dcc2ba70bf40f042-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33865,
+      "robot_id": 900050,
+      "shield_after": -1,
+      "shield_before": 1796187210383,
+      "x": 1674000,
+      "z": 1790000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:10.197000+08:00",
+    "task_id": "mongo-2b02de4022078fa5073e09c567dcdc5492c5b24c5e26e37f6789dd8c29ac7279-block-000001",
+    "record": {
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110068,
+        110069,
+        110070,
+        110070,
+        110068,
+        110068,
+        110071,
+        110068
+      ],
+      "player_id": 33828,
+      "robot_id": 900025,
+      "x": 1666000,
+      "z": 1736000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:10.473000+08:00",
+    "task_id": "mongo-58b47059ff9ef87067dbf300ae37630a247aaa15a79317cded120cefdf4a765e-block-000001",
+    "record": {
+      "castle_skin": 1191,
+      "lineup_skins": [
+        110070,
+        110068,
+        110069,
+        110069,
+        110069,
+        110071,
+        110068,
+        110068
+      ],
+      "player_id": 33829,
+      "robot_id": 900031,
+      "x": 1562000,
+      "z": 1758000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:11.609000+08:00",
+    "task_id": "mongo-8ba22df5e99df8263de6480083f01f5ee83f5aeabe3c255a6aab8c39cbb69e25-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110068,
+        110070,
+        110071,
+        110071,
+        110068,
+        110070,
+        110071,
+        110070
+      ],
+      "player_id": 33847,
+      "robot_id": 900032,
+      "x": 1678000,
+      "z": 1758000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:11.804000+08:00",
+    "task_id": "mongo-2b02de4022078fa5073e09c567dcdc5492c5b24c5e26e37f6789dd8c29ac7279-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33828,
+      "robot_id": 900025,
+      "shield_after": -1,
+      "shield_before": 1796187195169,
+      "x": 1666000,
+      "z": 1736000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:12.073000+08:00",
+    "task_id": "mongo-58b47059ff9ef87067dbf300ae37630a247aaa15a79317cded120cefdf4a765e-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33829,
+      "robot_id": 900031,
+      "shield_after": -1,
+      "shield_before": 1796187214457,
+      "x": 1562000,
+      "z": 1758000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:12.839000+08:00",
+    "task_id": "mongo-90eba8664b896f5a7a84818bb3365aa0dfb7a1494be7fcf1564ac2d4a3153a07-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110068,
+        110071,
+        110071,
+        110069,
+        110070,
+        110068,
+        110070,
+        110069
+      ],
+      "player_id": 33855,
+      "robot_id": 900034,
+      "x": 1648000,
+      "z": 1766000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:13.270000+08:00",
+    "task_id": "mongo-8ba22df5e99df8263de6480083f01f5ee83f5aeabe3c255a6aab8c39cbb69e25-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33847,
+      "robot_id": 900032,
+      "shield_after": -1,
+      "shield_before": 1796187210028,
+      "x": 1678000,
+      "z": 1758000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:13.378000+08:00",
+    "task_id": "mongo-3f3bf606a7cdf0aeb149d2da29505d29879b647af7fc6a33b4384704aa9f24db-block-000001",
+    "record": {
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110068,
+        110071,
+        110071,
+        110071,
+        110071,
+        110069,
+        110070,
+        110070
+      ],
+      "player_id": 33841,
+      "robot_id": 900005,
+      "x": 1548000,
+      "z": 1702000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:14.129000+08:00",
+    "task_id": "mongo-695ecc394999ccf1890887bcaa25879c3fcdbcbc37abdba9f6c3ee02573df76c-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110070,
+        110070,
+        110070,
+        110070,
+        110071,
+        110068,
+        110070,
+        110068
+      ],
+      "player_id": 33848,
+      "robot_id": 900035,
+      "x": 1608000,
+      "z": 1770000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:14.617000+08:00",
+    "task_id": "mongo-90eba8664b896f5a7a84818bb3365aa0dfb7a1494be7fcf1564ac2d4a3153a07-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33855,
+      "robot_id": 900034,
+      "shield_after": -1,
+      "shield_before": 1796187199445,
+      "x": 1648000,
+      "z": 1766000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:15.008000+08:00",
+    "task_id": "mongo-3f3bf606a7cdf0aeb149d2da29505d29879b647af7fc6a33b4384704aa9f24db-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33841,
+      "robot_id": 900005,
+      "shield_after": -1,
+      "shield_before": 1796187194985,
+      "x": 1548000,
+      "z": 1702000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:15.577000+08:00",
+    "task_id": "mongo-ce6a008b214fccadd7d65c759fbf6dd54b6a6c10a504c0105bbcd0325ed4a7af-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110071,
+        110071,
+        110068,
+        110068,
+        110070,
+        110069,
+        110069,
+        110069
+      ],
+      "player_id": 33866,
+      "robot_id": 900038,
+      "x": 1494000,
+      "z": 1776000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:15.887000+08:00",
+    "task_id": "mongo-695ecc394999ccf1890887bcaa25879c3fcdbcbc37abdba9f6c3ee02573df76c-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33848,
+      "robot_id": 900035,
+      "shield_after": -1,
+      "shield_before": 1796187214891,
+      "x": 1608000,
+      "z": 1770000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:16.404000+08:00",
+    "task_id": "mongo-b6366a0470b0bf60666569eeb7600a56c836f267608320c546f5e7c6e28ba510-block-000001",
+    "record": {
+      "castle_skin": 1189,
+      "lineup_skins": [
+        110071,
+        110070,
+        110069,
+        110069,
+        110070,
+        110071,
+        110068,
+        110068
+      ],
+      "player_id": 33837,
+      "robot_id": 900041,
+      "x": 1600000,
+      "z": 1780000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:16.404000+08:00",
+    "task_id": "mongo-0c41b13678a15d65cc476fe0a853f8372885452523d07be6fa8d8c6750027e1b-block-000001",
+    "record": {
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110071,
+        110068,
+        110069,
+        110068,
+        110071,
+        110070,
+        110071,
+        110070
+      ],
+      "player_id": 33830,
+      "robot_id": 900012,
+      "x": 1576000,
+      "z": 1716000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:16.968000+08:00",
+    "task_id": "mongo-64719b20d87715385959417188c6b0241beaf2ab29681fea6ae408854e58e5da-block-000001",
+    "record": {
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110069,
+        110069,
+        110069,
+        110068,
+        110068,
+        110070,
+        110069,
+        110070
+      ],
+      "player_id": 33868,
+      "robot_id": 900042,
+      "x": 1646000,
+      "z": 1780000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:17.179000+08:00",
+    "task_id": "mongo-ce6a008b214fccadd7d65c759fbf6dd54b6a6c10a504c0105bbcd0325ed4a7af-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33866,
+      "robot_id": 900038,
+      "shield_after": -1,
+      "shield_before": 1796187216408,
+      "x": 1494000,
+      "z": 1776000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:18.052000+08:00",
+    "task_id": "mongo-b6366a0470b0bf60666569eeb7600a56c836f267608320c546f5e7c6e28ba510-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33837,
+      "robot_id": 900041,
+      "shield_after": -1,
+      "shield_before": 1796187216906,
+      "x": 1600000,
+      "z": 1780000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:18.057000+08:00",
+    "task_id": "mongo-0c41b13678a15d65cc476fe0a853f8372885452523d07be6fa8d8c6750027e1b-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33830,
+      "robot_id": 900012,
+      "shield_after": -1,
+      "shield_before": 1796187194842,
+      "x": 1576000,
+      "z": 1716000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:18.404000+08:00",
+    "task_id": "mongo-7aef8f0d262309858c5a2d48b66d13887fd34a9e8d0e42a442be02ab16385bf4-block-000001",
+    "record": {
+      "castle_skin": 1191,
+      "lineup_skins": [
+        110070,
+        110071,
+        110070,
+        110071,
+        110069,
+        110071,
+        110069,
+        110068
+      ],
+      "player_id": 33850,
+      "robot_id": 900045,
+      "x": 1490000,
+      "z": 1788000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:18.548000+08:00",
+    "task_id": "mongo-64719b20d87715385959417188c6b0241beaf2ab29681fea6ae408854e58e5da-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33868,
+      "robot_id": 900042,
+      "shield_after": -1,
+      "shield_before": 1796187199820,
+      "x": 1646000,
+      "z": 1780000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:19.226000+08:00",
+    "task_id": "mongo-ba3a5a6e6f187849fc5bec94e3e68db25407664dd4764c46d3dc8a970435e605-block-000001",
+    "record": {
+      "castle_skin": 2004,
+      "lineup_skins": [
+        110070,
+        110068,
+        110071,
+        110071,
+        110070,
+        110070,
+        110071,
+        110068
+      ],
+      "player_id": 33849,
+      "robot_id": 900046,
+      "x": 1516000,
+      "z": 1788000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:20.016000+08:00",
+    "task_id": "mongo-7aef8f0d262309858c5a2d48b66d13887fd34a9e8d0e42a442be02ab16385bf4-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33850,
+      "robot_id": 900045,
+      "shield_after": -1,
+      "shield_before": 1796187199820,
+      "x": 1490000,
+      "z": 1788000
+    }
+  },
+  {
+    "time": "2026-10-29T11:47:20.813000+08:00",
+    "task_id": "mongo-ba3a5a6e6f187849fc5bec94e3e68db25407664dd4764c46d3dc8a970435e605-block-000002",
+    "record": {
+      "era_advanced": true,
+      "era_after": 26,
+      "era_before": 25,
+      "player_id": 33849,
+      "robot_id": 900046,
+      "shield_after": -1,
+      "shield_before": 1796187206389,
+      "x": 1516000,
+      "z": 1788000
+    }
+  }
+]
