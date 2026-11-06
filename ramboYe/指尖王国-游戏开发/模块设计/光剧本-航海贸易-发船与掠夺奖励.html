@@ -1,0 +1,193 @@
+<!doctype html>
+<!--
+---
+类型: 模块设计
+模块: 光剧本-航海贸易（远征商船）
+版本: h5_new_tf_v1053_remote_fight_light
+状态: 定稿
+创建日期: 2026-10-23
+tags: [远征, 光剧本, 航海贸易, 商船, 掠夺, 奖励]
+---
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>航海贸易奖励规则</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg:#eef1f3; --card:#fff; --ink:#17202a; --muted:#5f6b77; --line:#ccd4dc; --panel:#f7f9fa;
+      --accent:#2674c7; --good:#16856b; --warn:#b7791f; --bad:#c53b3b; --code:#eef2f6;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --bg:#14181c; --card:#1d2328; --ink:#e4e9ee; --muted:#9aa6b2; --line:#34404a; --panel:#232a31;
+        --accent:#6aa9ea; --good:#4cc3a2; --warn:#e3b35c; --bad:#ef7b7b; --code:#2a323a;
+      }
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg:#14181c; --card:#1d2328; --ink:#e4e9ee; --muted:#9aa6b2; --line:#34404a; --panel:#232a31;
+      --accent:#6aa9ea; --good:#4cc3a2; --warn:#e3b35c; --bad:#ef7b7b; --code:#2a323a;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.65 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+    header { padding:24px 16px 18px; background:var(--card); border-bottom:1px solid var(--line); }
+    header .in, main { width:min(1040px,100%); margin:auto; }
+    h1 { margin:0 0 6px; font-size:clamp(22px,3vw,32px); }
+    header p { margin:0; color:var(--muted); }
+    main { padding:18px 16px 48px; display:grid; gap:14px; }
+    section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px 18px; min-width:0; }
+    h2 { margin:0 0 10px; font-size:19px; }
+    h3 { margin:16px 0 6px; font-size:16px; }
+    p, li { margin:6px 0; }
+    ul, ol { padding-left:22px; margin:6px 0; }
+    code { background:var(--code); padding:1px 5px; border-radius:4px; font:13px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace; word-break:break-all; }
+    pre { background:var(--code); padding:10px 12px; border-radius:6px; overflow-x:auto; font:13px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace; margin:8px 0; }
+    .tldr { border-left:4px solid var(--accent); }
+    .tldr strong { color:var(--accent); }
+    .table-wrap { overflow-x:auto; }
+    table { border-collapse:collapse; width:100%; min-width:560px; font-size:14px; }
+    th, td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+    th { background:var(--panel); }
+    .flow { display:grid; gap:8px; }
+    .step { display:grid; grid-template-columns:34px 1fr; gap:10px; align-items:start; background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
+    .num { width:28px; height:28px; border-radius:50%; background:var(--accent); color:var(--card); display:grid; place-items:center; font-weight:700; font-size:14px; }
+    .step b { display:block; }
+    .step small { color:var(--muted); }
+    .plus { color:var(--good); font-weight:600; }
+    .minus { color:var(--bad); font-weight:600; }
+    .note { border-left:4px solid var(--warn); background:var(--panel); padding:8px 12px; border-radius:4px; margin:8px 0; }
+    .tiers { display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); gap:4px; margin:10px 0; font-size:13px; text-align:center; }
+    .tiers div { background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:4px 0; }
+    .tiers .h { background:transparent; border:none; color:var(--muted); }
+    .tiers .hit { border-color:var(--accent); color:var(--accent); font-weight:700; }
+    @media (max-width:600px) { .tiers { font-size:11px; } }
+  </style>
+</head>
+<body>
+<header><div class="in">
+  <h1>光剧本 · 航海贸易（远征商船）奖励规则</h1>
+  <p>发船奖励怎么算、掠夺奖励怎么算、分别读哪些配置 · 分支 h5_new_tf_v1053_remote_fight_light · 2026-10-23</p>
+</div></header>
+<main>
+
+<section class="tldr">
+  <h2>结论</h2>
+  <ul>
+    <li><strong>发船奖励</strong>：在发船那一刻按全场港口归属算一次，结果存在商船的 <code>fleet.Assets</code> 上。航行途中港口易主不会重新计算，之后只有被掠夺会让它减少。</li>
+    <li><strong>掠夺奖励</strong>：按目标商船上可被抢的奖励总数落到对应档位，确定抢几个，然后从奖励里随机抽。真人商船的基础奖励不会被抢。NPC 商船按机器人表的 reward 固定给。打输了没有奖励，次数也会退回。</li>
+    <li><strong>配置</strong>：<code>ExpArenaPortCfg.tsv</code>（港口奖励）、<code>ExpArenaRobotCfg.tsv</code>（NPC 奖励）、<code>D2ConfigCfg.tsv</code>（<code>Expedition_Arena_*</code> 常量）。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>一、发船奖励</h2>
+  <div class="flow">
+    <div class="step"><div class="num">1</div><div><b>OnNewMerchantFleetReq</b><small>game/wmap/internal/ctl_maritime_trade_fleet.go:251 — 前置校验（<code>checkNewMerchantFleet</code>）</small></div></div>
+    <div class="step"><div class="num">2</div><div><b>dispatchMerchantFleet</b><small>ctl_maritime_trade_fleet.go:107 — 调用 <code>GetHarborBuildOccupyRewardByCampId(campId, true)</code></small></div></div>
+    <div class="step"><div class="num">3</div><div><b>GetHarborBuildOccupyRewardByCampId</b><small>game/wmap/internal/ctl_harbor_build.go:1098 — 遍历所有港口，累加或扣减奖励</small></div></div>
+    <div class="step"><div class="num">4</div><div><b>写入商船</b><small><code>fleet.Assets</code> = 奖励、<code>fleet.TaxAssets</code> = 被抽的税、<code>SelfOccupyPortNum</code> / <code>EnemyOccupyPortNum</code></small></div></div>
+    <div class="step"><div class="num">5</div><div><b>到期结算 finishMerchantFleet</b><small>ctl_maritime_trade_fleet.go:340 — 把 Assets / TaxAssets / PlunderAssets 存进存档 <code>MaritimeFleet</code></small></div></div>
+    <div class="step"><div class="num">6</div><div><b>领奖 OnMaritimeTradeGetRewardReq</b><small>ctl_maritime_trade_reward.go:20 — <code>makeMaritimeRewardAssets</code>（ctl_maritime_trade.go:138）对每个 rewardId 调用 <code>reward.MakeReward</code> 展开，再乘以数量；数量 ≤0 的跳过</small></div></div>
+  </div>
+
+  <h3>每个港口的计算规则</h3>
+  <div class="table-wrap"><table>
+    <tr><th>港口状态</th><th>对发船方奖励的影响</th></tr>
+    <tr><td>本阵营占领</td><td><span class="plus">+ BonusReward</span>（占领额外奖励）</td></tr>
+    <tr><td>本阵营占领，并且是本阵营的初始港口（<code>cfg.CampId == campId</code>）</td><td>再 <span class="plus">+ BaseReward</span>（基础奖励）</td></tr>
+    <tr><td>敌方阵营占领（<code>unit.CampId &gt; 0</code>）</td><td><span class="minus">− Tax</span>，扣掉的部分记到 <code>TaxAssets</code>；<code>start=true</code> 时同时累加到这个港口的 <code>unit.TaxReward[占领方阵营]</code></td></tr>
+    <tr><td>无人占领</td><td>不影响</td></tr>
+  </table></div>
+  <div class="note">税收流向：港口上累计的 <code>TaxReward</code> 跨天时由 <code>collectHarborTaxAssets</code>（ctl_maritime_trade_reward.go:62）汇总，通过 <code>SendMaritimeTradeTaxMail</code> 发邮件给占领阵营。玩家领奖界面上显示的“损耗” = 税收 + 被掠夺（<code>MergeInt32Map(TaxRewardMap, PlunderedRewardMap)</code>）。</div>
+
+  <h3>配置：ExpArenaPortCfg.tsv（gdconf/conf_exparenaport.go）</h3>
+  <div class="table-wrap"><table>
+    <tr><th>id</th><th>camp_id</th><th>start_pos_id</th><th>base_reward</th><th>tax</th><th>bonus_reward</th></tr>
+    <tr><td>10001</td><td>1</td><td>0</td><td>[3700200,20]</td><td>[3700200,1]</td><td>[3700201,2]</td></tr>
+    <tr><td>10002</td><td>2</td><td>20</td><td>[3700200,20]</td><td>[3700200,1]</td><td>[3700202,2]</td></tr>
+    <tr><td>10003</td><td>3</td><td>12</td><td>[3700200,20]</td><td>[3700200,1]</td><td>[3700203,2]</td></tr>
+  </table></div>
+  <p>字段格式都是 <code>[rewardId, 数量]</code>。tax 和 base_reward 用的是同一个 rewardId（3700200），所以税实际是从基础奖励里扣。</p>
+
+  <h3>相关常量（D2ConfigCfg.tsv）</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Key</th><th>当前值</th><th>说明</th></tr>
+    <tr><td><code>Expedition_Arena_Cost_Time</code></td><td>14400</td><td>航程时长，单位秒（4 小时）</td></tr>
+    <tr><td><code>Expedition_Arena_Start_Max</code></td><td>—</td><td>同时在航的商船数量上限</td></tr>
+    <tr><td><code>Expedition_Arena_Start_Deadline</code></td><td>—</td><td>从 BFPBattleIn 阶段开始算起的发船截止秒数</td></tr>
+    <tr><td><code>Expedition_Arena_Help_Max</code></td><td>—</td><td>每天被联盟成员借用编队的次数上限</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>二、掠夺奖励</h2>
+  <div class="flow">
+    <div class="step"><div class="num">1</div><div><b>OnMerchantFleetPlunderReq</b><small>ctl_maritime_trade_plunder.go:257 — 校验后<b>预扣</b>掠夺次数，异步调用 BATTLECALC 跨服战斗</small></div></div>
+    <div class="step"><div class="num">2</div><div><b>merchantFleetPlunderCb</b><small>ctl_maritime_trade_plunder.go:357 — 根据战斗结果结算；出错时调用 <code>plunderFailBack</code> 退回次数</small></div></div>
+    <div class="step"><div class="num">3a</div><div><b>真人商船 settlePlunderFleetReward</b><small>:466 — 调用 <code>GetFleetPlunderReward(fleet.Assets, 目标阵营)</code>，从商船 Assets 里扣掉抢走的部分，记入 PlunderAssets，<code>PlunderNum++</code></small></div></div>
+    <div class="step"><div class="num">3b</div><div><b>NPC 商船 settlePlunderRobotReward</b><small>:445 — 调用 <code>GetFleetPlunderReward({robot.Reward[0]: robot.Reward[1]}, 0)</code></small></div></div>
+    <div class="step"><div class="num">4</div><div><b>发奖</b><small>赢了：<code>AddAssets</code>（ReasonIDBfPlunderFleetReward）。输了：没有奖励，并且 <code>AddPlunderCount(-1)</code> 退回次数</small></div></div>
+  </div>
+
+  <h3>GetFleetPlunderReward 抽取算法（ctl_maritime_trade_plunder.go:504）</h3>
+  <ol>
+    <li><b>过滤基础奖励</b>（<code>filterPlunderBaseReward</code>）：真人商船去掉目标阵营初始港口 <code>BaseReward[0]</code> 对应的 rewardId，这部分不能被抢；NPC（campId=0）不过滤。</li>
+    <li>剩下的奖励数量加起来得到 <code>rewardTotal</code>。</li>
+    <li><b>确定档位</b>：遍历 <code>Expedition_Arena_Reward</code>，取最后一个满足 <code>rewardTotal ≥ limit</code> 的下标 i（默认是 0）。</li>
+    <li><b>抢的个数</b> = <code>Expedition_Arena_Rob_Reward[i]</code>。</li>
+    <li>把奖励按数量展开成列表，比如 <code>{A:2,B:3}</code> → <code>[A,A,B,B,B]</code>，用 <code>RandNumInt32</code> 随机抽上一步定下的个数，抽中的从原奖励中逐个扣掉。</li>
+  </ol>
+
+  <h3>当前档位配置</h3>
+<pre>Expedition_Arena_Reward     = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12]   // 可被抢奖励总数的门槛
+Expedition_Arena_Rob_Reward = [1, 1, 2, 2, 3, 3, 3, 3,  3,  4]   // 对应抢几个</pre>
+  <div class="table-wrap"><table>
+    <tr><th>可被抢奖励总数</th><th>落在的下标</th><th>抢几个</th></tr>
+    <tr><td>&lt; 2（未达到任何门槛）</td><td>0（默认值）</td><td>1</td></tr>
+    <tr><td>2</td><td>0</td><td>1</td></tr>
+    <tr><td>3</td><td>1</td><td>1</td></tr>
+    <tr><td>4 ~ 5</td><td>2 ~ 3</td><td>2</td></tr>
+    <tr><td>6 ~ 11</td><td>4 ~ 8</td><td>3</td></tr>
+    <tr><td>≥ 12</td><td>9</td><td>4</td></tr>
+  </table></div>
+  <p>例：可被抢的奖励总数是 5，满足条件的最后一档是 5（下标 3），所以抢 2 个。</p>
+
+  <h3>NPC 商船：ExpArenaRobotCfg.tsv（gdconf/conf_exparenarobot.go）</h3>
+  <div class="table-wrap"><table>
+    <tr><th>id</th><th>troop</th><th>reward</th></tr>
+    <tr><td>3</td><td>3</td><td>[3700208,1]</td></tr>
+    <tr><td>4</td><td>4</td><td>[3700209,1]</td></tr>
+    <tr><td>5</td><td>5</td><td>[3700206,1]</td></tr>
+    <tr><td>6</td><td>6</td><td>[3700207,1]</td></tr>
+  </table></div>
+  <p>现在的配置数量都是 1，总数为 1 时落在下标 0，抢 1 个，<b>实际效果就是固定拿到 reward × 1</b>。NPC 的编队走 <code>troop → ExpArenaRobotTroopCfg → NpcTroopPowerCfg</code>。</p>
+
+  <h3>掠夺相关常量（D2ConfigCfg.tsv）</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Key</th><th>当前值</th><th>说明</th></tr>
+    <tr><td><code>Expedition_Arena_Reward</code></td><td>[2,3,4,5,6,7,8,9,10,12]</td><td>掠夺档位的门槛</td></tr>
+    <tr><td><code>Expedition_Arena_Rob_Reward</code></td><td>[1,1,2,2,3,3,3,3,3,4]</td><td>每个档位抢几个</td></tr>
+    <tr><td><code>Expedition_Arena_Rob_Count_Max</code></td><td>5</td><td>每天主动掠夺次数上限（跨天重置）</td></tr>
+    <tr><td><code>Expedition_Arena_Lost_Limit</code></td><td>1</td><td>一艘船一趟航程最多被掠夺次数</td></tr>
+    <tr><td><code>Expedition_Arena_Rob_Deadline</code></td><td>—</td><td>从 BFPBattleIn 阶段开始算起的掠夺截止秒数</td></tr>
+    <tr><td><code>Expedition_Arena_Enemy_Max</code> / <code>Enemy_Npc_Max</code></td><td>—</td><td>搜索结果里的目标总数 / NPC 数量（真人商船不够时用 NPC 补齐）</td></tr>
+  </table></div>
+  <div class="note">搜索目标（<code>searchPlunderTargetFleet</code>，:94）会排除：同盟、同阵营、已到达被掠夺上限、剩余航程不足 1 分钟、已结束的商船。</div>
+</section>
+
+<section>
+  <h2>备注</h2>
+  <ul>
+    <li>配置数值取自 gdconfig 的 <code>origin/h5_new_tf_v1053_remote_fight_light</code> 分支；本地 gdconfig 当前在 <code>h5_new_tf_v1054</code> 分支，这个分支下没有 ExpArenaPortCfg / ExpArenaRobotCfg 表。</li>
+    <li>表中标为“—”的常量本文没有核对具体数值。</li>
+    <li>相关文档：<a href="奖励规则-RewardCfg.md">奖励规则-RewardCfg</a></li>
+  </ul>
+</section>
+
+</main>
+</body>
+</html>

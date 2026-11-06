@@ -1,0 +1,278 @@
+<!doctype html>
+<!--
+---
+类型: 模块设计
+模块: 世界地图行军
+版本: h5_new_tf_v1053_remote_fight_light
+状态: 待测试服验证
+创建日期: 2026-10-21
+tags: [行军, 寻路, 碰撞, 绕路, A*]
+关联: 行军流程, 行军变速碰撞回弹图解
+---
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>大地图寻路优化对比</title>
+  <style>
+    :root { color-scheme: light; --ink:#17202a; --muted:#66727f; --line:#ccd4dc; --panel:#f7f9fa; --bad:#d64545; --good:#16856b; --warn:#e6a23c; --route:#2674c7; --bg:#eef1f3; --card:#fff; --code:#f1f4f6; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) { color-scheme: dark; --ink:#e4e9ee; --muted:#9aa6b2; --line:#36414b; --panel:#1b2229; --bad:#ef6b6b; --good:#3cc39f; --warn:#f0b75a; --route:#5aa2ea; --bg:#12171c; --card:#1a2027; --code:#232b33; }
+    }
+    :root[data-theme="dark"] { color-scheme: dark; --ink:#e4e9ee; --muted:#9aa6b2; --line:#36414b; --panel:#1b2229; --bad:#ef6b6b; --good:#3cc39f; --warn:#f0b75a; --route:#5aa2ea; --bg:#12171c; --card:#1a2027; --code:#232b33; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif; }
+    header { padding:22px clamp(16px,4vw,52px) 16px; background:var(--card); border-bottom:1px solid var(--line); }
+    h1 { margin:0 0 6px; font-size:clamp(22px,3vw,32px); }
+    header p { margin:0; color:var(--muted); }
+    main { width:min(1200px,100%); margin:auto; padding:18px 16px 40px; }
+    h2 { font-size:20px; margin:28px 0 10px; }
+    h3 { font-size:16px; margin:0 0 6px; }
+    p { margin:6px 0; }
+    code { font-family:ui-monospace,Consolas,monospace; font-size:13px; background:var(--code); padding:1px 5px; border-radius:4px; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    @media (max-width:820px) { .grid { grid-template-columns:1fr; } }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px 16px; overflow:hidden; }
+    .card.before { border-top:4px solid var(--bad); }
+    .card.after { border-top:4px solid var(--good); }
+    .tag { display:inline-block; font-size:12px; font-weight:700; padding:1px 8px; border-radius:10px; margin-right:6px; color:#fff; }
+    .tag.b { background:var(--bad); } .tag.a { background:var(--good); }
+    .stage { background:var(--panel); border:1px solid var(--line); border-radius:6px; margin:10px 0 6px; }
+    svg { width:100%; height:auto; display:block; }
+    .obstacle { fill:#606b75; stroke:#313940; stroke-width:2; }
+    .danger { fill:none; stroke:var(--bad); stroke-width:1.5; stroke-dasharray:6 5; opacity:.7; }
+    .orig { fill:none; stroke:var(--muted); stroke-width:2.5; stroke-dasharray:7 6; }
+    .badp { fill:none; stroke:var(--bad); stroke-width:4; stroke-linejoin:round; }
+    .goodp { fill:none; stroke:var(--good); stroke-width:4; stroke-linejoin:round; }
+    .pt { fill:var(--card); stroke:var(--route); stroke-width:3; }
+    .lbl { fill:var(--ink); font-size:14px; font-weight:600; }
+    .lbl.m { fill:var(--muted); font-weight:500; font-size:13px; }
+    .lbl.r { fill:var(--bad); } .lbl.g { fill:var(--good); }
+    .cap { color:var(--muted); font-size:13px; }
+    table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:8px; overflow:hidden; font-size:14px; }
+    th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { background:var(--panel); font-weight:700; }
+    tr:last-child td { border-bottom:none; }
+    .tbl { overflow-x:auto; }
+    ol, ul { margin:6px 0; padding-left:22px; }
+    li { margin:3px 0; }
+    .flow { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+    .step { border:1px solid var(--line); background:var(--panel); border-radius:6px; padding:7px 10px; font-size:14px; }
+    .step.bad { border-color:var(--bad); }
+    .step.good { border-color:var(--good); }
+    .step.new { border-left:4px solid var(--good); }
+    .arrow { text-align:center; color:var(--muted); line-height:1; }
+    .note { border-left:4px solid var(--warn); background:var(--card); padding:10px 14px; border-radius:6px; border:1px solid var(--line); border-left-width:4px; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>大地图寻路优化：局部网格绕路（改前 / 改后）</h1>
+  <p>问题：大地图建筑密集时部队容易卡住不走，而玩家手动点却能走过去。分支 <code>h5_new_tf_v1053_remote_fight_light</code>，2026-10-21。</p>
+</header>
+<main>
+
+<h2>1. 背景：动态建筑不在导航网格里</h2>
+<div class="card">
+  <p>部队出发时用 <code>NavMgr.Route</code>（vendor <code>tse/cmlib/nav</code>，导航网格 + A*）寻路。导航网格里<b>只有静态地形</b>，城市、联盟建筑等动态建筑并不参与寻路。</p>
+  <p>建筑是在行军 tick 中撞上之后才处理的：<code>WMap.Marching</code>（<code>game/wmap/internal/ctl_march_ticker.go:213</code>）→ <code>EntityMgr.CheckCollision</code>（<code>mentity/moving.go:60</code>）→ 绕路。所以"建筑多就卡"本质是<b>撞上之后的局部绕路算法</b>不行。</p>
+</div>
+
+<h2>2. 两种典型场景对比</h2>
+<div class="grid">
+  <div class="card before">
+    <h3><span class="tag b">改前</span>两个挨着的建筑：来回弹</h3>
+    <div class="stage">
+      <svg viewBox="0 0 640 360" role="img" aria-label="改前：圆弧绕路在两建筑间来回">
+        <line class="orig" x1="300" y1="335" x2="300" y2="25"/>
+        <circle class="danger" cx="290" cy="180" r="82"/>
+        <circle class="danger" cx="402" cy="180" r="82"/>
+        <circle class="obstacle" cx="290" cy="180" r="55"/>
+        <circle class="obstacle" cx="402" cy="180" r="55"/>
+        <text class="lbl" x="280" y="185" fill="#fff" style="fill:#fff">A</text>
+        <text class="lbl" x="393" y="185" style="fill:#fff">B</text>
+        <polyline class="badp" points="300,335 300,264 340,250 362,222 336,238 356,214 334,232"/>
+        <circle class="pt" cx="300" cy="335" r="7"/>
+        <circle class="pt" cx="300" cy="25" r="7"/>
+        <text class="lbl m" x="312" y="340">起点</text>
+        <text class="lbl m" x="312" y="30">终点</text>
+        <text class="lbl r" x="380" y="300">绕 A 撞进 B，绕 B 又推回 A</text>
+        <text class="lbl r" x="380" y="320">→ 原地抖动 / 段数超限停止</text>
+      </svg>
+    </div>
+    <p class="cap">灰虚线：导航网格原路径；红虚圈：圆弧绕路半径；红实线：实际轨迹。</p>
+  </div>
+  <div class="card after">
+    <h3><span class="tag a">改后</span>把 A、B 当成一个整体绕开</h3>
+    <div class="stage">
+      <svg viewBox="0 0 640 360" role="img" aria-label="改后：局部网格A*整体绕开">
+        <line class="orig" x1="300" y1="335" x2="300" y2="25"/>
+        <circle class="obstacle" cx="290" cy="180" r="55"/>
+        <circle class="obstacle" cx="402" cy="180" r="55"/>
+        <text class="lbl" x="280" y="185" style="fill:#fff">A</text>
+        <text class="lbl" x="393" y="185" style="fill:#fff">B</text>
+        <polyline class="goodp" points="300,335 300,268 208,222 208,138 300,92 300,25"/>
+        <circle class="pt" cx="300" cy="335" r="7"/>
+        <circle class="pt" cx="300" cy="25" r="7"/>
+        <circle class="pt" cx="300" cy="92" r="6" style="stroke:var(--good)"/>
+        <text class="lbl m" x="312" y="340">起点</text>
+        <text class="lbl m" x="312" y="30">终点</text>
+        <text class="lbl g" x="312" y="96">绕路终点（穿过后第一个空地）</text>
+        <text class="lbl g" x="20" y="300">窗口内所有建筑一起算 → 网格 A* → 拉直</text>
+      </svg>
+    </div>
+    <p class="cap">绿线：局部网格 A* 并拉直后的路径；绕路终点之后接回原路径。</p>
+  </div>
+
+  <div class="card before">
+    <h3><span class="tag b">改前</span>一排建筑留了缺口：钻不过去</h3>
+    <div class="stage">
+      <svg viewBox="0 0 640 360" role="img" aria-label="改前：缺口无法通过">
+        <line class="orig" x1="210" y1="335" x2="210" y2="25"/>
+        <g>
+          <circle class="obstacle" cx="90" cy="180" r="38"/><circle class="obstacle" cx="170" cy="180" r="38"/><circle class="obstacle" cx="250" cy="180" r="38"/>
+          <circle class="obstacle" cx="410" cy="180" r="38"/><circle class="obstacle" cx="490" cy="180" r="38"/><circle class="obstacle" cx="570" cy="180" r="38"/>
+        </g>
+        <circle class="danger" cx="250" cy="180" r="66"/>
+        <circle class="danger" cx="170" cy="180" r="66"/>
+        <polyline class="badp" points="210,335 210,250 240,246 262,240 228,250 248,244"/>
+        <circle class="pt" cx="210" cy="335" r="7"/><circle class="pt" cx="210" cy="25" r="7"/>
+        <text class="lbl m" x="222" y="340">起点</text><text class="lbl m" x="222" y="30">终点</text>
+        <text class="lbl m" x="300" y="130">缺口</text>
+        <text class="lbl r" x="300" y="300">只看撞上的单个建筑、方向固定；</text>
+        <text class="lbl r" x="300" y="320">绕路半径 ÷cos(π/8) 偏大 → 找不到缺口</text>
+      </svg>
+    </div>
+  </div>
+  <div class="card after">
+    <h3><span class="tag a">改后</span>A* 自动找到缺口</h3>
+    <div class="stage">
+      <svg viewBox="0 0 640 360" role="img" aria-label="改后：穿过缺口">
+        <line class="orig" x1="210" y1="335" x2="210" y2="25"/>
+        <g>
+          <circle class="obstacle" cx="90" cy="180" r="38"/><circle class="obstacle" cx="170" cy="180" r="38"/><circle class="obstacle" cx="250" cy="180" r="38"/>
+          <circle class="obstacle" cx="410" cy="180" r="38"/><circle class="obstacle" cx="490" cy="180" r="38"/><circle class="obstacle" cx="570" cy="180" r="38"/>
+        </g>
+        <polyline class="goodp" points="210,335 210,262 330,228 330,132 210,98 210,25"/>
+        <circle class="pt" cx="210" cy="335" r="7"/><circle class="pt" cx="210" cy="25" r="7"/>
+        <text class="lbl m" x="222" y="340">起点</text><text class="lbl m" x="222" y="30">终点</text>
+        <text class="lbl g" x="350" y="300">只要缺口宽度 ≥ 部队直径 + 安全距离就能通过</text>
+        <text class="lbl g" x="350" y="320">小窗口找不到会扩大窗口重试</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<h2>3. 撞上建筑后的处理流程</h2>
+<div class="grid">
+  <div class="card before">
+    <h3><span class="tag b">改前</span><code>CheckCollision</code></h3>
+    <div class="flow">
+      <div class="step">检测点撞上建筑 X（目标建筑 / <code>ExcludeID</code> 直接放行）</div><div class="arrow">↓</div>
+      <div class="step">剩余路段终点全在 X 半径内 → 停止行军</div><div class="arrow">↓</div>
+      <div class="step">X 贴着静态地形 → 设 <code>ExcludeID</code> 直接穿过</div><div class="arrow">↓</div>
+      <div class="step">部队已在 X 内 → <code>doPush</code> 挤出</div><div class="arrow">↓</div>
+      <div class="step bad"><code>doDetour</code>：只围绕 <b>X 一个建筑</b>生成圆弧点（<code>geo.GetCoordsAround</code>），再从弧末 <code>Route</code> 到终点。<br>不检查圆弧是否撞进别的建筑。</div><div class="arrow">↓</div>
+      <div class="step bad">下一帧撞上邻居 Y → 再绕 Y → 又撞回 X ……来回循环，直到段数达到 <code>MaxMoveSectionCount</code> 才停止</div>
+    </div>
+  </div>
+  <div class="card after">
+    <h3><span class="tag a">改后</span><code>CheckCollision</code></h3>
+    <div class="flow">
+      <div class="step">检测点撞上建筑 X（目标建筑 / <code>ExcludeID</code> 直接放行）</div><div class="arrow">↓</div>
+      <div class="step">剩余路段终点全在 X 半径内 → 停止行军（不变）</div><div class="arrow">↓</div>
+      <div class="step good new"><b>新增 <code>doGridDetour</code></b>（<code>moving.go:115</code>）<br>① 沿原路径前看 40000，找穿过阻挡后的第一个空地作为绕路终点<br>② 收集窗口内<b>所有</b>阻挡建筑<br>③ 500 一格做 8 方向 A*（外扩 10000，失败再扩 30000）<br>④ 拉直成少量拐点，逐段校验不碰撞<br>⑤ 保留已走路段，在当前位置截断，绕路终点后接回原路径</div><div class="arrow">↓ 成功即返回；失败 5 秒内该部队不再重试</div>
+      <div class="step">失败才走原逻辑兜底：贴地形穿过 / <code>doPush</code> / <code>doDetour</code> 圆弧绕路</div>
+    </div>
+  </div>
+</div>
+
+<h2>4. 改动清单</h2>
+<div class="tbl">
+<table>
+  <tr><th>文件</th><th>改前</th><th>改后</th></tr>
+  <tr>
+    <td><code>mentity/detour_grid.go</code>（新增）</td>
+    <td>无</td>
+    <td>局部网格绕路实现：
+      <ul>
+        <li><code>doGridDetour</code> / <code>tryGridDetour</code>（:412 / :449）入口，含失败退避</li>
+        <li><code>findDetourGoal</code>（:362）找绕路终点；<code>lookAheadBounds</code>（:389）前瞻范围</li>
+        <li><code>newDetourField</code>（:318）收集阻挡：跳过自己、目标、<code>ExcludeID</code>、<code>BelongSys</code> 1/2、<code>!IsBlock(BlockTypDetour)</code></li>
+        <li><code>searchWithPadding</code>（:185）网格 A*；<code>smooth</code>（:297）拉直</li>
+        <li><code>passable</code> / <code>segmentPassable</code>（:89 / :112）：圆形阻挡分桶 + 点到线段距离解析判断，无内存分配</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td><code>mentity/moving.go:114</code></td>
+    <td>撞上后直接走 静态检查 → 挤出 → <code>doDetour</code></td>
+    <td>先调用 <code>doGridDetour</code>，失败才走原流程；成功后用新 Move 判断 <code>MaxMoveSectionCount</code></td>
+  </tr>
+  <tr>
+    <td><code>ctl_march_ticker.go:213</code></td>
+    <td><code>nextCoord</code> 在循环前就算好，第一次检测换路后，第二次仍按<b>旧路径</b>的下一帧位置检测</td>
+    <td>第二次检测时按新路径重新算 <code>GetCoordAfterTime</code></td>
+  </tr>
+  <tr>
+    <td><code>mentity/entity_mgr.go:26</code></td>
+    <td>无</td>
+    <td>新增 <code>gridDetourRetryTs map[int64]int64</code>（小写 + <code>bson:"-"</code>，不持久化，不需要 <code>make deepcopy</code>）</td>
+  </tr>
+  <tr>
+    <td><code>mentity/detour_grid_test.go</code>（新增）</td>
+    <td>无</td>
+    <td>单测：缺口墙、相邻建筑对、终点被包围（应返回失败）、绕路终点选择；基准测试 <code>BenchmarkGridDetourWall</code></td>
+  </tr>
+</table>
+</div>
+
+<h2>5. 关键差异一览</h2>
+<div class="tbl">
+<table>
+  <tr><th>维度</th><th>改前（圆弧绕路）</th><th>改后（局部网格 A*）</th></tr>
+  <tr><td>考虑的阻挡</td><td>只有当前撞上的 1 个建筑</td><td>窗口内所有阻挡建筑</td></tr>
+  <tr><td>绕行方向</td><td>固定选离终点角度近的一侧</td><td>A* 求最短可通行路径，左右都会尝试</td></tr>
+  <tr><td>能否穿过缺口</td><td>绕路半径 = (半径和+100)/cos(π/8)，偏大，窄缺口过不去</td><td>格子中心保持 100 安全距离，缺口 ≥ 部队直径 + 安全距离即可通过</td></tr>
+  <tr><td>新路径是否保证不撞</td><td>不检查，圆弧可能落在邻居建筑里</td><td>每段直线都用与行军碰撞相同的判定校验</td></tr>
+  <tr><td>建筑群场景表现</td><td>来回弹、原地抖动，最后段数超限停止</td><td>一次规划绕开整片建筑</td></tr>
+  <tr><td>静态地形</td><td>圆弧点出导航网格就直接穿过建筑</td><td>格子 / 采样点必须在导航网格内</td></tr>
+  <tr><td>路径时间轴</td><td>从回退到的路段起点重建，当前位置可能轻微跳动</td><td>在当前位置截断当前段，位置连续</td></tr>
+  <tr><td>失败处理</td><td>—</td><td>回退原逻辑；同一部队 5 秒内不重试</td></tr>
+</table>
+</div>
+
+<h2>6. 参数与性能</h2>
+<div class="grid">
+  <div class="card">
+    <h3>可调参数（<code>detour_grid.go</code> 顶部）</h3>
+    <ul>
+      <li><code>gridDetourCellSize = 500</code> 格子边长（部队阻挡半径 1000，建筑 2000~2500）</li>
+      <li><code>gridDetourLookAhead = 40000</code> 沿原路径前看距离</li>
+      <li><code>gridDetourPaddings = {10000, 30000}</code> 窗口外扩，逐级扩大</li>
+      <li><code>gridDetourMaxCells = 40000</code> 格子数上限，超出时格子边长翻倍</li>
+      <li><code>gridDetourRetryMs = 5000</code> 失败退避</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>性能</h3>
+    <p>只在撞上建筑时触发，平时没有额外开销。</p>
+    <p>最坏情况（一大片建筑完全挡住，两级窗口都搜满后失败），基准测试约 <b>2.3ms / 次</b>（i5-12400F）。正常能找到路时会快得多。</p>
+    <p>加上 5 秒失败退避，被围住的部队不会每帧都搜一遍。</p>
+  </div>
+</div>
+
+<h2>7. 测试服验证要点</h2>
+<div class="note">
+  <ul>
+    <li>单测和编译已通过，<b>还没在真实地图上跑过</b>。</li>
+    <li>日志关键字 <code>grid detour</code>：成功打印 pos / goal / 拐点，失败打印 <code>grid detour failed</code>，都带 pid。</li>
+    <li>重点场景：联盟领地城市密集区行军、集结穿过建筑群、目标紧挨其他建筑、建筑贴着山体/水域。</li>
+    <li>客户端表现：换路时下发的是新的 <code>Sections</code>，确认客户端轨迹平滑、没有瞬移。</li>
+  </ul>
+</div>
+
+</main>
+</body>
+</html>

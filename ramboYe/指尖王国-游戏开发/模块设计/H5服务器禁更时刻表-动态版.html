@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>H5 禁更时刻表</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--line:#d8dee4;--text:#1f2328;--mute:#57606a;--safe:#dafbe1;--safeb:#4ac26b;--safet:#116329;--fix:#cf222e;--sp:#fb8f44;--spt:#7d3c00;--now:#0969da}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Noto Sans CJK SC","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:1760px;margin:0 auto;padding:24px 16px 40px}
+h1{font-size:26px;margin:0 0 6px}
+.sub{color:var(--mute);font-size:14px;margin-bottom:16px;line-height:1.6}
+.sub b{color:var(--fix)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:16px}
+.controls{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;font-size:14px}
+.controls input[type=datetime-local],.controls select{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:6px}
+.controls button{font:inherit;padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:#f6f8fa;cursor:pointer}
+.controls button:hover{background:#eaeef2}
+.chk{display:inline-flex;align-items:center;gap:6px}
+.top{display:grid;grid-template-columns:1.1fr 1fr;gap:16px}
+@media (max-width:1000px){.top{grid-template-columns:1fr}}
+.status h2{margin:0 0 8px;font-size:24px}
+.status .big{font-size:15px;line-height:1.8}
+.status.ok{border-left:8px solid var(--safeb)}
+.status.p0{border-left:8px solid #d4a72c}
+.status.no{border-left:8px solid var(--fix)}
+.status.mid{border-left:8px solid #8c959f}
+.tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12.5px;margin-right:6px;background:#eaeef2}
+.tag.fix{background:var(--fix);color:#fff}.tag.sp{background:var(--sp);color:#fff}.tag.safe{background:var(--safe);color:var(--safet);border:1px solid var(--safeb)}
+#weekinfo h3{margin:0 0 8px;font-size:17px}
+#weekinfo table{border-collapse:collapse;width:100%;font-size:14px}
+#weekinfo td{padding:6px 6px;border-top:1px solid #eaeef2;vertical-align:top}
+#weekinfo td:first-child{white-space:nowrap;font-weight:700;width:1%}
+.yes{color:var(--fix);font-weight:700}.noo{color:var(--mute)}
+.legend{display:flex;flex-wrap:wrap;gap:20px;font-size:13.5px;margin:0 0 10px 190px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:22px;height:13px;border-radius:3px;display:inline-block}
+.axis{position:relative;height:38px;margin-left:190px}
+.tick{position:absolute;transform:translateX(-50%);text-align:center;font-size:12.5px;line-height:15px}
+.tick b{display:block}.tick i{display:block;font-style:normal;color:#8c959f;font-size:11px}
+.axlab{position:absolute;left:-185px;top:0;font-size:12px;color:var(--mute);line-height:15px}
+.row{display:flex;border-top:2px solid #8c959f;padding:8px 0;position:relative}
+.row:last-child{border-bottom:2px solid #8c959f}
+.row:nth-child(even){background:#f6f8fa}
+.row.today{background:#ddf4ff}
+.lab{width:190px;flex:none;display:flex;flex-direction:column;justify-content:center;padding-right:10px}
+.lab b{font-size:17px}.lab i{font-style:normal;font-size:12.5px;color:var(--mute)}
+.tl{position:relative;flex:1;min-width:0;cursor:col-resize}
+#chart{touch-action:none;user-select:none}
+.nowline::after{content:"";position:absolute;left:-5px;top:0;bottom:0;width:12px}
+.gl{position:absolute;top:-8px;bottom:-8px;width:1px;background:rgba(140,149,159,.18)}
+.lane{position:relative;height:28px;margin:3px 0}
+.bar{position:absolute;top:0;height:28px;border-radius:5px;overflow:hidden;white-space:nowrap;font-size:12.5px;line-height:28px;padding:0 6px;cursor:default}
+.bar.safe{background:var(--safe);border:1px solid var(--safeb);color:var(--safet)}
+.bar.fix{background:var(--fix);color:#fff}
+.bar.sp{background:var(--sp);color:#fff}
+.out{position:absolute;top:0;height:28px;line-height:28px;font-size:12.5px;white-space:nowrap;font-weight:700}
+.out.fix{color:var(--fix)}.out.sp{color:#bc4c00}.out.safe{color:var(--safet)}
+.nowline{position:absolute;top:-8px;bottom:-8px;width:2px;background:var(--now);z-index:5}
+.nowtag{position:absolute;top:-19px;transform:translateX(4px);background:var(--now);color:#fff;font-size:11.5px;padding:0 6px;border-radius:4px;z-index:6;white-space:nowrap}
+.notes li{font-size:14px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>H5 服务器禁更时刻表 · 动态版</h1>
+<div class="sub">服务器按 <b>北京时间 UTC+8</b> 运行（<code>game/main.go:57</code> <code>timeutil.SetLocalTime(true)</code>，跨天/周几/配置日期均按进程本地时区；线上 GVG 报名 startts 实测为北京周四 00:00），时间轴以北京时间为主、灰色小字为 UTC。输入时间后自动判定本周类型（王座 A/B 周、巅峰赛周、远征开局周、战区争霸），并给出当前是否可更新、下一个禁更时段。<br>依据 gdconfig / gs v1054，2026-10-28 核对（同日修正：原版误按 UTC 解读，整体偏了 8 小时）；配置变动后改脚本顶部 <code>CFG</code> 即可。</div>
+
+<div class="card controls">
+  <label>时间 <input type="datetime-local" id="t"></label>
+  <label>输入时区 <select id="tz"><option value="bj">北京 (UTC+8)</option><option value="utc">UTC</option></select></label>
+  <button id="now">现在</button>
+  <label class="chk"><input type="checkbox" id="live">实时跟随</label>
+  <button id="prev">◀ 上一周</button>
+  <button id="next">下一周 ▶</button>
+  <button id="back">回到输入时间所在周</button>
+  <label class="chk"><input type="checkbox" id="season">远征赛季末一轮（周五 23:50 融冰总榜）</label>
+</div>
+
+<div class="top">
+  <div class="card status" id="status"></div>
+  <div class="card" id="weekinfo"></div>
+</div>
+
+<div class="card">
+  <div class="legend">
+    <span><i class="sw" style="background:var(--safe);border:1px solid var(--safeb)"></i>可更窗口（周末为仅 P0）</span>
+    <span><i class="sw" style="background:var(--fix)"></i>每周固定禁更</span>
+    <span><i class="sw" style="background:var(--sp)"></i>本周特有禁更（巅峰 / 战区 / 远征 / 赛季末）</span>
+    <span><i class="sw" style="background:var(--now)"></i>输入时间（在图上按住拖动可改，按 5 分钟吸附）</span>
+  </div>
+  <div class="axis" id="axis"></div>
+  <div id="chart"></div>
+</div>
+
+<div class="card notes">
+  <ul style="margin:0;padding-left:20px">
+    <li><b>跨天 北京 23:55-00:10（UTC 15:55-16:10）</b>：跨天定时器不入库，停机跨过 0 点会漏掉服务器级跨天事件（玩家/联盟级在登录、加载时会补）。</li>
+    <li>每天北京 23:00 只是联盟 BI 快照，不影响玩法。</li>
+    <li>GVG：报名活动北京周四 00:00 开始（ActvOnlineCfg 5000001），+23h（GVG_Match_Start_Time）即北京周四 23:00 报名截止并由 global 匹配，此刻 global 必须在线；开战为北京周五 20:00-21:00、21:30-22:30（GvgBattleTimeCfg 72000/77400 秒）；报名记录入库，白天单独重启 global 是安全的。</li>
+    <li>巅峰竞技场：开赛时间戳为北京周一 00:00（TopArena_Peak_Time 1747584000），淘汰赛北京 19:00-次日 01:00，小组赛 19:00-22:00，决赛每天 20:00。战区争霸在两届巅峰赛之间每 3 天滚动一轮。</li>
+    <li>可更窗口 = 每天北京 01:00-22:30（改 <code>CFG.safe</code>）中扣掉所有禁更时段后、连续 ≥1 小时的空档；周六、周日仅限 P0 应急。</li>
+    <li>未核实：飞服周末限制、泰坦宝库分金、GVG 战后死兵返还、领主总动员战场开放日（战场时段 北京 03/12/14/20 点）。</li>
+  </ul>
+</div>
+</div>
+
+<script>
+const H = 36e5, MIN = 6e4, DAY = 864e5;
+// ===== 配置锚点（改配置时只改这里）=====
+// 坐标约定：脚本内部所有时间戳都是「北京墙钟当 UTC 用」（= 真实 UTC 毫秒 + 8h），Date.UTC(...) 直接写北京时间
+const TZ = 8 * H;
+const CFG = {
+  kingA: Date.UTC(2026, 9, 24),        // 王座 A 周的周六（巅峰领地 14:00 + 王座 20:00），14 天一轮。ActvOnlineCfg 1100011 / 1100001；另一周为 B 周（王座 14:00，1100003）
+  peak: Date.UTC(2025, 4, 19),         // 巅峰赛首届开始（北京周一 00:00 = UTC 周日 16:00）。D2ConfigCfg TopArena_Peak_Time [1747584000,7,28]
+  peakPeriod: 28, peakDur: 7,          // 巅峰赛 28 天一届，持续 7 天
+  warPeriod: 3,                        // 战区争霸 3 天一轮。TopArena_WarZone_GlobalTime
+  exp: Date.UTC(2025, 10, 7),          // 远征预热周五 00:00，14 天一轮。ActvOnlineCfg 1100013
+  safe: [1, 22.5],                     // 可更窗口 [起, 止] 小时（北京）
+};
+const WD = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+const WDE = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const hm = (h, m = 0) => h * H + m * MIN;
+const mod = (a, n) => ((a % n) + n) % n;
+const pad = n => String(n).padStart(2, '0');
+const dayIdx = ts => (new Date(ts).getUTCDay() + 6) % 7;
+function fmt(ts, off = 0, withDate = true) {
+  const d = new Date(ts + off);
+  const s = pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes());
+  return withDate ? `${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${WD[(d.getUTCDay() + 6) % 7]} ${s}` : s;
+}
+const fU = ts => fmt(ts, -TZ), fB = ts => fmt(ts);
+function dur(ms) {
+  const m = Math.round(ms / MIN), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mm = m % 60;
+  return (d ? d + '天' : '') + (d || h ? h + '小时' : '') + mm + '分';
+}
+function weekStart(ts) {
+  const d = new Date(ts);
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - dayIdx(ts) * DAY;
+}
+function weekInfo(W) {
+  const kingA = mod(Math.round((W + 5 * DAY - CFG.kingA) / DAY), 14) === 0;
+  const P = W; // 本周一 00:00（北京）
+  const isPeakStart = ts => mod(Math.round((ts - CFG.peak) / DAY), CFG.peakPeriod) === 0;
+  const peakNow = isPeakStart(P);
+  const peakNext = isPeakStart(W + 7 * DAY);
+  const exp = mod(Math.round((W + 4 * DAY - CFG.exp) / DAY), 14) === 0;
+  const wars = [];
+  const per = CFG.peakPeriod * DAY;
+  const base = CFG.peak + Math.floor((W + 7 * DAY - CFG.peak) / per) * per;
+  for (const pk of [base - per, base])
+    for (let a = pk + CFG.peakDur * DAY; a < pk + per; a += CFG.warPeriod * DAY)
+      if (a + hm(47, 10) > W && a + hm(17, 50) < W + 7 * DAY) wars.push(a);
+  const nextPeak = CFG.peak + Math.ceil((W + 7 * DAY - CFG.peak) / per) * per;
+  const nextExp = CFG.exp + Math.ceil((W + 4 * DAY - CFG.exp) / (14 * DAY)) * 14 * DAY;
+  return { W, kingA, peakNow, peakNext, exp, wars, P, nextPeak, nextExp };
+}
+function build(W, opt) {
+  const wi = weekInfo(W), L = [];
+  const add = (s, e, label, kind) => L.push({ s, e, label, kind });
+  for (let d = 0; d <= 7; d++) {
+    const t = W + d * DAY, wk = d === 0 || d === 7;
+    add(t - 5 * MIN, t + (wk ? 15 : 10) * MIN, wk ? '周度跨天' : '跨天', 'fix');
+  }
+  add(W + 3 * DAY + hm(22, 45), W + 3 * DAY + hm(23, 15), '23:00 GVG 匹配 · global 须在线', 'fix');
+  add(W + 4 * DAY + hm(19, 30), W + 4 * DAY + hm(22, 45), 'GVG 20:00-21:00 / 21:30-22:30 两场', 'fix');
+  if (wi.kingA) add(W + 5 * DAY + hm(13, 50), W + 6 * DAY + hm(20, 10), 'A周：巅峰领地 14-22 + 王座 20:00→周日 20:00', 'fix');
+  else add(W + 5 * DAY + hm(13, 50), W + 6 * DAY + hm(14, 10), 'B周：王座 14:00→周日 14:00', 'fix');
+  add(W + 6 * DAY + hm(11, 45), W + 6 * DAY + hm(12, 15), '12:00 联盟对决跨服匹配', 'fix');
+  add(W + 6 * DAY + hm(23, 40), W + 7 * DAY, '23:50 领主总动员/融冰周榜', 'fix');
+  if (opt.season) add(W + 4 * DAY + hm(23, 40), W + 4 * DAY + hm(23, 55), '赛季末 23:50 融冰总榜', 'sp');
+  if (wi.exp) {
+    add(W + 2 * DAY + hm(22, 50), W + 2 * DAY + hm(23, 10), '远征开局周 · 23:00 报名', 'sp');
+    add(W + 6 * DAY + hm(22, 45), W + 6 * DAY + hm(23, 40), '远征 23:00 创图 · 23:30 拉图', 'sp');
+  }
+  if (wi.peakNow) {
+    const P = wi.P;
+    add(P + hm(17, 50), P + hm(25, 10), '巅峰·淘汰赛（北京 19:00-次日 01:00）', 'sp');
+    add(P + hm(42, 20), P + hm(46, 10), '巅峰·小组赛（北京 19-22）', 'sp');
+    for (let i = 0; i < 4; i++) add(P + hm(67, 20) + i * DAY, P + hm(71, 10) + i * DAY, `巅峰 R${i + 1}（北京 20:00）`, 'sp');
+  }
+  if (wi.peakNext) add(W + 7 * DAY - 10 * MIN, W + 7 * DAY + 10 * MIN, '周一 00:00 巅峰赛开启', 'sp');
+  for (const a of wi.wars) {
+    add(a + hm(17, 50), a + hm(23, 40), '战区·淘汰赛（北京 19:00-23:30）', 'sp');
+    add(a + hm(42, 20), a + hm(47, 10), '战区·小组+决赛（北京 19-23）', 'sp');
+  }
+  const blocks = L.slice();
+  for (let d = 0; d < 7; d++) {
+    const ds = W + d * DAY;
+    let segs = [[ds + CFG.safe[0] * H, ds + CFG.safe[1] * H]];
+    for (const b of blocks) {
+      const n = [];
+      for (const [s, e] of segs) {
+        if (b.e <= s || b.s >= e) { n.push([s, e]); continue; }
+        if (b.s > s) n.push([s, b.s]);
+        if (b.e < e) n.push([b.e, e]);
+      }
+      segs = n;
+    }
+    for (const [s, e] of segs) if (e - s >= H) add(s, e, d >= 5 ? '仅 P0 应急' : '可更', 'safe');
+  }
+  return { L, wi };
+}
+
+// ===== 状态 =====
+const $ = id => document.getElementById(id);
+const nowL = () => Date.now() + TZ;
+let T = nowL(), viewW = weekStart(T);
+const off = () => $('tz').value === 'bj' ? 0 : -TZ;
+function fillInput() { $('t').value = new Date(T + off()).toISOString().slice(0, 16); }
+function readInput() {
+  const v = $('t').value; if (!v) return;
+  const [d, t] = v.split('T'), [y, mo, da] = d.split('-').map(Number), [hh, mi] = t.split(':').map(Number);
+  T = Date.UTC(y, mo - 1, da, hh, mi) - off();
+}
+const opt = () => ({ season: $('season').checked });
+
+function rangeText(it) {
+  const sameDay = Math.floor(it.s / DAY) === Math.floor((it.e - 1) / DAY);
+  const e = sameDay ? fmt(it.e, 0, false).replace('00:00', '24:00') : WD[dayIdx(it.e)] + ' ' + fmt(it.e, 0, false);
+  return fmt(it.s, 0, false) + '-' + e;
+}
+const cv = document.createElement('canvas').getContext('2d');
+function textW(s, bold) { cv.font = `${bold ? 700 : 400} 12.5px "Noto Sans CJK SC","PingFang SC","Microsoft YaHei",sans-serif`; return cv.measureText(s).width; }
+
+function render() {
+  const { L, wi } = build(viewW, opt());
+  // axis
+  let ax = '<div class="axlab">北京<br>UTC</div>';
+  for (let i = 0; i <= 24; i += 2) ax += `<div class="tick" style="left:${i / 24 * 100}%"><b>${pad(i)}</b><i>${pad((i + 16) % 24)}</i></div>`;
+  $('axis').innerHTML = ax;
+  const chart = $('chart');
+  const tlW = chart.clientWidth - 190;
+  const rows = [];
+  for (let d = 0; d < 7; d++) {
+    const ds = viewW + d * DAY, de = ds + DAY;
+    const items = L.filter(it => it.e > ds && it.s < de).map(it => ({ ...it, cs: Math.max(it.s, ds), ce: Math.min(it.e, de) }));
+    const safes = items.filter(i => i.kind === 'safe');
+    const blks = items.filter(i => i.kind !== 'safe').sort((a, b) => a.cs - b.cs || (b.ce - b.cs) - (a.ce - a.cs));
+    const lanes = [safes];
+    const laneEnd = [];
+    for (const b of blks) {
+      let k = laneEnd.findIndex(e => e <= b.cs);
+      if (k < 0) { k = laneEnd.length; laneEnd.push(0); lanes.push([]); }
+      laneEnd[k] = b.ce; lanes[k + 1].push(b);
+    }
+    const row = document.createElement('div');
+    row.className = 'row' + (T >= ds && T < de ? ' today' : '');
+    const dt = new Date(ds);
+    row.innerHTML = `<div class="lab"><b>${WD[d]} ${WDE[d]}</b><i>北京 ${pad(dt.getUTCMonth() + 1)}-${pad(dt.getUTCDate())}</i><i>UTC ${fU(ds).slice(0, 5)} 16:00 起</i></div>`;
+    const tl = document.createElement('div'); tl.className = 'tl';
+    for (let i = 0; i <= 24; i++) tl.insertAdjacentHTML('beforeend', `<div class="gl" style="left:${i / 24 * 100}%"></div>`);
+    const pending = [];
+    for (const lane of lanes) {
+      const ln = document.createElement('div'); ln.className = 'lane';
+      const occ = [];
+      const hit = (a, b) => occ.some(([x, y]) => a < y && b > x);
+      for (const it of lane) occ.push([(it.cs - ds) / DAY * tlW, (it.ce - ds) / DAY * tlW]);
+      for (const it of lane) {
+        const x = (it.cs - ds) / DAY * tlW, w = Math.max((it.ce - it.cs) / DAY * tlW, 3);
+        const cont = it.s < ds ? '（续）' : '';
+        const txt = `${rangeText(it)}｜${it.label}${cont}`;
+        const tip = `北京 ${fB(it.s)} → ${fB(it.e)}\nUTC ${fU(it.s)} → ${fU(it.e)}\n${it.label}`;
+        const bar = document.createElement('div');
+        bar.className = 'bar ' + it.kind; bar.title = tip;
+        bar.style.left = (x / tlW * 100) + '%'; bar.style.width = (w / tlW * 100) + '%';
+        const tw = textW(txt) + 14;
+        if (tw <= w) bar.textContent = txt;
+        else if (it.label !== '跨天' && it.label !== '周度跨天') {
+          const ow = textW(txt, true) + 8;
+          let pos = null;
+          if (x + w + 6 + ow < tlW && !hit(x + w + 2, x + w + 6 + ow)) pos = ['left', x + w + 6];
+          else if (x - 6 - ow > 0 && !hit(x - 6 - ow, x - 2)) pos = ['left', x - 6 - ow];
+          if (pos) {
+            const o = document.createElement('div');
+            o.className = 'out ' + it.kind; o.textContent = txt; o.title = tip;
+            o.style.left = (pos[1] / tlW * 100) + '%';
+            ln.appendChild(o); occ.push([pos[1], pos[1] + ow]);
+          } else pending.push({ txt, tip, kind: it.kind, x, ow });
+        }
+        ln.appendChild(bar);
+      }
+      tl.appendChild(ln);
+    }
+    // 放不下的标签另起一行
+    const ovl = [];
+    for (const pd of pending) {
+      const left = Math.max(0, Math.min(pd.x, tlW - pd.ow));
+      let k = ovl.findIndex(o => o.every(([a, b]) => left >= b + 8 || left + pd.ow <= a - 8));
+      if (k < 0) { k = ovl.length; ovl.push([]); }
+      ovl[k].push([left, left + pd.ow]);
+      pd.left = left; pd.k = k;
+    }
+    for (let k = 0; k < ovl.length; k++) {
+      const ln = document.createElement('div'); ln.className = 'lane'; ln.style.height = '22px';
+      for (const pd of pending.filter(p => p.k === k)) {
+        const o = document.createElement('div');
+        o.className = 'out ' + pd.kind; o.textContent = '↑ ' + pd.txt; o.title = pd.tip;
+        o.style.left = (pd.left / tlW * 100) + '%'; o.style.height = o.style.lineHeight = '22px';
+        ln.appendChild(o);
+      }
+      tl.appendChild(ln);
+    }
+    if (T >= ds && T < de) {
+      const p = (T - ds) / DAY * 100;
+      tl.insertAdjacentHTML('beforeend', `<div class="nowline" style="left:${p}%"></div><div class="nowtag" style="left:${p}%">北京 ${fmt(T, 0, false)} / UTC ${fmt(T, -TZ, false)}</div>`);
+    }
+    row.appendChild(tl); rows.push(row);
+  }
+  chart.replaceChildren(...rows);
+  renderStatus(); renderWeek(wi);
+}
+
+let statusH = 0;
+window.addEventListener('resize', () => { statusH = 0; });
+function renderStatus() {
+  const W = weekStart(T);
+  const all = [...build(W - 7 * DAY, opt()).L, ...build(W, opt()).L, ...build(W + 7 * DAY, opt()).L];
+  const blocks = all.filter(i => i.kind !== 'safe'), safes = all.filter(i => i.kind === 'safe');
+  const inB = blocks.filter(b => T >= b.s && T < b.e);
+  const inS = safes.find(s => T >= s.s && T < s.e);
+  const nextB = blocks.filter(b => b.s > T).sort((a, b) => a.s - b.s)[0];
+  const nextS = safes.filter(s => s.s > T && s.label === '可更').sort((a, b) => a.s - b.s)[0];
+  const el = $('status');
+  let cls, title, body = '';
+  const head = `<div class="big">输入时间：北京 <b>${fB(T)}</b> ｜ UTC <b>${fU(T)}</b></div>`;
+  if (inB.length) {
+    cls = 'no'; title = '🚫 禁更中';
+    const endAt = Math.max(...inB.map(b => b.e));
+    body = inB.map(b => `<span class="tag ${b.kind}">${b.label}</span>`).join('') +
+      `<div class="big">本禁更时段结束：北京 ${fB(endAt)}（UTC ${fU(endAt)}），还剩 <b>${dur(endAt - T)}</b></div>`;
+  } else if (inS) {
+    cls = inS.label === '可更' ? 'ok' : 'p0';
+    title = inS.label === '可更' ? '✅ 可以更新' : '⚠ 仅限 P0 应急';
+    body = `<div class="big">当前可更窗口：北京 ${fmt(inS.s, 0, false)}-${fmt(inS.e, 0, false)}（UTC ${fmt(inS.s, -TZ, false)}-${fmt(inS.e, -TZ, false)}），剩余 <b>${dur(inS.e - T)}</b></div>`;
+  } else {
+    cls = 'mid'; title = '➖ 非推荐时段'; body = '<div class="big">不在禁更时段，但也不在推荐窗口内（夜间缓冲 / 窗口不足 1 小时）。</div>';
+  }
+  if (nextB) body += `<div class="big">下一个禁更：<span class="tag ${nextB.kind}">${nextB.label}</span>北京 ${fB(nextB.s)}（UTC ${fU(nextB.s)}），<b>${dur(nextB.s - T)}</b> 后开始</div>`;
+  if (nextS && !(inS && inS.label === '可更')) body += `<div class="big">下一个可更窗口：北京 ${fB(nextS.s)} → ${fmt(nextS.e, 0, false)}（UTC ${fU(nextS.s)} → ${fmt(nextS.e, -TZ, false)}），<b>${dur(nextS.s - T)}</b> 后</div>`;
+  el.className = 'card status ' + cls;
+  el.innerHTML = `<h2>${title}</h2>${head}${body}`;
+  el.style.minHeight = '';
+  const hgt = el.offsetHeight;
+  if (hgt > statusH) statusH = hgt;
+  el.style.minHeight = statusH + 'px';
+}
+
+function renderWeek(wi) {
+  const W = wi.W, E = W + 7 * DAY;
+  const y = v => v ? '<span class="yes">是</span>' : '<span class="noo">否</span>';
+  const wars = wi.wars.length
+    ? wi.wars.map(a => `北京 ${fB(a + hm(19)).slice(0, 8)} 淘汰赛 → ${fB(a + hm(43)).slice(0, 8)} 小组+决赛`).join('<br>')
+    : '<span class="noo">本周无</span>';
+  $('weekinfo').innerHTML = `<h3>显示周：北京 ${fB(W).slice(0, 8)} → ${fB(E - 1).slice(0, 8)}</h3>
+  <table>
+  <tr><td>UTC 对应</td><td>${fU(W)} → ${fU(E)}</td></tr>
+  <tr><td>王座战</td><td>${wi.kingA ? '<span class="yes">A 周</span>：巅峰领地 周六 14-22 + 王座 周六 20:00→周日 20:00（北京）' : '<span class="yes">B 周</span>：王座 周六 14:00→周日 14:00（北京）'}</td></tr>
+  <tr><td>巅峰赛周</td><td>${y(wi.peakNow)}${wi.peakNow ? `：北京 ${fB(wi.P)} 开赛` : `（下一届 北京 ${fB(wi.nextPeak)} 开赛）`}</td></tr>
+  <tr><td>远征开局周</td><td>${y(wi.exp)}${wi.exp ? '：周三 23:00 报名、周五起预热、周日 23:00 创图（北京）' : `（下一次预热 北京 ${fB(wi.nextExp).slice(0, 8)}）`}</td></tr>
+  <tr><td>战区争霸</td><td>${wars}</td></tr>
+  <tr><td>赛季末一轮</td><td>${y($('season').checked)}（需手动勾选）</td></tr>
+  </table>`;
+}
+
+// ===== 事件 =====
+$('tz').value = 'bj';
+try { // 支持 ?t=2026-11-03T20:00（北京时间）直接打开指定时间
+  const q = new URLSearchParams(location.search).get('t');
+  if (q) { $('t').value = q.slice(0, 16); readInput(); viewW = weekStart(T); }
+} catch (e) {}
+fillInput();
+$('t').addEventListener('change', () => { readInput(); $('live').checked = false; viewW = weekStart(T); render(); });
+$('tz').addEventListener('change', () => { fillInput(); });
+$('now').addEventListener('click', () => { T = nowL(); fillInput(); viewW = weekStart(T); render(); });
+$('live').addEventListener('change', () => { if ($('live').checked) { T = nowL(); fillInput(); viewW = weekStart(T); render(); } });
+$('prev').addEventListener('click', () => { viewW -= 7 * DAY; render(); });
+$('next').addEventListener('click', () => { viewW += 7 * DAY; render(); });
+$('back').addEventListener('click', () => { viewW = weekStart(T); render(); });
+$('season').addEventListener('change', render);
+// 拖动竖线：在任意一天的时间轴上按住左右拖，上下拖换天
+let dragging = false, rafPending = false, lastEv = null;
+function dragTo(ev) {
+  const rows = [...$('chart').children];
+  if (!rows.length) return;
+  let d = rows.findIndex(r => { const b = r.getBoundingClientRect(); return ev.clientY < b.bottom; });
+  if (d < 0) d = rows.length - 1;
+  const b = rows[d].querySelector('.tl').getBoundingClientRect();
+  const frac = Math.min(Math.max((ev.clientX - b.left) / b.width, 0), 1);
+  const step = 5 * MIN;
+  T = viewW + d * DAY + Math.min(Math.round(frac * DAY / step) * step, DAY - step); // 拖到最右停在当天 23:55，不翻到下一天
+  $('live').checked = false;
+  const top0 = $('chart').getBoundingClientRect().top;
+  fillInput(); render();
+  const dy = $('chart').getBoundingClientRect().top - top0;
+  if (dy) window.scrollBy(0, dy);
+}
+$('chart').addEventListener('pointerdown', ev => {
+  if (ev.button !== 0 || !ev.target.closest('.tl')) return;
+  dragging = true; $('chart').setPointerCapture(ev.pointerId); dragTo(ev);
+});
+$('chart').addEventListener('pointermove', ev => {
+  if (!dragging) return;
+  lastEv = ev;
+  if (!rafPending) { rafPending = true; requestAnimationFrame(() => { rafPending = false; dragTo(lastEv); }); }
+});
+const endDrag = () => { dragging = false; };
+$('chart').addEventListener('pointerup', endDrag);
+$('chart').addEventListener('pointercancel', endDrag);
+window.addEventListener('resize', render);
+setInterval(() => { if ($('live').checked) { const w = weekStart(T); T = nowL(); fillInput(); if (weekStart(T) !== w) viewW = weekStart(T); render(); } }, 30000);
+render();
+</script>
+</body>
+</html>
