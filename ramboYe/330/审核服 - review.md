@@ -9,9 +9,6 @@
 6. vars //查看变量
 7. deploy //部署某个包
 
-**查看日志**
-
-
 
 Last login: Tue Sep 1 22:09:20 2026 from 192.168.5.250 ubuntu@innerjumper:$ cd ops/ansible ubuntu@innerjumper:/ops/ansible$ ./console.sh input 'h' for help [revive] > env h5review [h5review] 
 > use 1 [h5review] h5review> vars [tools] h5review ansible_user=ubuntu ansible_ssh_host=119.29.246.73 ansible_ssh_pass='[9kH5RsX=h?b' device=true
