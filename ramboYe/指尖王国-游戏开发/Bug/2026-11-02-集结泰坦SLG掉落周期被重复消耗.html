@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>集结掉落周期重复消耗</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#f4f6f8; --surface:#ffffff; --ink:#1c2230; --muted:#5d6676; --line:#dfe3ea;
+  --accent:#c4600f; --accent-soft:#fbeadc; --code-bg:#eef1f5;
+  --a:#2f6fd6; --a-soft:#dde8fb; --b:#7a8494; --b-soft:#e8ebf0; --c:#1f9a6a; --c-soft:#d9f2e7;
+  --bad:#c23b3b; --bad-soft:#fbe3e3; --ok:#1f8a4c;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#14171d; --surface:#1c2028; --ink:#e7eaf0; --muted:#9aa3b2; --line:#2e3440;
+    --accent:#f0954a; --accent-soft:#3a2617; --code-bg:#232833;
+    --a:#6fa0f0; --a-soft:#1f2f4d; --b:#9aa3b2; --b-soft:#2a303b; --c:#4cc79a; --c-soft:#173a2e;
+    --bad:#ef7070; --bad-soft:#402020; --ok:#5ccb8a; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#14171d; --surface:#1c2028; --ink:#e7eaf0; --muted:#9aa3b2; --line:#2e3440;
+  --accent:#f0954a; --accent-soft:#3a2617; --code-bg:#232833;
+  --a:#6fa0f0; --a-soft:#1f2f4d; --b:#9aa3b2; --b-soft:#2a303b; --c:#4cc79a; --c-soft:#173a2e;
+  --bad:#ef7070; --bad-soft:#402020; --ok:#5ccb8a; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font:15px/1.7 var(--sans)}
+.wrap{max-width:860px;margin:0 auto;padding-inline:20px;padding-block:40px 64px}
+header{display:grid;gap:6px;margin-bottom:24px}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.08em;color:var(--bad);text-transform:uppercase}
+h1{font-size:28px;line-height:1.3;margin:0;text-wrap:balance}
+h2{font-size:19px;margin:36px 0 12px;text-wrap:balance}
+p{margin:0 0 12px;max-width:68ch}
+.meta{color:var(--muted);font-size:13px}
+.summary{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:8px;padding:16px 20px}
+.summary p:last-child{margin:0}
+code{font-family:var(--mono);font-size:13px;background:var(--code-bg);padding:1px 5px;border-radius:4px}
+pre{font:13px/1.6 var(--mono);background:var(--code-bg);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:0 0 12px}
+pre .hl{background:var(--bad-soft);color:var(--bad);display:inline-block;width:100%}
+pre .add{background:var(--c-soft);display:inline-block;width:100%}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font-size:12.5px;color:var(--muted);font-weight:500}
+td.num{text-align:center;font-family:var(--mono)}
+td.hit{color:var(--accent);font-weight:700}
+ul{margin:0 0 12px;padding-left:20px;max-width:70ch}
+li{margin:5px 0}
+.strip{display:grid;grid-template-columns:repeat(10,minmax(54px,1fr));gap:6px;min-width:600px}
+.slot{border-radius:6px;padding:8px 4px;text-align:center;font-size:12.5px;line-height:1.35;display:grid;gap:2px;border:1px solid transparent}
+.slot .i{font:600 11px var(--mono);color:var(--muted)}
+.slot .who{font-weight:700}
+.slot .r{font-size:11.5px;color:var(--muted)}
+.slot.A{background:var(--a-soft)} .slot.A .who{color:var(--a)}
+.slot.B{background:var(--b-soft)} .slot.B .who{color:var(--b)}
+.slot.C{background:var(--c-soft)} .slot.C .who{color:var(--c)}
+.slot.hit{border-color:var(--accent)}
+.slot .p{font-weight:700;color:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--muted);margin:10px 0 0}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--sw)}
+.result{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px}
+.res{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-size:14px}
+.res b{display:block;margin-bottom:2px}
+.res.bad b{color:var(--bad)}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">代码问题 · game/wmap · 待评估</div>
+  <h1>集结泰坦：队长的 SLG 掉落周期被每个参战部队重复消耗</h1>
+  <div class="meta">版本 v1054 · 发现于 2026-11-02 排查万圣节南瓜时 · yemingheng · 严重度：中</div>
+</header>
+
+<div class="summary">
+  <p>集结打赢泰坦后，结算代码在遍历<b>每个参战部队</b>时，都会用<b>队长</b>的掉落周期掷一次南瓜。N 个部队参战，队长的周期就前进 N 次，而不是 1 次。</p>
+  <p>后果有两个：</p>
+  <ul>
+    <li>队长「10 只泰坦固定掉 5 个」的保底被打乱。</li>
+    <li>开了自动补体力的集结成员也能拿到南瓜，而设计上只有队长掉落。</li>
+  </ul>
+</div>
+
+<h2>先说「周期」是什么</h2>
+<p>泰坦南瓜用的是保底掉落：每个玩家每打 10 次，<b>必定掉 5 个</b>，只是落在哪几次是随机的。配置是 <code>SlgDropSwitchCfg</code> 1042（<code>frequency_max=10</code>）和 <code>SlgDropCycleCfg</code> 1042001（<code>frequency=5</code>）。</p>
+<p>服务器给每人记两个数：本轮打了几次、掉了几次（<code>MapPlayer.SlgDropCycleRecord</code>）。每次的掉率 = 本轮还剩几次要掉 ÷ 本轮还剩几次可打。前面没掉，后面的概率就越来越高，最后变成 100%，所以一轮一定刚好掉 5 个（<code>computeSlgDrop</code>，<code>game/wmap/internal/ctl_battle_settle.go:661</code>）。</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>第几次</th><td class="num">1</td><td class="num">2</td><td class="num">3</td><td class="num">4</td><td class="num">5</td><td class="num">6</td><td class="num">7</td><td class="num">8</td><td class="num">9</td><td class="num">10</td></tr></thead>
+  <tbody>
+    <tr><th>掉率</th><td class="num">5/10</td><td class="num">5/9</td><td class="num">4/8</td><td class="num">4/7</td><td class="num">4/6</td><td class="num">4/5</td><td class="num">3/4</td><td class="num">2/3</td><td class="num">2/2</td><td class="num">1/1</td></tr>
+    <tr><th>结果（示例）</th><td class="num">–</td><td class="num hit">掉</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td class="num hit">掉</td><td class="num hit">掉</td><td class="num">–</td><td class="num hit">掉</td><td class="num hit">掉</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="meta">正确的用法：<b>每打死一只泰坦，队长的周期只走 1 格。</b></p>
+
+<h2>问题代码</h2>
+<p><code>settleBattleRTroopAtkNTroop</code>，<code>game/wmap/internal/ctl_battle_settle.go:2044</code> 起：</p>
+<pre>for _, pt := range rallyTroopList {                    // 遍历每个参战部队
+    ptOwnerId := pt.GetOwnerId()
+    ...
+<span class="hl">    slgrop := wmap.slgDrop(captainPlayerID, monsterType) // :2058 每个部队都用队长的周期掷一次</span>
+    ...
+    if wmap.canGetAwards(pt, rallyTroop, npcTroop, joinMax) {
+        if ptOwnerId == captainPlayerID {              // :2083 只有队长那一次并入奖励
+            assets = append(assets, slgrop...)
+        }
+        if ausoCostFlag == cspb.NoneSet {
+            wmap.AddAssets(ptOwnerId, assets, ...)    // 手动扣体力：成员那次 slgrop 被丢弃
+        } else {
+<span class="hl">            autoCostMap[ptOwnerId].PackSetAwards(slgrop) // :2098 自动补体力：slgrop 发给成员本人</span>
+        }
+    } else {
+<span class="hl">        autoCostMap[ptOwnerId].PackSetAwards(slgrop)     // 超出参与次数上限的分支同样会发</span>
+    }
+}</pre>
+<p class="meta">自动补体力的成员这份 <code>SlgDrop</code>，在 play 侧 <code>OnMapToPlayReportAssert</code>（<code>game/play/internal/ctl_map.go:74</code>）扣体力成功后，会通过 <code>append(assets, req.Extra.SlgDrop...)</code> 真正发到账。</p>
+
+<h2>例子：3 人集结连打 4 只泰坦</h2>
+<p>队长 A，成员 B、C。每打死一只泰坦，A 的周期被掷 3 次。下面是 A 的一整轮（10 格），沿用上面示例的命中位置：</p>
+<div class="scroll">
+<div class="strip">
+  <div class="slot A"><span class="i">#1</span><span class="who">A</span><span class="r">第1只</span><span>–</span></div>
+  <div class="slot B hit"><span class="i">#2</span><span class="who">B</span><span class="r">第1只</span><span class="p">🎃</span></div>
+  <div class="slot C"><span class="i">#3</span><span class="who">C</span><span class="r">第1只</span><span>–</span></div>
+  <div class="slot A"><span class="i">#4</span><span class="who">A</span><span class="r">第2只</span><span>–</span></div>
+  <div class="slot B"><span class="i">#5</span><span class="who">B</span><span class="r">第2只</span><span>–</span></div>
+  <div class="slot C hit"><span class="i">#6</span><span class="who">C</span><span class="r">第2只</span><span class="p">🎃</span></div>
+  <div class="slot A hit"><span class="i">#7</span><span class="who">A</span><span class="r">第3只</span><span class="p">🎃</span></div>
+  <div class="slot B"><span class="i">#8</span><span class="who">B</span><span class="r">第3只</span><span>–</span></div>
+  <div class="slot C hit"><span class="i">#9</span><span class="who">C</span><span class="r">第3只</span><span class="p">🎃</span></div>
+  <div class="slot A hit"><span class="i">#10</span><span class="who">A</span><span class="r">第4只</span><span class="p">🎃</span></div>
+</div>
+</div>
+<div class="legend">
+  <span style="--sw:var(--a)">A 队长自己的部队</span>
+  <span style="--sw:var(--b)">B 成员</span>
+  <span style="--sw:var(--c)">C 成员</span>
+  <span style="--sw:var(--accent)">🎃 这一格掉了南瓜</span>
+</div>
+<div class="result">
+  <div class="res"><b>正确行为</b>4 只泰坦只该用掉 A 的 4 格，全部归 A。</div>
+  <div class="res bad"><b>实际：A</b>打到第 4 只就把这一轮 10 格用完了（第 4 只 B、C 那两格算进下一轮）。A 自己只分到 4 格，拿到 2 个。</div>
+  <div class="res bad"><b>实际：B、C 的 3 个</b>手动扣体力 → 直接丢掉；自动补体力 → 发给 B、C。</div>
+</div>
+
+<h2>影响</h2>
+<ul>
+  <li><b>队长的长期平均不变</b>：每格平均 0.5 个，队长每只泰坦分到 1 格，平均还是 0.5 个/只。但保底失效，可能连续很多只都不掉。玩家会反馈「多人集结很久不出南瓜」。</li>
+  <li><b>自动补体力的成员白拿南瓜</b>：违背「集结只有队长掉落」（<code>:2083</code> 注释）。而且用的是队长的周期，不占成员自己的，成员的周期不动。</li>
+  <li><b>手动扣体力的成员</b>：那几格掷出的南瓜直接浪费，谁也拿不到。</li>
+  <li>不只影响南瓜：所有 <code>monster_type</code> 含 2 的 <code>SlgDropSwitchCfg</code> 掉落规则都受影响。</li>
+</ul>
+
+<h2>修复建议</h2>
+<p>把队长的掉落移到循环外，每只泰坦只掷一次，只发给队长；循环里成员的 <code>slgrop</code> 从空列表开始（成员自己的秘钥、回归掉落照常追加）。</p>
+<pre><span class="add">captainSlgDrop := wmap.slgDrop(captainPlayerID, monsterType) // 每只泰坦只掷一次</span>
+for _, pt := range rallyTroopList {
+    ptOwnerId := pt.GetOwnerId()
+    ...
+<span class="add">    var slgrop []*cspb.TypIDVal
+    if ptOwnerId == captainPlayerID {
+        slgrop = gdconf.DeepCopyTypIDValList(captainSlgDrop)
+    }</span>
+    ...
+}</pre>
+<ul>
+  <li>要确认的设计点：自动补体力的成员到底该不该掉南瓜。如果策划本来就想让他们掉，就该用<b>成员自己</b>的周期（<code>slgDrop(ptOwnerId, …)</code>），不能共用队长的。</li>
+  <li>队长自动补体力时，掉落走 <code>autoCostMap[captain].SlgDrop</code>，修改后这条路径仍然只发一次，不会重复。</li>
+</ul>
+
+<h2>关联</h2>
+<ul>
+  <li>发现来源：<a href="2026-11-02-万圣节刷泰坦-玩家7318277体力与南瓜统计.html">玩家 7318277 万圣节刷泰坦：体力与南瓜</a>。该统计不受此问题影响（南瓜数直接数自战报）。</li>
+  <li>线上暂无玩家反馈，需要和策划确认后再排期修复。</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<meta charset="utf-8">
+<title>小号老邮件成因复核</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --ink:#1c2330; --muted:#5b6475; --line:#dde1e8;
+  --accent:#2f5d8a; --accent-soft:#e7eef6;
+  --ok:#2c7a4b; --ok-soft:#e5f3ea;
+  --warn:#9a5b00; --warn-soft:#fbf0dc;
+  --bad:#a8291f; --bad-soft:#fbe6e3;
+  --code-bg:#eef1f5;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#13171e; --surface:#1b2029; --ink:#e3e7ee; --muted:#9aa3b2; --line:#2c3340;
+    --accent:#86afd9; --accent-soft:#1f2c3b;
+    --ok:#6fcb92; --ok-soft:#18301f;
+    --warn:#e6b25c; --warn-soft:#352813;
+    --bad:#f08a80; --bad-soft:#3a1c19;
+    --code-bg:#222834;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#13171e; --surface:#1b2029; --ink:#e3e7ee; --muted:#9aa3b2; --line:#2c3340;
+  --accent:#86afd9; --accent-soft:#1f2c3b;
+  --ok:#6fcb92; --ok-soft:#18301f;
+  --warn:#e6b25c; --warn-soft:#352813;
+  --bad:#f08a80; --bad-soft:#3a1c19;
+  --code-bg:#222834;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.75 "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;padding-inline:16px;padding-block:32px 56px;margin:0}
+.wrap{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2{font-family:"Noto Serif SC","Songti SC",serif;text-wrap:balance;margin:0;line-height:1.35}
+h1{font-size:28px}
+h2{font-size:20px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:16px;margin:0 0 4px}
+p{margin:0}
+.meta{color:var(--muted);font-size:13px;letter-spacing:.02em}
+code,.mono{font-family:"JetBrains Mono",ui-monospace,Consolas,monospace;font-size:.88em}
+code{background:var(--code-bg);padding:1px 5px;border-radius:4px;word-break:break-all}
+.verdict{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:6px;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.verdict strong{color:var(--warn)}
+section{display:flex;flex-direction:column;gap:14px}
+.item{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:start}
+.item .body{display:flex;flex-direction:column;gap:6px}
+.chip{font-size:12px;font-weight:500;letter-spacing:.04em;padding:2px 8px;border-radius:999px;white-space:nowrap;margin-top:3px}
+.chip.ok{color:var(--ok);background:var(--ok-soft)}
+.chip.bad{color:var(--bad);background:var(--bad-soft)}
+.chip.warn{color:var(--warn);background:var(--warn-soft)}
+.chip.todo{color:var(--accent);background:var(--accent-soft)}
+ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+pre{margin:0;background:var(--code-bg);border-radius:6px;padding:12px 14px;overflow-x:auto;font-family:"JetBrains Mono",ui-monospace,Consolas,monospace;font-size:12.5px;line-height:1.6}
+.table-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500;font-size:12.5px;letter-spacing:.04em}
+.foot{color:var(--muted);font-size:13px}
+@media (max-width:480px){h1{font-size:23px}.item{grid-template-columns:1fr}}
+</style>
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:8px">
+    <p class="meta">复核对象：Bug/小号收到老邮件成因.html ｜ 关联 H5-10969 / 提交 a8be7a7f2 ｜ 复核日期 2026-10-27</p>
+    <h1>小号收到老邮件——成因复核</h1>
+    <p class="meta">依据：<code>mail/webserver/mailserver</code> 与 <code>game/play/internal/ctl_mail.go</code> 源码（分支 h5_new_tf_v1054）</p>
+  </header>
+
+  <div class="verdict">
+    <p><strong>结论：bug 确实存在，但原文档对"修复后为什么还有"的解释站不住，"正常创角 100% 复现"也说过头了。</strong></p>
+    <p>入盟路径能绕过守卫，这一点成立。但今天的样例 13029098 没有联盟（<code>guild_id=0</code>），这条路径解释不了它。按当前代码，无联盟新号不会触发，所以更可能是<b>线上 mailserver 没部署 a8be7a7f2</b>。</p>
+  </div>
+
+  <section>
+    <h2>说对了的部分</h2>
+
+    <div class="item"><span class="chip ok">成立</span><div class="body">
+      <h3>10703971 的成因</h3>
+      <p>这个号 07-15 创角，当时 H5-10969 还没修：</p>
+      <ul>
+        <li>新号还没有 mail_meta 记录时，<code>QueryMailMeta</code> 返回非 nil 的空 map（<code>mail_storage_new.go:1057</code>）；</li>
+        <li>修复前的守卫是 <code>SubscribeGroup == nil</code>，空 map 拦不住；</li>
+        <li><code>handler.go:221</code> 取到 <code>lastTimestamp = 0</code>，<code>QueryNewMailsAfterTimestamp</code> 把公共邮箱 <code>h5_3_282</code> 里所有未过期邮件都拷进了玩家邮箱。</li>
+      </ul>
+    </div></div>
+
+    <div class="item"><span class="chip ok">成立</span><div class="body">
+      <h3>入盟只写 key 2，绕过 <code>len==0</code></h3>
+      <pre>创角 → syncMailGroup → UserMailGroup（group == nil，handler.go:1344）
+        └ 只写 mail_group，不写 subscribe_group
+入盟 → unionMailSubscribe（ctl_union.go:2203）→ syncMailGroup → UserMailGroup
+        └ 只对 GroupType=2 调 updateSubscribeGroupInfo（handler.go:1356）
+        └ SubscribeGroup = {2: ts}，len == 1，通过守卫（handler.go:205）
+首次 /login → doLogin
+        └ SubscribeGroup[3] 为零值 0 → 全量拉取全服邮件</pre>
+      <p>触发条件：<b>新号在第一次打开邮件（/login）之前就加入了联盟。</b></p>
+    </div></div>
+
+    <div class="item"><span class="chip ok">成立</span><div class="body">
+      <h3>修复 1 方向正确</h3>
+      <p>在 doLogin 里按组判断 <code>lastTimestamp &lt;= 0</code>：补写当前时间戳后 <code>continue</code>，不拉历史邮件。这是最稳的兜底，不依赖调用顺序。</p>
+    </div></div>
+  </section>
+
+  <section>
+    <h2>有问题的部分</h2>
+
+    <div class="item"><span class="chip bad">矛盾</span><div class="body">
+      <h3>无联盟样例 13029098 解释不通</h3>
+      <p>没入盟就走不了路径 B。修复后，普通新号第一次登录时 <code>len == 0</code>，会调用 <code>initSubscribeGroupInfo</code> 初始化 key 2 和 key 3（<code>logic.go:250</code>），不会拉老邮件。</p>
+      <p>我检查了所有写 mail_meta 的地方：<code>doMailTransfer</code>、<code>batchUpdateMailMeta</code>、<code>updateNewMailTimestamp</code>、<code>UpdateMailMeta</code>，都不会造成只有部分 key 的情况，代码里找不到其他触发路径。所以更可能是：</p>
+      <ul>
+        <li>线上 mailserver 没部署 a8be7a7f2；或者</li>
+        <li>数数里的 <code>guild_id</code> 不是领邮件那一刻的值。</li>
+      </ul>
+    </div></div>
+
+    <div class="item"><span class="chip bad">错误</span><div class="body">
+      <h3>把提交时间当成了上线时间</h3>
+      <p>a8be7a7f2 是 07-22 提交到 <code>h5_new_tf_v1048_mail</code> 上的，之后进了 1049 系列分支。原文"07-23 起 = 修复后"的划分没有依据，那 3,186 人里有多少是修复没上线、有多少是真的绕过了守卫，目前分不清。</p>
+    </div></div>
+
+    <div class="item"><span class="chip warn">过度</span><div class="body">
+      <h3>"正常创角 100% 触发"</h3>
+      <p>按当前代码，只有"先入盟、再首次打开邮件"才会触发，或者线上跑的是旧版本。复现步骤里"进主城后自动 /mail/polling"这一步，在新代码下恰好<b>不会</b>触发。</p>
+    </div></div>
+
+    <div class="item"><span class="chip warn">混淆</span><div class="body">
+      <h3>"路径 A（空 map / 独立进程未拦截）"</h3>
+      <p>这条把修复前和修复后的情况混在了一起。空 map 正是 a8be7a7f2 已经修掉的问题，修复后不再是一条独立的绕过路径。</p>
+    </div></div>
+
+    <div class="item"><span class="chip warn">次要</span><div class="body">
+      <h3>修复 2 只覆盖 <code>group == nil</code></h3>
+      <p>这次修复的主力还是修复 1，修复 2 可有可无。</p>
+    </div></div>
+  </section>
+
+  <section>
+    <h2>原文观点对照</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>原文观点</th><th>复核结果</th><th>依据</th></tr></thead>
+        <tbody>
+          <tr><td>10703971 因 lastTimestamp=0 拉取全表</td><td><span class="chip ok">成立</span></td><td class="mono">mail_storage_new.go:1057, handler.go:221</td></tr>
+          <tr><td>入盟增量只写 subscribe_group.2，绕过守卫</td><td><span class="chip ok">成立</span></td><td class="mono">handler.go:1344-1357, ctl_union.go:2203</td></tr>
+          <tr><td>doLogin 缺少零值兜底</td><td><span class="chip ok">成立</span></td><td class="mono">handler.go:221</td></tr>
+          <tr><td>07-23 后的数据即"修复后仍触发"</td><td><span class="chip bad">无依据</span></td><td>提交时间 ≠ 上线时间</td></tr>
+          <tr><td>老区正常创角 100% 触发</td><td><span class="chip warn">过度</span></td><td class="mono">handler.go:205 → logic.go:250</td></tr>
+          <tr><td>13029098（无联盟）由路径 B 触发</td><td><span class="chip bad">矛盾</span></td><td>路径 B 要求先入盟</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>建议下一步</h2>
+    <div class="item"><span class="chip todo">先做</span><div class="body"><p><b>确认线上 mailserver 的实际构建版本和发布时间</b>，看是否包含 a8be7a7f2。这一项决定了到底是"修复没上线"还是"修复被绕过"。</p></div></div>
+    <div class="item"><span class="chip todo">待查</span><div class="body"><p>抽查 13029098、13034220 的 <code>mail_meta.subscribe_group</code>，以及它们在 <code>mail_group</code> 里第一次出现 GroupType=2 的时间。h5prod MCP 查 mail71 实例没有权限（find 和列集合都失败），需要有权限的人查。</p></div></div>
+    <div class="item"><span class="chip todo">修复</span><div class="body"><p>不管查出来是哪种情况，修复 1 都应该做，并且要单独构建、发布 mailserver 进程。</p></div></div>
+  </section>
+
+  <p class="foot">相关：[[小号收到老邮件成因]] · H5-10969</p>
+</div>

@@ -1,0 +1,451 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>H5 战损礼包买完首个礼包后限时礼包入口消失成因与代码核查</title><style>
+:root {
+  color-scheme: light;
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --text: #1f2937;
+  --strong: #111827;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --head: #f3f4f6;
+  --soft: #f9fafb;
+  --accent: #2563eb;
+  --accent-soft: #eff6ff;
+  --code-bg: #f6f0f0;
+  --code-line: #ecdada;
+  --code: #b4232a;
+  --ok: #047857;
+  --ok-soft: #ecfdf5;
+  --ok-line: #a7f3d0;
+  --bad: #b91c1c;
+  --bad-soft: #fef2f2;
+  --bad-line: #fecaca;
+  --warn: #a16207;
+  --warn-soft: #fffbeb;
+  --warn-line: #fde68a;
+  --shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.75 -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body { padding: 32px 16px 64px; }
+
+.report {
+  max-width: 1020px;
+  margin: 0 auto;
+  padding: 38px 44px 48px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+.report.wide { max-width: 1200px; }
+
+.report-header {
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.meta {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+h1 {
+  margin: 0;
+  color: var(--strong);
+  font-size: 26px;
+  font-weight: 750;
+  line-height: 1.4;
+}
+h2 {
+  margin: 0 0 14px;
+  padding-left: 10px;
+  border-left: 4px solid var(--accent);
+  color: var(--strong);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+h3 {
+  margin: 20px 0 8px;
+  color: var(--strong);
+  font-size: 16px;
+  font-weight: 650;
+}
+section { margin-top: 32px; }
+section + section {
+  padding-top: 28px;
+  border-top: 1px solid #f1f5f9;
+}
+p { margin: 0 0 10px; }
+p:last-child { margin-bottom: 0; }
+strong { color: var(--strong); font-weight: 650; }
+ul, ol { margin: 8px 0; padding-left: 1.5em; }
+li { margin: 8px 0; }
+li > ul, li > ol { margin-top: 6px; }
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+code {
+  padding: 1px 6px;
+  border: 1px solid var(--code-line);
+  border-radius: 5px;
+  background: var(--code-bg);
+  color: var(--code);
+  font: 0.86em/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  overflow-wrap: break-word;
+}
+
+/* 首屏结论框：白底微灰 + 左色条 + 状态胶囊 + 一句话结论 + 3格 KPI */
+.conclusion {
+  margin: 20px 0 26px;
+  padding: 20px 22px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent);
+  border-radius: 12px;
+}
+.conclusion[data-status="ok"] { border-left-color: var(--ok); }
+.conclusion[data-status="abnormal"] { border-left-color: var(--bad); }
+.conclusion[data-status="risk"],
+.conclusion[data-status="pending"] { border-left-color: var(--warn); }
+.conclusion p {
+  font-size: 15.5px;
+  line-height: 1.75;
+  color: var(--text);
+}
+.conclusion .lead {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--strong);
+  margin-bottom: 6px;
+}
+.conclusion ul { margin: 4px 0 0; }
+.conclusion li + li {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.status.ok { color: var(--ok); }
+.status.bad { color: var(--bad); }
+.status.warn { color: var(--warn); }
+.status.neutral { color: var(--accent); }
+.status .resolved { color: var(--ok); }
+
+.pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+.pill.ok { color: var(--ok); background: var(--ok-soft); border-color: var(--ok-line); }
+.pill.bad { color: var(--bad); background: var(--bad-soft); border-color: var(--bad-line); }
+.pill.warn { color: var(--warn); background: var(--warn-soft); border-color: var(--warn-line); }
+.pill.neutral { color: var(--accent); background: var(--accent-soft); border-color: #bfdbfe; }
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 14px 0 2px;
+}
+.kpi {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.kpi .label { color: var(--muted); font-size: 12px; margin-bottom: 2px; }
+.kpi .value {
+  color: var(--strong);
+  font-size: 20px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.kpi .value.ok { color: var(--ok); }
+.kpi .value.bad { color: var(--bad); }
+.kpi .value.warn { color: var(--warn); }
+
+/* 并排原因卡片：固定 3 列一字排开 */
+.causes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 12px 0 16px;
+}
+.cause {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--bad);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.cause.warn-card { border-top-color: var(--warn); }
+.cause .n { font-size: 12px; font-weight: 700; color: var(--bad); }
+.cause.warn-card .n { color: var(--warn); }
+.cause .t { font-size: 15px; font-weight: 700; color: var(--strong); margin: 2px 0 6px; }
+
+/* 表格：浅灰表头 + 纵横细分隔线 + 合理列宽防挤压 */
+.table-scroll {
+  max-width: 100%;
+  margin: 12px 0 18px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.7;
+}
+th, td {
+  padding: 13px 15px;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: break-word;
+}
+th:first-child, td:first-child {
+  width: 22%;
+  min-width: 165px;
+}
+th:last-child, td:last-child { border-right: 0; }
+tbody tr:last-child td { border-bottom: 0; }
+th {
+  background: var(--head);
+  color: var(--strong);
+  font-weight: 650;
+}
+th.c, td.c {
+  text-align: center;
+  white-space: nowrap;
+  width: 15%;
+  min-width: 118px;
+}
+td.big {
+  font-weight: 700;
+  color: var(--strong);
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  width: 15%;
+  min-width: 118px;
+}
+td.big.bad { color: var(--bad); }
+td.big.ok { color: var(--ok); }
+.sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+}
+td p { margin-bottom: 8px; }
+td p:last-child { margin-bottom: 0; }
+.num { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.table-scroll table.fixed-wide { min-width: 1080px; }
+
+/* 竖排时间线：红点异常、绿点恢复、灰点常规 */
+.timeline {
+  list-style: none;
+  margin: 14px 0 8px;
+  padding: 0 0 0 6px;
+}
+.timeline li {
+  position: relative;
+  margin: 0;
+  padding: 0 0 18px 24px;
+  border-left: 2px solid var(--line);
+}
+.timeline li:last-child {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid #9ca3af;
+}
+.timeline li.bad::before { border-color: var(--bad); background: var(--bad-soft); }
+.timeline li.ok::before { border-color: var(--ok); background: var(--ok); }
+.timeline .tm {
+  font-weight: 700;
+  color: var(--strong);
+  font-variant-numeric: tabular-nums;
+}
+.timeline .utc {
+  color: var(--muted);
+  font-size: 12px;
+  margin-left: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 问答卡片：默认展开不藏字，标题栏清晰分层 */
+.qa-list { display: grid; gap: 10px; margin: 12px 0; }
+.qa {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--soft);
+}
+.qa .q {
+  font-weight: 700;
+  color: var(--strong);
+  margin-bottom: 6px;
+}
+.qa .a { font-size: 15px; color: var(--text); }
+
+/* 重点框 / 告警框 / 调用链 / 客服回话框（限定 div.warn 避免污染 .pill.warn） */
+.highlight, div.warn:not(.value):not(.bar-seg), .flow {
+  margin: 14px 0;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--soft);
+}
+.highlight {
+  border-left: 4px solid var(--ok);
+  background: var(--soft);
+}
+.highlight .tip {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ok);
+}
+div.warn:not(.value):not(.bar-seg) { background: var(--warn-soft); border-color: var(--warn-line); }
+.flow {
+  border-left: 4px solid var(--accent);
+  font: 13.5px/1.85 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bar {
+  display: flex;
+  height: 10px;
+  margin: 6px 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--line);
+}
+.bar-seg { height: 100%; background: var(--accent); }
+.bar-seg.ok { background: var(--ok); }
+.bar-seg.bad { background: var(--bad); }
+.bar-seg.warn { background: var(--warn); }
+
+details {
+  margin: 10px 0;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--soft);
+}
+summary { cursor: pointer; font-weight: 700; color: var(--strong); }
+
+.figure-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin: 14px 0;
+}
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+figure {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--soft);
+}
+figcaption {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.yes { color: var(--ok); font-weight: 700; }
+.no { color: var(--bad); font-weight: 700; }
+
+@media (max-width: 720px) {
+  body { padding: 16px 10px 36px; }
+  .report { padding: 24px 18px 32px; border-radius: 12px; }
+  .kpi-grid, .causes, .figure-grid { grid-template-columns: 1fr; }
+  th, td { padding: 9px 10px; }
+}
+
+@media print {
+  body { padding: 0; background: #fff; }
+  .report, .report.wide { max-width: none; padding: 0; border: 0; box-shadow: none; }
+  h1, h2, h3 { break-after: avoid; }
+  .conclusion, .kpi, figure, .cause, .qa { break-inside: avoid; }
+  .table-scroll { overflow: visible; }
+  thead { display: table-header-group; }
+  details > *:not(summary) { display: block !important; }
+  a { color: inherit; text-decoration: none; }
+}
+</style></head><body><main class="report" data-report-type="investigation"><header class="report-header"><h1>H5 战损礼包买完首个礼包后限时礼包入口消失：代码与配置核查报告</h1><div class="meta">核查日期：2026-11-05 · H5 · 双端源码与最新配表只读核查（对标 K3 S156 限时礼包入口消失案）<br>基线：客户端 k3client <code>d8a752ef117d</code>（2026-10-28）· 服务器 gs <code>921c045b3403</code>（2026-10-29）· 配表 <code>配置表/TD(最新)/Gift.xlsx</code></div></header><div class="conclusion" data-status="abnormal"><span class="status bad"><span class="pill bad">源码层面存在同款缺陷</span><span class="pill warn">影响程度待实测确认</span><span class="pill warn">重登无法自救</span></span><p class="lead">H5 不仅原样存在 K3 报告定位的 3 处双端代码缺陷，而且因为 H5 在自动拍脸、支付回调与弹窗刷新上的 4 处差异，从源码推演玩家受影响程度可能比 K3 更重（尚未在测试服实测，见第六、七节）。</p><p>当玩家同时触发普通弹窗礼包（<code>Type=19</code>）与战损礼包（<code>Type=39</code>，<code>2700001~2700004</code>）或仅触发战损礼包时，买完第 1 个礼包后弹窗立即强关、主城左侧按钮当场消失；且 H5 战损礼包配为 <code>DayTimes=1, CdTime=0</code>，玩家连靠重新登录触发拍脸自救的途径也被彻底堵死。（A）</p><div class="kpi-grid"><div class="kpi"><div class="label">同源双端缺陷 + H5 特有缺陷</div><div class="value bad">3 + 1 处</div></div><div class="kpi"><div class="label">受影响战损礼包总额</div><div class="value bad">¥1,172 / $179.96</div></div><div class="kpi"><div class="label">H5 当日重登能否再拍脸</div><div class="value bad">否（DayTimes=1）</div></div></div></div><section><h2>一、先回答：H5 有没有这个 Bug</h2><div class="causes"><div class="cause"><div class="n">问题点 1 · 同 K3</div><div class="t">主城按钮漏判 Type=39</div>弹窗内 <code>PopGiftMgr</code> 认 <code>Type=19/39</code>，但主城按钮 <code>HeroPopGiftMgr.CheckHasGift</code> 只查 <code>Type=19</code>，没有 <code>19</code> 时入口直接隐藏。</div><div class="cause"><div class="n">问题点 2 · 含 H5 陷阱</div><div class="t">买单档即强关整个弹窗</div><code>UIGiftWidget</code> 买任意 1 个即调用 <code>ClosePopup</code>；且 H5 的 <code>UIGiftPopup.OnOpenStart</code> 空列表未调 <code>Close()</code>，直删会留空壳。</div><div class="cause"><div class="n">问题点 3/4 · H5 差异</div><div class="t">已购状态不同步 + 拍脸死锁</div>服务端对 <code>Type=39</code> 只下发 bought 为购买前旧值的 <code>isRecharge=false</code> 推送，带正确次数的充值推送被拦截（不直接导致入口消失）；客户端 <code>DayTimes=1</code> 与 <code>CheckPopGift</code> 耦合封死重登拍脸。</div></div><p>结论：K3 案例中的每一条故障机制在 H5 均未修复，且 H5 修复时若照搬 K3 客户端改动而不补 <code>UIGiftPopup.OnOpenStart</code> 的 <code>Close()</code>，还会引入“买完最后一档残留空弹窗”的新 Bug。（A）</p><p><strong>成因归属：</strong>“入口消失”的直接成因是问题点 1（主城按钮漏判 <code>Type=39</code>）与问题点 2（买单档强关弹窗）；问题点 3 影响的是战损礼包购买后的已购状态与支付回调，与入口显隐无直接因果，单列处理。（A）</p></section><section><h2>二、调用链：H5 战损礼包触发与购买全流程</h2><div class="flow">【触发链路】大地图 PVP 结算 WMap.tiggerLossCompensate（ctl_battle_settle.go:2544）
+ ├ 死兵数 × MapBattle_BattleLossGift_Score(10000=100%) → W2PPvpDeadScoreNtf
+ └ Play.PvpDeadScoreGift（ctl_gitf_time_limit.go:304）累加 BattleLossScore（跨天按 20% 保底 5 万衰减）
+      └ 达 10万 / 20万 / 40万 / 80万 触发 2700001~2700004（Type=39, 封装 15001~15004, Tab=1, 有效期 24h）
+
+【入口与弹窗链路】客户端 Tab=1（PopGiftTypeEnum.Limit，共 815 个 Type=19 + 4 个 Type=39）
+ ├ 弹窗内部：PopGiftMgr.CheckGiftIsValid（PopGiftMgr.cs:597）校验 Type==19 || Type==39 → 弹窗内多页签正常显示
+ ├ 主城按钮：HeroPopGiftMgr.CheckHasGift（HeroPopGiftMgr.cs:79）只取 GetPeriodGiftDats(PopGift=19) → 漏掉 39！
+ └ 点击购买：UIGiftWidget.OnBtnBuyClick（UIGiftWidget.cs:413）无条件 ClosePopup&lt;UIGiftPopupPop&gt;() → 买 1 档即强关整窗！
+
+【服务端购买推送链路】Play.LoadPlayerOnBuyProduct（ctl_d2iap.go:185）
+ ├ SendGiftCheckFirst :289 → delGiftTimeLimitRecord :2009 先 CurCount++ 再发 UpdateGiftNtf(bought=购买前旧值，首购为 0, isRecharge=false)
+ ├ LoadPlayerOnBuyGift :392 → SendUpdateGiftNtf(isRecharge=true) 在 :1087 遇到 Type==39 直接 return（此处仅单个礼包，正确的 bought 推送丢失）
+ └ H5 客户端 LPay.OnBuySuccessNtf（LPay.cs:904）见 isRecharge==false 直接 return → 购买战损礼包时客户端支付回调断链！</div><p>在 H5 配表 <code>D2GiftPackageCfg.tsv</code> 中，连 K3 案例里同场出现的 <code>4000021~4000024</code>（<code>弹窗礼包-远征兵临城下1~4_火赛季</code>，<code>Type=19, Tab=1</code>）也完全一致。（A）</p></section><section><h2>三、H5 战损礼包 4 档配置与 K3 表现对照</h2><div class="table-scroll"><table><thead><tr><th>档位与礼包 ID</th><th>H5 解锁死兵积分与冷却</th><th>价格与核心道具（Gift.xlsx）</th><th>H5 自动拍脸配置（D2GiftPackageCfg）</th></tr></thead><tbody><tr><td>第 1 档 <code>2700001</code><span class="sub">战争补给礼包-1（封装 15001）</span></td><td><code>Score = 100,000</code><span class="sub">档位 CD 7 天 · 持续 24h</span></td><td><code>¥68 / $9.99</code>（1360 钻）<span class="sub">复活圣泉 40,000 + 预备兵 25,000</span></td><td><code>Tab=1, DayTimes=1, CdTime=0</code><span class="sub">TabOrder=2, RemindToday=1</span></td></tr><tr><td>第 2 档 <code>2700002</code><span class="sub">战争补给礼包-2（封装 15002）</span></td><td><code>Score = 200,000</code><span class="sub">档位 CD 7 天 · 持续 24h</span></td><td><code>¥128 / $19.99</code>（2560 钻）<span class="sub">复活圣泉 70,000 + 预备兵 40,000</span></td><td><code>Tab=1, DayTimes=1, CdTime=0</code><span class="sub">TabOrder=2, RemindToday=1</span></td></tr><tr><td>第 3 档 <code>2700003</code><span class="sub">战争补给礼包-3（封装 15003）</span></td><td><code>Score = 400,000</code><span class="sub">档位 CD 7 天 · 持续 24h</span></td><td><code>¥328 / $49.99</code>（6560 钻）<span class="sub">复活圣泉 150,000 + 预备兵 90,000</span></td><td><code>Tab=1, DayTimes=1, CdTime=0</code><span class="sub">TabOrder=2, RemindToday=1</span></td></tr><tr><td>第 4 档 <code>2700004</code><span class="sub">战争补给礼包-4（封装 15004）</span></td><td><code>Score = 800,000</code>（扣除循环）<span class="sub">档位 CD 0 秒 · 持续 24h</span></td><td><code>¥648 / $99.99</code>（12960 钻）<span class="sub">复活圣泉 350,000 + 预备兵 150,000</span></td><td><code>Tab=1, DayTimes=1, CdTime=0</code><span class="sub">TabOrder=2, RemindToday=1</span></td></tr></tbody></table></div><p>注：H5 积分门槛为 10万/20万/40万/80万（系数 100%，跨天衰减 20% 保底 5 万），且第 4 档若在 24h 有效期内未买，<code>alreadyGift(p, 2700004)</code>（<code>ctl_gitf_time_limit.go:312</code>）会在该礼包 24h 有效期内跳过后续 80 万积分触发；过期后 <code>alreadyGift</code> 会清理过期记录（<code>ctl_gitf_time_limit.go:268-283</code>），触发恢复，积分不丢失。（A）</p></section><section><h2>四、原因与处理方案（客户端）：入口漏判与买单档强关</h2><h3>问题点 1：主城左侧按钮显隐与倒计时漏掉 PvpDeadGift（P0）</h3><p><code>HeroPopGiftMgr.CheckHasGift()</code>（<code>HeroPopGiftMgr.cs:79</code>）只查询 <code>GameData.I.GiftData.GetPeriodGiftDats(GiftTypeEnum.PopGift)</code>（<code>Type=19</code>），<code>GetMinInvalidTime()</code>（<code>:48-66</code>）也只遍历该列表。当弹窗内只剩 <code>Type=39</code> 战损礼包时，<code>CheckHasGift()</code> 返回 <code>false</code>，<code>UIMain_SpecialActivityWidget.cs:419</code> 立即隐藏主城入口。</p><p><strong>修复方案：</strong>将 <code>HeroPopGiftMgr.cs:79</code> 改为 <code>GameData.I.GiftData.GetPeriodGiftDats(GiftTypeEnum.PopGift, GiftTypeEnum.PvpDeadGift)</code>（<code>GetPeriodGiftDats</code> 原生支持变长参数）。（A）</p><h3>问题点 2：买单档即强关整窗 + H5 空列表未关窗陷阱（P1）</h3><p><code>UIGiftWidget.OnBtnBuyClick</code>（<code>UIGiftWidget.cs:413</code>）与 <code>OnBuyItemFunc</code>（<code>:445</code>）点击购买即调用 <code>PopupManager.I.ClosePopup&lt;UIGiftPopupPop&gt;()</code>。<strong>但注意 H5 差异</strong>：H5 收到 <code>PaySuccess</code> 后走 <code>UIGiftPopup.RefreshShowUI -&gt; OnOpenStart()</code>（<code>UIGiftPopup.cs:445-448</code>），当 <code>mDataList.Count == 0</code> 时只 <code>return</code> 未调 <code>Close()</code>！</p><p><strong>修复方案：</strong>① <code>UIGiftWidget.cs</code> 在多页签未买完时不调 <code>ClosePopup</code>；② <strong>同步在 <code>UIGiftPopup.cs:445</code> 的 <code>if (mDataList.Count == 0)</code> 分支补上 <code>Close();</code></strong>，防止买完最后一档残留空壳弹窗。（A）</p></section><section><h2>五、原因与处理方案（服务端与拍脸）：推送拦截与重登死锁</h2><h3>问题点 3：服务端战损礼包购买后已购状态推送缺失，H5 客户端 LPay 回调断链（P1，非入口消失直接成因）</h3><p>服务端 <code>delGiftTimeLimitRecord</code>（<code>ctl_d2iap.go:2009-2024</code>）在 <code>RecordShopping</code> 之前执行（战损礼包记录的 <code>TargetId</code> 由 <code>AddPvpLoseRecord</code> 以 <code>idgen.NewID()</code> 生成，必然 &gt; 0），先对 <code>record.CurCount++</code> 并发送 <code>isRecharge=false</code> 的 <code>UpdateGiftNtf</code>；由于 <code>GetGiftBoughtCount</code> 读取的是 <code>RecordShopping</code> 写入的购买记录，此时 <code>bought</code> 仍是<strong>购买前旧值</strong>（首购为 0）。随后 <code>SendUpdateGiftNtf</code>（<code>:1087-1089</code>）遇到 <code>GiftTypeBattleLossGift(39)</code> 直接 <code>return</code>。而在 H5 中，<code>LPay.OnBuySuccessNtf</code>（<code>LPay.cs:904-907</code>）判断 <code>(bool)args[1] == false</code>（即 <code>isRecharge == false</code>）时直接 <code>return</code>，导致购买战损礼包后客户端支付成功回调 <code>_actionList</code> 与历史购买次数累加失效，且客户端<strong>收不到任何一条已购次数正确的推送</strong>。</p><p><strong>历史背景：</strong>该 <code>return</code> 由 <code>7ff1cd1f5c</code>（2024-01-30，攻击补偿）引入，当时函数只处理单个礼包，含义是“战损礼包不推送”，属有意设计；<code>be891f480c</code>（2024-08-24，优化礼包推送）改为批量推送时沿用了 <code>return</code>，才变成“整批丢弃”。整批丢弃只会发生在 <code>GiftTrigger</code>（<code>ctl_d2iap.go:890</code>）与多选一分支，且前提是 39 号礼包混入其列表；战损礼包走 PVP 积分触发路径，正常不会混入，因此“同批新礼包被吞”属理论风险而非已发生问题。（A）</p><p><strong>修复方案：</strong>① <code>SendUpdateGiftNtf</code> 中的 <code>return</code> 改为 <code>continue</code>，消除整批丢弃风险；② 将 <code>delGiftTimeLimitRecord</code> 的推送移到 <code>RecordShopping</code> 之后（或推送时 bought 补 +1），保证已购次数正确；③ 是否对战损礼包恢复发送 <code>isRecharge=true</code> 推送，需先与客户端确认当初跳过的原因及 <code>LPay</code> 实际依赖的消息后再定，避免重复弹窗等副作用。（B）</p><h3>问题点 4：H5 特有的 3 重自动拍脸死锁（P1）</h3><ul><li><strong>限制一（配表与去重）</strong>：<code>15001~15004</code> 配了 <code>DayTimes=1, CdTime=0, TabOrder=2</code>（<code>AutoOpenMgr.cs:581-608</code>），非登录切回主城因 <code>CoolDownTime==0</code> 永不弹出，登录时同属 <code>TabOrder=2</code> 只弹 1 个且弹完 1 次即耗尽当日额度。</li><li><strong>限制二（错误耦合普通礼包）</strong>：<code>AutoOpenMgr.PopGiftCheck</code>（<code>AutoOpenMgr.cs:938-943</code>）拼接了 <code>&amp;&amp; PopGiftMgr.I.CheckPopGift(true)</code>，后者校验的是 <code>GiftTypeEnum.Common(1)</code> 普通周/月常驻礼包（<code>PopGiftMgr.cs:465-496</code>），普通礼包售罄即连坐封死 <code>Tab=1</code> 自动拍脸。</li><li><strong>限制三（今日不再弹出）</strong>：勾选 <code>UIDailyMuteToggle</code>（<code>UIGiftPopup.cs:281-284</code>）会将整个 <code>PopGiftTypeEnum_1</code> 当日静默。</li></ul><p><strong>修复方案：</strong>移除 <code>AutoOpenMgr.PopGiftCheck</code> 中对 <code>CheckPopGift(true)</code> 的错误耦合，并由策划评估将 <code>15001~15004</code> 的 <code>DayTimes / CdTime</code> 调整为允许冷却后重弹。（A）</p></section><section><h2>六、如何复现与回归验收</h2><ol><li><strong>复现路径</strong>：测试服账号同时触发 1 个 <code>Type=19</code> 弹窗礼包（如 <code>4000021</code>）与任意档位 <code>Type=39</code> 战损礼包（如大地图 PVP 死兵满 10 万触发 <code>2700001</code>）；打开主城左侧限时礼包弹窗，购买第 1 个页签（<code>4000021</code>），观察到弹窗立即关闭、主城左侧限时礼包按钮消失、重登也不再弹出剩余战损礼包。</li><li><strong>主城入口与倒计时回归</strong>：修复后，当账号仅有未购买的 <code>2700001~2700004</code>（无 <code>Type=19</code> 礼包）时，主城左侧 <code>HeroGift</code> 按钮正常显示，倒计时与最快过期的战损礼包一致。</li><li><strong>多页签连续购买与末档关窗回归</strong>：弹窗含多个页签时，买完第 1 个页签后弹窗保持打开并自动刷新切换到剩余未买页签；买完最后 1 个页签后弹窗自动关闭，不留空壳界面。</li><li><strong>战损礼包支付回调回归</strong>：直接购买 <code>2700001~2700004</code>，验证服务端下发的 <code>UpdateGiftNtf</code> 中 bought 为购买后的正确次数（如与客户端确认需要，再验证 <code>isRecharge=true</code> 推送），客户端 <code>LPay.OnBuySuccessNtf</code> 正常触发发奖弹窗与历史次数累加。</li></ol><p>以上复现与回归项基于源码确定性推演，待研发合入补丁后在测试服实机执行。（D）</p></section><section><h2>七、实际依据与缺口</h2><p>本报告全部代码与配置结论均来自 H5 本地仓库（客户端 <code>d8a752ef117d</code>、服务器 <code>921c045b3403</code>、配表 <code>配置表/TD(最新)/Gift.xlsx</code> 与 <code>Q全局配置.xlsx</code>）逐行只读核查。（A）</p><p>当前缺口：本次为针对 K3 线上案例的 H5 同源缺陷排查，未查询 H5 线上具体受影响玩家流水，也尚未修改业务代码或上测试服抓包实测。（D）</p><p><strong>修订记录（2026-11-05）：</strong>服务端部分复核后修正——① <code>delGiftTimeLimitRecord</code> 推送的 bought 是购买前旧值而非 1；② 补充 <code>SendUpdateGiftNtf</code> 中 <code>return</code> 的历史背景，“同批新礼包被吞”改为理论风险；③ 问题点 3 从 P0 降为 P1，明确其非入口消失直接成因；④ 去掉“100% 存在”“比 K3 更重”等未经实测的定性；⑤ 修复方案中“恢复 isRecharge=true 推送”改为待与客户端确认。客户端结论（问题点 1/2/4）未复核。</p><p>完整代码行号锚点与证据表见 <a href="report.md">核对底稿（report.md）</a>；面向运营与客服的通俗说明见 <a href="战损礼包买完首个礼包后入口消失成因_运营版.html">运营读者版</a>。</p></section></main></body></html>

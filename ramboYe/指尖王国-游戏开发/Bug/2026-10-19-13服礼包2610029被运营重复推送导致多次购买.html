@@ -1,0 +1,143 @@
+<title>礼包重复购买排查</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f5f7f9; --surface:#ffffff; --ink:#18212b; --muted:#5b6876; --line:#dbe2e8;
+  --accent:#2a6a96; --accent-soft:#e3eef6; --crit:#b23a30; --crit-soft:#f8e6e3;
+  --ok:#2f7a4f; --code-bg:#eef2f5;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#11171d; --surface:#18212a; --ink:#e4eaf0; --muted:#97a5b3; --line:#2a3743;
+    --accent:#7db5dd; --accent-soft:#1c3142; --crit:#ef8a7f; --crit-soft:#3a201d;
+    --ok:#7cc79a; --code-bg:#1d2832;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#11171d; --surface:#18212a; --ink:#e4eaf0; --muted:#97a5b3; --line:#2a3743;
+  --accent:#7db5dd; --accent-soft:#1c3142; --crit:#ef8a7f; --crit-soft:#3a201d;
+  --ok:#7cc79a; --code-bg:#1d2832;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.75;padding-inline:16px;padding-block:40px 64px}
+.wrap{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+header{display:flex;flex-direction:column;gap:14px}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--accent);font-weight:500}
+h1{font-size:28px;line-height:1.35;margin:0;text-wrap:balance;font-weight:700}
+h2{font-size:19px;margin:0 0 14px;text-wrap:balance;font-weight:700}
+p{margin:0}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.meta div{background:var(--surface);padding:10px 14px;display:flex;flex-direction:column}
+.meta dt{font-size:12px;color:var(--muted)}
+.meta dd{margin:0;font-weight:500;font-variant-numeric:tabular-nums}
+.verdict{background:var(--crit-soft);border-left:3px solid var(--crit);padding:14px 18px;border-radius:0 6px 6px 0}
+.verdict strong{color:var(--crit)}
+code,.mono{font-family:var(--mono);font-size:.86em}
+code{background:var(--code-bg);padding:1px 5px;border-radius:3px;word-break:break-word}
+section{display:flex;flex-direction:column}
+.timeline{list-style:none;margin:0;padding:0;border-left:2px solid var(--line);display:flex;flex-direction:column}
+.timeline li{position:relative;padding:8px 0 8px 22px;display:grid;grid-template-columns:76px 1fr;gap:12px;align-items:baseline}
+.timeline li::before{content:"";position:absolute;left:-6px;top:17px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--accent)}
+.timeline li.crit::before{background:var(--crit);border-color:var(--crit)}
+.timeline li.miss::before{border-color:var(--muted);border-style:dashed}
+.timeline time{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.timeline li.crit time,.timeline li.crit span{color:var(--crit);font-weight:500}
+.timeline li.miss span{color:var(--muted)}
+.chain{display:flex;flex-direction:column;gap:10px;margin:0;padding-left:20px}
+.chain li::marker{color:var(--accent);font-weight:700}
+.note{color:var(--muted);font-size:14px;margin-top:12px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;min-width:480px;background:var(--surface)}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.04em;background:var(--code-bg)}
+tr:last-child td{border-bottom:none}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:500}
+.fixes{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
+.fixes li{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 16px}
+.fixes b{display:block;margin-bottom:2px}
+.code-block{background:var(--code-bg);border-radius:6px;padding:12px 14px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.6;white-space:pre;margin-top:12px}
+footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:480px){
+  h1{font-size:23px}
+  .timeline li{grid-template-columns:1fr;gap:0}
+}
+</style>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">线上排查 · h5prod · 2026-10-19</div>
+  <h1>13 服玩家 139638 多次购买礼包 2610029</h1>
+  <dl class="meta">
+    <div><dt>服务器</dt><dd>game13</dd></div>
+    <div><dt>玩家</dt><dd>139638</dd></div>
+    <div><dt>礼包</dt><dd>2610029 神赐礼盒：行动力补给-2</dd></div>
+    <div><dt>当日购买</dt><dd>6 次 × 98 元</dd></div>
+  </dl>
+  <p class="verdict"><strong>结论：</strong>运营推送系统在玩家每买完一单后 10～30 秒内，又单独给他推了一次这个礼包。服务端收到同类型推送会直接覆盖旧记录，已购次数从 0 重新算，所以"限购 1 次"拦不住。6 单都是正常的"新推送 → 购买"，没有重复扣款，也没有重复发货。</p>
+</header>
+
+<section>
+  <h2>礼包配置</h2>
+  <div class="tbl"><table>
+    <tr><th>字段</th><th>值</th></tr>
+    <tr><td>id / price</td><td class="num">2610029 / 1015（98 CNY）</td></tr>
+    <tr><td>type / buy_type</td><td>37 / 2（限时礼包 <code>GiftTypeGiftTimeLimit</code>）</td></tr>
+    <tr><td>buy_limit</td><td class="num">1</td></tr>
+    <tr><td>持续时间</td><td>86400 秒（1 天），备注「运营推送礼包」</td></tr>
+  </table></div>
+  <p class="note">来源：<code>gdconfig/tsv/D2GiftCfg.tsv</code></p>
+</section>
+
+<section>
+  <h2>时间线（北京时间 = 日志 UTC + 8）</h2>
+  <ul class="timeline">
+    <li><time>16:55:32</time><span>运营批量推送 <code>TargetId:4281185047</code>，推给一大批玩家，其中 13 服是 139638 和 2558680</span></li>
+    <li class="crit"><time>17:01:07</time><span>第 1 单到账 <code>boughtCount:54</code></span></li>
+    <li><time>17:01:25</time><span>单独再推 <code>push_id:139638</code> <code>TargetId:1595394262</code></span></li>
+    <li class="crit"><time>17:01:44</time><span>第 2 单到账 <code>boughtCount:55</code></span></li>
+    <li><time>17:01:55</time><span>再推 <code>TargetId:1989904575</code></span></li>
+    <li class="crit"><time>17:02:27</time><span>第 3 单 <code>boughtCount:56</code></span></li>
+    <li><time>17:02:54</time><span>再推 <code>TargetId:1972769302</code></span></li>
+    <li class="crit"><time>17:04:00</time><span>第 4 单 <code>boughtCount:57</code></span></li>
+    <li><time>17:04:25</time><span>再推 <code>TargetId:2581636742</code></span></li>
+    <li class="crit"><time>17:04:41</time><span>第 5 单 <code>boughtCount:58</code></span></li>
+    <li><time>17:04:54</time><span>再推 <code>TargetId:3538624365</code></span></li>
+    <li class="crit"><time>17:05:27</time><span>第 6 单 <code>boughtCount:59</code></span></li>
+    <li class="miss"><time>17:05:54</time><span>再推 <code>TargetId:1330817442</code>，之后没再购买</span></li>
+  </ul>
+  <p class="note">每一单都走完整流程：<code>OnOrderCreateReq</code> → mohe <code>PayNotify</code> → <code>LoadPlayerOnBuyGift</code> → <code>GiftChoose BuyProduct</code>，订单号各不相同（6ad5dc48… / 6ad5dc6f… / 6ad5dc98… / 6ad5dcf4… / 6ad5dd1e… / 6ad5dd4c…）。推送入口日志：door1 <code>api/goods.go:286</code>、<code>receiver/ctl_gift.go:27</code>，game13 <code>internal/ctl_gitf_time_limit.go:32</code>。</p>
+</section>
+
+<section>
+  <h2>服务端为什么没拦住</h2>
+  <ol class="chain">
+    <li>door 收到推送后发 <code>D2PGiftTimeLimitRecordNtf</code>，game 端调用 <code>TiggerGiftTimeLimit</code>（<code>game/play/internal/ctl_gitf_time_limit.go:106</code>），用 <code>cfg.BuyLimit</code> 当 countMax。</li>
+    <li><code>addGiftTimeLimitRecordByGm</code>（<code>game/play/internal/ctl_d2iap.go:2079</code>）里的去重条件要求"未过期<b>且类型不同</b>"才跳过。运营推送的 <code>LimitTimeTyp</code> 都是 0，前后相等，所以条件永远不成立。</li>
+    <li>于是新推送直接覆盖 <code>GiftTimeLimitRecords[giftId]</code>，<code>CurCount: 0</code> 被重置，玩家又能买一次。</li>
+  </ol>
+  <div class="code-block">// 如果已经有记录了，并且没有过期 不在触发新的
+if util.NowSecTs() &lt; records.GetEnd() &amp;&amp; records.LimitTimeTyp != giftLimitTimeTyp {
+    return
+}
+...
+shopRecord.GiftTimeLimitRecords[gift.Id] = &amp;mplayer.GiftTimeLimit{ ..., CountMax: countMax, CurCount: 0, ... }</div>
+</section>
+
+<section>
+  <h2>建议</h2>
+  <ul class="fixes">
+    <li><b>运营 / 推送平台（主因）</b>确认这个礼包的推送策略，看是不是配了"买完再推"或者"没有限制地重复推"。推送日志里的 <code>push_id</code> 和 <code>ops_request_id</code> 都能对上。</li>
+    <li><b>服务端保护（可选）</b>同一个礼包还有未过期记录、并且已经买满时，忽略同类型的重复推送，或者不重置 <code>CurCount</code>。要不要这样改，需要先和策划、运营对一下当初的设计意图。</li>
+    <li><b>历史</b>今天之前 <code>boughtCount</code> 已经是 53，这个玩家之前也多次买过这个礼包，大概率是同样的原因。线上日志只保留约 20 天，更早的查不到。</li>
+  </ul>
+</section>
+
+<footer>数据来源：Kibana 索引 game-h5prod-2026.10.18 / 2026.10.19，查询条件 message 含 139638 和 2610029，共 93 条。分支 h5_new_tf_v1054_assistant。</footer>
+</div>
+</body>

@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>巅峰战报缺失编队</title>
+<meta name="description" content="H5-13298 巅峰对决战报数据对比只显示 3 队：换目标结算提前删除战斗报告，导致竞技场伤害漏统计、部队缺失。">
+<!--
+类型: Bug
+单号: H5-13298
+版本: 1054
+状态: 已修复（619bea5f2a，h5_new_tf_v1055_arena_king，待合并上线）；客户端另有一条待查
+tags: [bug, 巅峰对决, 编队竞技场, 战报]
+创建日期: 2026-11-04
+关联: 巅峰竞技场玩法 / 2026-11-02-巅峰对决淘汰赛对手空血反胜判定错误
+-->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#f4f6f8; --surface:#ffffff; --ink:#1c2230; --muted:#5d6676; --line:#dfe3ea;
+  --accent:#c4600f; --accent-soft:#fbeadc; --code-bg:#eef1f5;
+  --a:#2f6fd6; --a-soft:#dde8fb; --c:#1f9a6a; --c-soft:#d9f2e7;
+  --bad:#c23b3b; --bad-soft:#fbe3e3; --ok:#1f8a4c; --warn:#a86b00; --warn-soft:#fbf0d6;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#14171d; --surface:#1c2028; --ink:#e7eaf0; --muted:#9aa3b2; --line:#2e3440;
+    --accent:#f0954a; --accent-soft:#3a2617; --code-bg:#232833;
+    --a:#6fa0f0; --a-soft:#1f2f4d; --c:#4cc79a; --c-soft:#173a2e;
+    --bad:#ef7070; --bad-soft:#402020; --ok:#5ccb8a; --warn:#e6b450; --warn-soft:#3a2f14; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#14171d; --surface:#1c2028; --ink:#e7eaf0; --muted:#9aa3b2; --line:#2e3440;
+  --accent:#f0954a; --accent-soft:#3a2617; --code-bg:#232833;
+  --a:#6fa0f0; --a-soft:#1f2f4d; --c:#4cc79a; --c-soft:#173a2e;
+  --bad:#ef7070; --bad-soft:#402020; --ok:#5ccb8a; --warn:#e6b450; --warn-soft:#3a2f14; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font:15px/1.7 var(--sans)}
+.wrap{max-width:920px;margin:0 auto;padding-inline:20px;padding-block:40px 64px}
+header{display:grid;gap:6px;margin-bottom:24px}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.08em;color:var(--bad);text-transform:uppercase}
+h1{font-size:28px;line-height:1.3;margin:0;text-wrap:balance}
+h2{font-size:19px;margin:40px 0 12px;text-wrap:balance}
+h3{font-size:16px;margin:24px 0 8px}
+h4{font-size:14px;margin:18px 0 6px;color:var(--accent)}
+p{margin:0 0 12px;max-width:72ch}
+.meta{color:var(--muted);font-size:13px}
+.summary{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:8px;padding:16px 20px}
+.summary p:last-child,.summary ul:last-child{margin-bottom:0}
+.note{background:var(--warn-soft);border-radius:8px;padding:12px 16px;margin:0 0 12px}
+.note p:last-child{margin:0}
+code{font-family:var(--mono);font-size:13px;background:var(--code-bg);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+pre{font:13px/1.6 var(--mono);background:var(--code-bg);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:0 0 12px}
+pre .del{background:var(--bad-soft);color:var(--bad);display:inline-block;width:100%}
+pre .add{background:var(--c-soft);display:inline-block;width:100%}
+.scroll{overflow-x:auto;margin:0 0 12px}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font-size:12.5px;color:var(--muted);font-weight:500}
+td.num{text-align:right;font-family:var(--mono)}
+tr.miss-s td{background:var(--bad-soft)}
+tr.miss-c td{background:var(--warn-soft)}
+.tag{display:inline-block;font-size:12px;padding:0 7px;border-radius:10px;font-weight:500}
+.tag.s{background:var(--bad-soft);color:var(--bad)}
+.tag.c{background:var(--warn-soft);color:var(--warn)}
+.tag.ok{background:var(--c-soft);color:var(--ok)}
+ul,ol{margin:0 0 12px;padding-left:22px;max-width:74ch}
+li{margin:5px 0}
+.fig{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;margin:0 0 8px;overflow-x:auto}
+.fig .mermaid{min-width:640px;text-align:center}
+.cap{color:var(--muted);font-size:13px;margin:0 0 20px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--muted);margin:0 0 10px}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px;background:var(--sw)}
+pre.mermaid{background:transparent;padding:0;white-space:pre}
+footer{margin-top:40px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:12px}
+@media (max-width:600px){h1{font-size:23px}.wrap{padding-inline:16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Bug · H5-13298 · 1054 线上</div>
+  <h1>巅峰对决战报「数据对比」缺失编队</h1>
+  <div class="meta">35 服 · 玩家 2712352（秒秒）· 第 7 届巅峰之王淘汰赛第 13 轮 · 分析日期 2026-11-04 · 修复提交 <code>619bea5f2a</code>（<code>h5_new_tf_v1055_arena_king</code>）</div>
+</header>
+
+<section class="summary">
+  <p><strong>结论：</strong>玩家自己的阵容在第 12、13 轮完全一致，输掉是正常战斗结果。「数据对比只显示 3 队」是战报数据缺失：服务端少了失败方 1 条，客户端少显示了胜利方 1 条。</p>
+  <p><strong>服务端根因：</strong>竞技场战报只收录 <code>TroopDamage</code> 里有伤害记录的部队，而伤害只在部队<em>阵亡时</em>从战斗报告里统计一次。部队换目标时 <code>settleBattle</code> 会先删掉双方的战斗报告（<code>DelReport</code>），删除前没有计入竞技场伤害。第 13 轮里部队 <code>…246</code> 和 <code>…242</code> 之间的报告在两者阵亡前就被删了，<code>…246</code> 的伤害一次都没记上，战报里就没有它。</p>
+  <p><strong>为什么会换目标：</strong><code>…242</code> 兵力被打到 0 后，竞技场 AI tick（<code>startTroopArenaAI</code> → <code>CheckTroopAttack</code>）看到目标 <code>IsDead()</code>，立即让所有攻击它的部队换目标；而 <code>…242</code> 的正式阵亡处理（<code>TroopArenaTroopDead</code> → <code>TroopArenaBattleDamage</code>）要到下一个战斗回合（约 0.6 秒后）才执行，此时报告已被删除。这是 AI 和阵亡处理的执行顺序问题，任何部队被打光时都可能触发。</p>
+</section>
+
+<h2>1. 现象与数据核对</h2>
+<p>截图失败方三行伤害合计 1.11 + 1.81 + 5.27 = <strong>8.19 亿</strong>，等于第 13 轮结算日志 <code>DownDamage:821516591</code>，所以截图是第 13 轮（对手 3134740，副本建在 game12）。下表是服务端存在玩家身上的这场战报（<code>player.trooparenakingdata.battlerecords</code>，round=13）：</p>
+<div class="legend"><span style="--sw:var(--bad-soft)">服务端战报缺失</span><span style="--sw:var(--warn-soft)">服务端有、客户端未显示</span></div>
+<div class="scroll"><table>
+<thead><tr><th>方</th><th>部队 troopid</th><th>编队 lineupid</th><th>主将</th><th class="num">战力</th><th class="num">伤害</th><th class="num">承伤</th><th>情况</th></tr></thead>
+<tbody>
+<tr class="miss-c"><td>胜 3134740</td><td><code>…242</code></td><td><code>7550701833853974217</code></td><td>1010065</td><td class="num">4.05 亿</td><td class="num">0.81 亿</td><td class="num">4.05 亿</td><td><span class="tag c">客户端未显示</span> 本场阵亡</td></tr>
+<tr><td>胜 3134740</td><td><code>…243</code></td><td><code>7552585881391011396</code></td><td>1010032</td><td class="num">3.24 亿</td><td class="num">1.12 亿</td><td class="num">2.83 亿</td><td>显示</td></tr>
+<tr><td>胜 3134740</td><td><code>…240</code></td><td><code>7550292841298541958</code></td><td>1010035</td><td class="num">5.06 亿</td><td class="num">7.31 亿</td><td class="num">2.85 亿</td><td>显示</td></tr>
+<tr><td>胜 3134740</td><td><code>…241</code></td><td><code>7550501434978619698</code></td><td>1010064</td><td class="num">4.15 亿</td><td class="num">2.86 亿</td><td class="num">2.74 亿</td><td>显示</td></tr>
+<tr><td>负 2712352</td><td><code>…245</code></td><td><code>7546934133922537591</code></td><td>1010056</td><td class="num">4.44 亿</td><td class="num">1.12 亿</td><td class="num">4.44 亿</td><td>显示</td></tr>
+<tr class="miss-s"><td>负 2712352</td><td><code>…246</code></td><td><code>7546933399483296125</code></td><td>1010035</td><td class="num">5.04 亿</td><td class="num">—</td><td class="num">—</td><td><span class="tag s">服务端缺失</span></td></tr>
+<tr><td>负 2712352</td><td><code>…247</code></td><td><code>7547167548219766091</code></td><td>1010032</td><td class="num">4.01 亿</td><td class="num">1.82 亿</td><td class="num">4.01 亿</td><td>显示</td></tr>
+<tr><td>负 2712352</td><td><code>…248</code></td><td><code>7547143998913802931</code></td><td>1010065</td><td class="num">4.40 亿</td><td class="num">5.28 亿</td><td class="num">4.40 亿</td><td>显示</td></tr>
+</tbody></table></div>
+<p class="meta">troopid 完整前缀为 <code>77035578816257682…</code>；同一份战报的 <code>buffer</code>（双方编队列表）是完整的 4 + 4。第 12 轮战报双方都是完整的 4 条。</p>
+
+<h3>「第 12 轮和第 13 轮队伍不一致」不成立</h3>
+<p>两轮开局时 2712352 都创建了 4 支部队（<code>mtroop/player_troop.go:149</code> 日志），编队 ID 完全相同，和 global <code>troop_arena_player</code> 里的参赛阵容一致。两轮对手不同（1186191 / 3134740），所以对面的队伍不同。</p>
+<div class="scroll"><table>
+<thead><tr><th>轮次</th><th>时间</th><th>副本所在服</th><th>上方</th><th>下方</th><th>胜者</th><th class="num">上方存活</th><th class="num">下方存活</th></tr></thead>
+<tbody>
+<tr><td>1~11</td><td>19:00~20:43</td><td>game35/33/29/39/38/22</td><td colspan="3">2712352 全胜（11 场）</td><td class="num">—</td><td class="num">—</td></tr>
+<tr><td>12</td><td>20:51:17</td><td>game38</td><td>1186191</td><td>2712352</td><td>1186191</td><td class="num">3</td><td class="num">1（战力 0）</td></tr>
+<tr><td>13</td><td>21:02:17</td><td>game12</td><td>3134740</td><td>2712352</td><td>3134740</td><td class="num">3</td><td class="num">0</td></tr>
+</tbody></table></div>
+<p class="meta">第 12 轮「存活 1 但战力 0」是 H5-13291 的空血编队现象，本场对方存活 3 队，结果不受影响。</p>
+
+<h2>2. 线上版本：战报伤害是怎么生成的</h2>
+<div class="fig"><pre class="mermaid">
+flowchart TD
+  classDef bad fill:#fbe3e3,stroke:#c23b3b,color:#1c2230
+  classDef key fill:#dde8fb,stroke:#2f6fd6,color:#1c2230
+  subgraph W["承载服 wmap（第 13 轮为 game12）"]
+    A["战斗中：每次攻击写入战斗报告<br/>BatCtx.ReportList（按对手部队分条）"]
+    B{"部队换目标？<br/>giveUpTarget"}
+    C["settleBattle<br/>ctl_battle_settle.go:501"]
+    D["owner.DelReport / target.DelReport<br/>:528 删除双方互相的报告"]:::bad
+    E{"部队阵亡？"}
+    F["TroopArenaTroopDead(troopID)<br/>ctl_troop_arena.go:997"]
+    G["TroopArenaBattleDamage(troopID)<br/>:453 每支部队只执行一次"]
+    H["读：自己的 ReportList<br/>+ 当前目标 / 攻击者针对自己的报告"]
+    I["AddDamage → TroopDamage[造成伤害的部队]<br/>trooparena/mgr.go:85"]:::key
+    J{"一方全灭 / 超时？"}
+    K["遍历 TroopDamage 的 key 生成 ntf.TroopDamage<br/>ctl_troop_arena.go:1054"]:::bad
+    L["OwnerId = getArenaTroopId :922"]
+  end
+  subgraph P["玩家原服 play（game35）"]
+    M["addBattleReport<br/>ctl_troop_arena_king.go:2660"]
+    N["newTroopArenaBattleRecord :2338"]
+    O["getBattleData 按 OwnerId 筛选每方数据<br/>ctl_troop_arena.go:1731"]
+    Q["淘汰赛战报存到玩家身上<br/>TroopArenaKingData.BattleRecords"]
+  end
+  A --> B
+  B -- 是 --> C --> D --> A
+  B -- 否 --> E
+  E -- 否 --> A
+  E -- 是 --> F --> G --> H --> I --> J
+  J -- 否 --> A
+  J -- 是 --> K --> L --> M --> N --> O --> Q
+</pre></div>
+<p class="cap">图 1　线上 1054 版本的战报伤害链路。红色节点是问题所在：报告在统计前就可能被删除；生成战报时只遍历有伤害记录的部队。</p>
+
+<h2>3. 第 13 轮实际时间线（game12 日志）</h2>
+<div class="fig"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant T246 as 部队 …246<br/>(2712352)
+  participant T242 as 部队 …242<br/>(3134740)
+  participant AI as 竞技场 AI tick
+  participant S as settleBattle
+  participant D as TroopDamage
+  participant R as 战报
+  Note over T246,T242: 20:59:00 双方各创建 4 支部队，21:00:00 开战
+  T246->>T242: 21:00:02 起持续攻击（伤害写入双方报告）
+  Note over T242: 242 当前目标是 …248，被 248 / 245 / 246 围攻
+  Note over T242: 21:01:27.352 战斗回合结算后 curPower:0<br/>兵力已打光，但阵亡流程尚未执行
+  AI->>AI: CheckTroopAttack：目标 IsDead()，选最近的新目标
+  AI->>T246: giveUpTarget(…246)（…248、…245 同一时刻也放弃 …242）
+  T246->>S: 21:01:27.353 GiveUpTarget settle<br/>owner …246 target …242
+  S-->>T246: DelReport(…242)
+  S-->>T242: DelReport(…246)
+  Note over T246,T242: 246 打 242 的伤害报告已被删除，<br/>且没有计入 TroopDamage
+  AI->>T246: TroopAttack → 行军去打 …240
+  T242->>D: 21:01:27.997 下一回合才正式阵亡 → TroopArenaBattleDamage(…242)<br/>只读到 242 打 248 等记录，读不到与 246 的报告
+  Note over T246: 21:01:27.998 行军到达校验失败<br/>ErrCodeNoSupportMarch → recallPlayerTroop<br/>（副本内找不到主城，直接返回）
+  T246->>D: 21:01:29.030 …246 被 …241 打死 → TroopArenaBattleDamage(…246)<br/>自身报告里只有 241 打 246 的记录，记在 …241 名下
+  Note over D: TroopDamage 里没有 key …246
+  D->>R: 21:02:17.579 结算：遍历 TroopDamage 的 key<br/>负方只有 245 / 247 / 248 三条
+</pre></div>
+<p class="cap">图 2　部队 …246 的伤害在两支部队阵亡前就随报告一起被删掉，所以它从未成为 <code>TroopDamage</code> 的 key，战报里缺失。被删掉的那段伤害也不会计入 <code>UpDamage / DownDamage</code>。</p>
+
+<h3>为什么会换目标：AI tick 抢在阵亡处理之前</h3>
+<p>竞技场副本的定时 tick 每次都会调用 <code>startTroopArenaAI</code>（线上 1054 <code>ctl_troop_arena.go:535</code>），对每支部队执行 <code>CheckTroopAttack</code>（<code>:596</code>）：</p>
+<pre><code>// 战斗中，不修改
+if !wmap.checkEnemyDead(batCtx.GetCurTarget()) { continue }  // 当前目标 IsDead() 就换
+enemy := wmap.troopFindTargetAtk(...)                        // 选最近的敌人
+wmap.giveUpTarget(atk)                                       // :633 放弃旧目标 → settleBattle → DelReport
+wmap.stopMarch(atk); wmap.battleEnd(atk)
+wmap.TroopAttack(v, enemy)                                   // 行军去打新目标</code></pre>
+<p>AI 只看 <code>IsDead()</code>（兵力为 0 即为真），而竞技场的伤害统计挂在正式阵亡流程（<code>pTroopBattleEnd</code> → <code>TroopArenaTroopDead</code>）上，要等下一个战斗回合才执行。日志里 21:01:27.352 的 <code>clacPvpKillScore</code> 已显示 <code>…242</code> 的 <code>curPower:0</code>，正式的 <code>pTroopBattleEnd: troop …242 dead</code> 在 21:01:27.997，中间这 0.6 秒内 AI 已经让三支攻击者全部换了目标。</p>
+<p>三支部队都放弃了 <code>…242</code>，但 <code>giveUpTarget</code>（<code>ctl_battle.go:865</code>）只有在「目标当前没在打我」时才会 <code>settleBattle</code> 删报告：</p>
+<div class="scroll"><table>
+<thead><tr><th>部队</th><th>…242 当前在打谁</th><th>是否结算删报告</th><th>其他伤害记录</th><th>战报</th></tr></thead>
+<tbody>
+<tr><td><code>…248</code></td><td>正在打 …248</td><td>否，报告保留</td><td>有</td><td><span class="tag ok">有</span></td></tr>
+<tr><td><code>…245</code></td><td>没在打它</td><td>删了</td><td>被 …243 攻击过，仍有其他记录</td><td><span class="tag ok">有</span></td></tr>
+<tr class="miss-s"><td><code>…246</code></td><td>没在打它</td><td>删了</td><td>只打过 …242，无其他造成伤害的记录</td><td><span class="tag s">缺失</span></td></tr>
+</tbody></table></div>
+<p class="meta">数据来源：ES <code>game-h5prod-2026.11.02</code>，game12，UTC 13:01:26~13:01:30（北京时间 21:01:26~21:01:30）。<code>…246</code> 之后被 <code>…241</code> 攻击致死，它自身报告里的是 241 打 246 的记录，计在 <code>…241</code> 名下，不会让 <code>…246</code> 成为 key（此前版本写的「报告为空」不准确，已更正）。</p>
+
+<h3>两个 tick 的时序（代码）</h3>
+<p>伤害、阵亡、换目标由两个<strong>互不同步</strong>的定时器驱动。<code>ctl_battle.go</code> / <code>battlectx.go</code> / <code>lineup.go</code> 为当前分支行号（修复未改动），<code>ctl_troop_arena.go</code> 为线上 1054（<code>619bea5f2a^</code>）行号。</p>
+<h4>① 战斗 tick（每 1 秒，所有地图通用）：先 battlePrepare 查死亡，再 fieldBattle 扣兵</h4>
+<p><code>types/def.go:61</code> <code>BattleTick = 1 * 1000</code>；<code>ctl_battle.go:253</code>：</p>
+<pre><code>func (wmap *WMap) timerBattleTicker(_ int64, _ cbctx.M) {
+	bf := battlefield.NewMgr(0)
+	wmap.WildMap.GetMapUnitMgr().RangeBattleUnit(
+		func(unit battle.IBattleUnit) {
+			wmap.battlePrepare(unit, bf)      // ① 先准备：在这里检查死亡
+		})
+	...
+	wmap.Cast(wmap.Name(), &amp;iproto.Battle{ Fields: fields, ... })   // ② 再打：OnBattle → fieldBattle 扣兵
+}</code></pre>
+<p><code>ctl_battle.go:192</code> battlePrepare 中的死亡检查：</p>
+<pre><code>	ff := func(unit battle.IBattleUnit) bool {
+		if unit.IsDead() { //目标死亡
+			wmap.battleTroopDead(unit)        // 正式阵亡处理
+			return false
+		}
+		return true
+	}</code></pre>
+<p>第 N 个 tick 在 ② 被打光的部队，要到第 N+1 个 tick 的 ① 才走正式阵亡流程，中间最多 1 秒。</p>
+<h4>② 正式阵亡流程：先记账，再删报告（顺序正确）</h4>
+<p><code>ctl_battle.go:453</code>：</p>
+<pre><code>func (wmap *WMap) battleTroopDead(unit battle.IBattleUnit) {
+	if wmap.IsDuplicatemgrMap() {
+		wmap.MapOther.TroopDead(unit)        // :455 竞技场在这里记账（other_troop_arena.go:18 → TroopArenaTroopDead）
+		...
+	}
+	exitTroops := unitCtx.TroopDead()
+	...
+	for _, id := range exitTroops {
+		if atk, ok := wmap.GetMapUnitByUID(id); ok {
+			wmap.settleBattle(unit, melem.UnitToIBattleUnitMust(atk)) // :469 之后才删报告</code></pre>
+<p>线上 <code>ctl_troop_arena.go:1004~1006</code>，<code>TroopArenaTroopDead</code> 内部同样是先记账再换目标：</p>
+<pre><code>		//结算和该部队相关的伤害
+		wmap.TroopArenaBattleDamage(troopID)   // :1004 先记账
+		//重新选择目标
+		wmap.startTroopArenaAI()               // :1006 再换目标</code></pre>
+<h4>③ AITick（每 5 秒，竞技场专用兜底）：只看兵力，不等阵亡流程</h4>
+<p>注册：<code>module.go:352</code>，仅 <code>HasTroopArena()</code> 的地图；首次 <code>DuplicateTick</code>（1 秒）后触发，之后在 <code>OnAITick</code> 里每 5 秒重挂。线上 <code>ctl_troop_arena.go:509</code>：</p>
+<pre><code>func (wmap *WMap) OnAITick(_ int64, _ cbctx.M) {
+	wmap.GetTimerMgr().NewTimer(5*util.SecMs, types.TimerTypeAITick, nil)   // 每 5 秒，与战斗 tick 无关
+	// :514~:531 异常副本清理（OnMapTimeOut）
+	...
+	if wmap.MapState == cspb.MAP_STATE_RUNNING {
+		//触发编队目标选择
+		wmap.startTroopArenaAI()                                           // :536
+		if wmap.CheckAllEndTroop(...Up) || wmap.CheckAllEndTroop(...Down) {
+			wmap.TroopArenaTroopDead(-1, false)                            // :537~:540 兜底判胜负
+			wmap.DelTroopArenaMap()
+		}
+	}
+}</code></pre>
+<p>线上 <code>ctl_troop_arena.go:596</code> <code>CheckTroopAttack</code>：</p>
+<pre><code>		//战斗中，不修改
+		if batCtx != nil {
+			if !wmap.checkEnemyDead(batCtx.GetCurTarget()) {   // 目标 IsDead() 才往下走
+				continue
+			}
+		}
+		//敌人中选中一个新的目标
+		enemy, okAtk := wmap.troopFindTargetAtk(v.GetCoord(), target)
+		...
+		wmap.giveUpTarget(atk)        // :633 放弃旧目标 → settleBattle → DelReport（删报告）
+		wmap.stopMarch(atk)
+		wmap.battleEnd(atk)
+		wmap.TroopAttack(v, enemy)     // 行军去打新目标</code></pre>
+<p><code>IsDead()</code> 只看兵力：<code>battle/battlectx.go:459</code> → <code>battle/lineup.go:193</code></p>
+<pre><code>func (l *TroopData) IsDead() bool {
+	return utility.SumMapValueByCond(l.GetSoldiersInfo(), func(v *gdconf.SoldierInfo) int64 {
+		return v.GetCurPower()
+	}) &lt;= 0                          // 兵力为 0 就算死
+}</code></pre>
+<h4>AI 换目标的触发点与 AITick 的职责</h4>
+<p>竞技场双方都无人操作，部队靠 <code>startTroopArenaAI</code> 自动选最近的敌人。战斗 tick 是通用引擎，只负责「已锁定目标的双方怎么打」，不会主动找目标（大地图上靠玩家下指令）。</p>
+<div class="scroll"><table>
+<thead><tr><th>调用点</th><th>线上行号</th><th>时机</th></tr></thead>
+<tbody>
+<tr><td><code>startBattle</code></td><td><code>ctl_troop_arena.go:1356</code></td><td>开战，首次分配目标</td></tr>
+<tr><td><code>OnStartFightReq</code></td><td><code>:1429</code></td><td>玩家点开始</td></tr>
+<tr><td><code>TroopArenaTroopDead</code></td><td><code>:1006</code></td><td>正式阵亡后立刻重选（主路径，先记账）</td></tr>
+<tr><td><code>OnAITick</code></td><td><code>:536</code></td><td>每 5 秒兜底</td></tr>
+</tbody></table></div>
+<p>AITick 的兜底职责：异常副本清理；把呆住的部队重新拉起来（如 <code>…246</code> 行军报 <code>ErrCodeNoSupportMarch</code> 后没有阵亡事件能触发重选）；某方已全部 <code>IsDead()</code> 但阵亡事件没触发结算时强制结束，防止副本卡住。</p>
+<h4>套到本次日志</h4>
+<div class="scroll"><table>
+<thead><tr><th>时间</th><th>定时器</th><th>代码</th><th>发生了什么</th></tr></thead>
+<tbody>
+<tr><td>21:01:26.964</td><td>战斗 tick N</td><td><code>fieldBattle</code> 扣兵</td><td><code>…242</code> 兵力被打到 0，本 tick 不处理死亡</td></tr>
+<tr class="miss-s"><td>21:01:27.352</td><td>AITick</td><td><code>OnAITick:536</code> → <code>CheckTroopAttack</code></td><td>看到 <code>…242</code> 已 <code>IsDead()</code>，三支攻击者换目标，<code>giveUpTarget:633</code> 删报告</td></tr>
+<tr><td>21:01:27.997</td><td>战斗 tick N+1</td><td><code>battlePrepare:192</code> → <code>battleTroopDead:455</code></td><td>正式阵亡、记账，但报告已没了</td></tr>
+</tbody></table></div>
+<p>AITick 只要落在「兵被打光」到「下一个战斗 tick」这不到 1 秒的窗口里，就会绕过主路径的「先记账再换目标」顺序。H5-13291（空血反胜）也是这个时间差，见当前分支 <code>ctl_troop_arena.go:830</code> 注释。修复 619bea5f2a 改为在 <code>settleBattle</code> 删报告前记账，与哪个 tick 先执行无关；另一种做法是让 AI 改看正式死亡标记（<code>TroopArenaMgrTroopDead</code>）而不是 <code>IsDead()</code>，但会改变 AI 行为（兵已打光仍要多等一个 tick 才换目标），未采用。</p>
+
+<div class="note"><p><strong>影响不止少一行：</strong>换目标被结算掉的那段伤害，既不计入造成伤害的部队，也不计入双方伤害合计。只要有部队被打光、AI tick 先于阵亡处理执行，所有「打它而它没在反打」的攻击者都会丢掉这段伤害；伤害只打在这一个目标上的部队会整行消失。伤害合计是胜负判定的第三个比较条件（存活编队数 → 剩余兵力 → 伤害），前两项相同时会影响胜负。</p></div>
+
+<h2>4. 修复后的流程</h2>
+<div class="fig"><pre class="mermaid">
+flowchart TD
+  classDef fix fill:#d9f2e7,stroke:#1f9a6a,color:#1c2230
+  A["战斗中写入战斗报告"]
+  B{"部队换目标？"}
+  C["settleBattle"]
+  X["troopArenaSettleReport(owner, target)<br/>ctl_battle_settle.go:543 → ctl_troop_arena.go:513"]:::fix
+  Y["AccountReport 增量计入<br/>trooparena/mgr.go:114<br/>ReportCounted 记录已计入值，避免重复累加"]:::fix
+  Z["ResetReportCounted :132<br/>报告删除后计数清零"]:::fix
+  D["DelReport 删除双方报告"]
+  E{"部队阵亡？"}
+  G["TroopArenaBattleDamage<br/>改用 AccountReport（ctl_troop_arena.go:483 / :505）"]:::fix
+  J{"一方全灭 / 超时？"}
+  K["packTroopArenaDamage :536<br/>遍历双方全部出战部队，无伤害的也输出（伤害 0）"]:::fix
+  K2["战报 :1107 / 观战实时数据 :1542 统一调用"]:::fix
+  A --> B
+  B -- 是 --> C --> X --> Y --> Z --> D --> A
+  B -- 否 --> E
+  E -- 否 --> A
+  E -- 是 --> G --> J
+  J -- 否 --> A
+  J -- 是 --> K --> K2
+</pre></div>
+<p class="cap">图 3　修复后：报告删除前先按增量计入伤害；生成战报时遍历双方全部部队。行号为提交 <code>619bea5f2a</code> 中的位置。</p>
+
+<h3>关键改动</h3>
+<pre><span class="add">// ctl_battle_settle.go settleBattle
+// 编队竞技场删除前先计入编队伤害
+wmap.troopArenaSettleReport(owner, target)</span>
+owner.DelReport(target.GetID())
+target.DelReport(owner.GetID())
+
+<span class="del">// TroopArenaTroopDead 旧：只遍历有伤害记录的部队
+for k, _ := range troopArenaMgr.TroopDamage { ... }</span>
+<span class="add">// 新：遍历双方全部部队
+ntf.TroopDamage = wmap.packTroopArenaDamage(withstandDamage)</span></pre>
+
+<h2>5. 代码位置</h2>
+<div class="scroll"><table>
+<thead><tr><th>函数</th><th>线上 1054</th><th>修复提交 619bea5f2a</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td><code>settleBattle</code></td><td><code>wmap/internal/ctl_battle_settle.go:501</code>，删报告 <code>:528</code></td><td>删前计入 <code>:543</code></td><td>换目标时结算战斗</td></tr>
+<tr><td><code>startTroopArenaAI</code> / <code>CheckTroopAttack</code></td><td><code>wmap/internal/ctl_troop_arena.go:535</code> / <code>:596</code>，换目标 <code>:633</code></td><td>—</td><td>tick 触发，目标 IsDead 即换目标（本次触发点）</td></tr>
+<tr><td><code>giveUpTarget</code></td><td><code>wmap/internal/ctl_battle.go:830</code>，结算判断 <code>:865</code></td><td>—</td><td>目标没在打我时才 settleBattle</td></tr>
+<tr><td><code>TroopArenaBattleDamage</code></td><td><code>wmap/internal/ctl_troop_arena.go:453</code></td><td><code>:483</code> / <code>:505</code> 改用 AccountReport</td><td>阵亡时统计伤害，每支部队一次</td></tr>
+<tr><td><code>TroopArenaTroopDead</code></td><td><code>:997</code>，遍历 TroopDamage <code>:1054</code></td><td><code>:1107</code></td><td>结算并生成 TroopArenaResultNtf</td></tr>
+<tr><td><code>OnP2MTroopArenaStateReq</code></td><td>遍历 TroopDamage <code>:1500</code></td><td><code>:1542</code></td><td>观战实时数据，同样问题</td></tr>
+<tr><td><code>troopArenaSettleReport</code> / <code>packTroopArenaDamage</code></td><td>—</td><td><code>:513</code> / <code>:536</code></td><td>新增</td></tr>
+<tr><td><code>AddDamage</code> / <code>AccountReport</code> / <code>ResetReportCounted</code></td><td><code>wmap/internal/trooparena/mgr.go:85</code></td><td><code>:114</code> / <code>:132</code></td><td>TroopDamage 以造成伤害的部队为 key</td></tr>
+<tr><td><code>getArenaTroopId</code></td><td><code>wmap/internal/ctl_troop_arena.go:922</code></td><td>—</td><td>部队 → 所属玩家</td></tr>
+<tr><td><code>addBattleReport</code> / <code>newTroopArenaBattleRecord</code></td><td><code>play/internal/ctl_troop_arena_king.go:2660</code> / <code>:2338</code></td><td>—</td><td>淘汰赛战报存玩家身上</td></tr>
+<tr><td><code>getBattleData</code></td><td><code>play/internal/ctl_troop_arena.go:1731</code></td><td>—</td><td>按 OwnerId 筛选每方数据</td></tr>
+<tr><td><code>marchingCheckFail</code> / <code>recallPlayerTroop</code></td><td><code>wmap/internal/ctl_march_ticker.go:298</code> / <code>ctl_playertroop.go:599</code></td><td>—</td><td>已排除：副本内找不到主城直接返回，不删部队</td></tr>
+</tbody></table></div>
+
+<h2>6. 排查过程中排除的方向</h2>
+<ul>
+  <li><strong>参赛阵容被改：</strong>global、积分赛防守阵容、巅峰快照三处编队一致，两轮创建的部队编队相同。</li>
+  <li><strong>部队所属玩家（OwnerId）被改：</strong>wmap 中没有修改部队 owner 的路径，日志里也没有 <code>getArenaTroopId troopID none</code> 报错。</li>
+  <li><strong>行军失败召回删除了部队：</strong><code>recallPlayerTroop</code> 在副本地图（<code>IsDuplicatemgrMap</code>）找不到主城时直接返回；阵亡部队也不会从 Up/Down 部队表里删除。</li>
+</ul>
+
+<h2>7. 遗留与跟进</h2>
+<ul>
+  <li><span class="tag ok">已修复</span> 服务端：提交 <code>619bea5f2a</code>（<code>h5_new_tf_v1055_arena_king</code>），待合并上线。</li>
+  <li><span class="tag c">待客户端</span> 胜利方 <code>…242</code> 服务端战报里有、客户端未显示。它是胜利方排序第一条（按 buffer 顺序）且是胜利方唯一阵亡的部队，可从这两点排查。修复后失败方会恢复为 4 条，需同时确认双方 4 条时的显示。</li>
+  <li>Jira 评论已发（评论 ID 72633）。</li>
+</ul>
+
+<footer>相关文档：巅峰竞技场玩法（模块设计/巅峰竞技场玩法.md）· 2026-11-02-巅峰对决淘汰赛对手空血反胜判定错误（H5-13291）· 数据来源：ES game-h5prod-2026.11.02（game12 / game38 / game35）、h5prod MongoDB game35 / global1</footer>
+</div>
+
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+  const css = getComputedStyle(document.documentElement);
+  const v = (n) => css.getPropertyValue(n).trim();
+  const dark = matchMedia("(prefers-color-scheme: dark)").matches && document.documentElement.dataset.theme !== "light"
+            || document.documentElement.dataset.theme === "dark";
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    securityLevel: "loose",
+    themeVariables: {
+      darkMode: dark,
+      background: v("--surface"),
+      primaryColor: v("--surface"),
+      primaryTextColor: v("--ink"),
+      primaryBorderColor: v("--line"),
+      lineColor: v("--muted"),
+      textColor: v("--ink"),
+      noteBkgColor: v("--warn-soft"),
+      noteTextColor: v("--ink"),
+      noteBorderColor: v("--warn"),
+      actorBkg: v("--a-soft"),
+      actorBorder: v("--a"),
+      actorTextColor: v("--ink"),
+      signalColor: v("--ink"),
+      signalTextColor: v("--ink"),
+      clusterBkg: v("--ground"),
+      clusterBorder: v("--line"),
+      fontFamily: v("--sans"),
+      fontSize: "14px"
+    },
+    flowchart: { htmlLabels: true, curve: "basis" },
+    sequence: { mirrorActors: false, wrap: true }
+  });
+</script>
+</body>
+</html>

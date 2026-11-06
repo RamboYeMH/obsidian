@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>矿点卡战斗：从底层数组看懂根因</title>
+<style>
+:root{--ink:#182d40;--muted:#586c7e;--blue:#2464d9;--amber:#bb650e;--red:#c13949;--line:#dce5ed;--bg:#f3f6fa}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.8 system-ui,-apple-system,"Microsoft YaHei",sans-serif}main{max-width:1160px;margin:auto;padding:46px 24px 70px}h1{font-size:clamp(28px,4vw,44px);line-height:1.3;margin:12px 0 20px}h2{font-size:25px;margin:0 0 20px}h3{font-size:19px;margin:28px 0 10px}p{margin:12px 0}.eyebrow{font-size:13px;letter-spacing:2px;color:var(--blue);font-weight:700}.lead{font-size:19px;max-width:900px}.meta,.muted{color:var(--muted);font-size:14px}nav{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0}nav a{color:var(--ink);background:white;padding:8px 14px;border:1px solid var(--line);border-radius:24px;text-decoration:none}section{background:white;border:1px solid var(--line);border-radius:18px;padding:30px;margin:24px 0;scroll-margin-top:20px}.note{padding:15px 18px;border-left:4px solid var(--blue);background:#edf4ff;border-radius:0 8px 8px 0}.warn{border-left-color:var(--red);background:#fff1f2}.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}.card{border:1px solid var(--line);border-radius:12px;padding:18px}.card h3{margin:0 0 8px}pre{background:#14283c;color:#e4eef8;padding:20px;border-radius:10px;overflow:auto;font:14px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre}code{font-family:ui-monospace,Consolas,monospace}p code,li code{background:#eef2f7;padding:2px 5px;border-radius:4px;overflow-wrap:anywhere}table{width:100%;border-collapse:collapse;font-size:14px}td,th{text-align:left;border-bottom:1px solid var(--line);padding:12px;vertical-align:top}th{background:#f5f8fb}.tablewrap{overflow:auto}.blue{color:var(--blue)}.amber{color:var(--amber)}.red{color:var(--red)}.animation{padding:26px 20px}.canvasbox{background:#f7faff;border:1px solid var(--line);border-radius:12px;overflow:auto}canvas{display:block;width:100%;min-width:600px;height:auto}.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:16px 0}button,select{font:inherit;border:1px solid #ccd9e7;border-radius:8px;padding:8px 14px;background:white;color:var(--ink);cursor:pointer}button:hover{background:#edf4ff}button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #76a7ef;outline-offset:3px}button:disabled{opacity:.4;cursor:default}#play{background:var(--blue);color:white;border-color:var(--blue)}#stepTitle{margin:12px 0;font-size:21px}.steps{display:flex;flex-wrap:wrap;gap:6px}.steps button{font-size:13px;padding:5px 10px}.steps button[aria-current="step"]{border-color:var(--blue);background:#edf4ff;color:var(--blue)}#stepText{min-height:58px}#stepCode{margin:12px 0}.data{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:14px 0}.data div{background:#f2f5f9;padding:12px;border-radius:8px;font-size:14px}.data strong{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}footer{font-size:13px;color:var(--muted)}ul,ol{padding-left:24px}a{color:var(--blue)}@media(max-width:700px){main{padding:24px 12px}section{padding:22px 16px}.grid,.data{grid-template-columns:1fr}h2{font-size:22px}}@media print{body{background:white}main{max-width:none;padding:0}section{break-inside:avoid;padding:18px;border-radius:0}nav,.controls,.steps,.canvasbox,#stepTitle,#stepText,#stepCode,.data,.animationHint{display:none}pre{white-space:pre-wrap;color:black;background:#f1f3f5}a{color:inherit}}
+</style></head><body><main>
+<header><div class="eyebrow">GO 切片 · 战斗关系 · 根因复核</div><h1>矿点卡「战斗中」<br>从一块共享数组说起</h1><p class="lead">死亡敌军已经被删除，为什么又回到受击名单？关键在于：<b>两份切片共用数组，却保留着不同的长度。向短切片追加，覆盖了长切片仍在使用的位置。</b></p><p class="meta">2026-10-16 · 基线 h5_new_tf_v1053_bug / 79da3625c3 · 只读复核，未实施修复</p></header>
+<nav aria-label="报告目录"><a href="#memory">① 什么是数组共享</a><a href="#demo">逐步动画</a><a href="#cleanup">② 为什么没清理</a><a href="#residue">③ 为什么会残留</a><a href="#boundary">触发条件与修复</a></nav>
+<section id="memory"><h2>① 共享的是数组，不是长度</h2><p>把数组想成一排柜子，把切片想成一张登记卡。卡上写着“从哪个柜子开始、当前使用几个、最多可用几个”。<b>复制登记卡不会复制柜子。</b></p><pre>切片头                 底层数组                         战斗对象
+WhoAttack ───┐         ┌────────┬────────┬────────┐
+             ├────────→│ A 指针 │ B 指针 │ C 指针 │
+EndAttackInfo┘         └───┬────┴───┬────┴───┬────┘
+                          ↓        ↓        ↓
+                         A对象    B对象    C对象</pre><div class="grid"><div class="card"><h3>两张登记卡各自独立</h3><p><code>len</code> 是当前有效元素个数；<code>cap</code> 是从起点可使用的容量。改变 <code>WhoAttack.len</code>，不会改变另一张卡的长度。</p></div><div class="card"><h3>数组格子共同使用</h3><p>同一格被改写，两张卡都能看到。格子里存的是 <code>*BatCtx</code> 指针；复制指针不会创建一支新部队。</p></div></div><h3>共享发生在这里</h3><pre>// BatCtx.GiveupTarget · battle/battlectx.go
+curTarget.SetEndAttackInfo(curTarget.GetWhoAttack());
+curTarget.otherGiveupTarget(t);
+
+// 生成的 setter · battle/accessor_BatCtx.go
+func (p *BatCtx) SetEndAttackInfo(value []*BatCtx) {
+    p.EndAttackInfo = value // 只复制切片头，没有复制数组
+}</pre><p>当追击者 X 放弃玩家队伍 D 时，<code>curTarget</code> 就是 D。上面相当于 <code>D.EndAttackInfo = D.WhoAttack</code>。</p></section>
+<section id="demo" class="animation"><h2>动画：死亡的 A 是怎样被写回去的</h2><p>D 是玩家队伍；X 是上一轮最后退出的追击者；A、B、C 是后来围攻的敌军。下图显示的是 <b>D 的两份切片</b>。</p><div class="note">示例前提：此前多队追击留下足够容量，这里用 cap=8 示意。后续追加没有扩容，旧 EndAttackInfo 没有先被其他路径清掉。容量和格子布局是教学模型，不是线上内存快照。</div><div class="controls"><button id="prev" type="button">← 上一步</button><button id="play" type="button" aria-pressed="false">自动播放</button><button id="next" type="button">下一步 →</button><button id="reset" type="button">重新开始</button><label>速度 <select id="speed"><option value="1">正常</option><option value="0.6">慢速</option><option value="1.6">快速</option></select></label></div><div class="steps" id="steps" aria-label="选择动画步骤"></div><h3 id="stepTitle" aria-live="polite"></h3><p id="stepText"></p><div class="canvasbox"><canvas id="diagram" width="1000" height="380" aria-label="数组与切片有效范围动画，完整数据见下方逐步表">浏览器不支持 Canvas，请阅读下方完整状态表。</canvas></div><p class="muted animationHint">蓝色框：WhoAttack 的有效范围；橙色框：EndAttackInfo 的有效范围。红色移动块：本步写入；灰色格：有效范围外的旧值或无关值。键盘 ← / → 切换步骤，空格播放或暂停。</p><pre id="stepCode"></pre><div class="data"><div><strong>输入</strong><span id="input"></span></div><div><strong>操作</strong><span id="action"></span></div><div><strong>输出</strong><span id="output"></span></div></div><noscript><p class="note">JavaScript 未启用，动画不可用；下方状态表与完整报告仍可阅读。</p></noscript><h3>完整状态表：不播放也能逐步对照</h3><div class="tablewrap"><table><thead><tr><th>步骤</th><th>底层数组前几格</th><th>WhoAttack</th><th>EndAttackInfo</th></tr></thead><tbody id="statesTable"><tr><td>保存共享引用</td><td>[X, ·, ·]</td><td>len=1 → [X]</td><td>len=1 → [X]</td></tr><tr><td>X 退出</td><td>[X, ·, ·]</td><td>len=0 → []</td><td>len=1 → [X]</td></tr><tr><td>A/B/C 加入</td><td>[A, B, C]</td><td>len=3 → [A,B,C]</td><td>len=1 → [A]</td></tr><tr><td>A 死亡，原地删除</td><td>[B, C, C]</td><td>len=2 → [B,C]</td><td>len=1 → [B]</td></tr><tr><td>收尾追加 A</td><td>[B, A, C]</td><td>len=2 → [B,A]，污染</td><td>len=2 → [B,A]</td></tr><tr><td>清理收尾名单</td><td>[B, A, C]</td><td>len=2 → [B,A]</td><td>nil</td></tr><tr><td>B 死亡</td><td>[A, A, C]</td><td>len=1 → [A]</td><td>nil</td></tr><tr><td>C 死亡</td><td>[A, A, C]</td><td>找不到 C，仍为 [A]</td><td>nil</td></tr></tbody></table></div><p class="muted">末两步聚焦 WhoAttack 的删除效果，省略各次死亡附带的临时收尾名单生成与清空，不把该表当作全部函数调用的逐指令快照。</p><h3>三个容易混淆的细节</h3><ol><li><b>X 去哪里了？</b>删除后 len=0，追加 A 从下标0写入，直接覆盖 X 的指针。append 不会检查那一格有没有旧值。</li><li><b>为什么删除 A 变成 [B,C,C]？</b>原地删除是把 B/C 复制到前两格，最后一个旧 C 没擦掉。新 WhoAttack 长度只有2，第三格不属于它的有效内容。</li><li><b>为何 append 不保护另一张名单？</b>它只知道接收切片自己的 len/cap，不知道其他切片是否也使用这些格子。EndAttackInfo.len=1，就写下标1。</li></ol></section>
+<section id="cleanup"><h2>② 为什么 EndAttackInfo 没清理</h2><h3>先区分：被别人攻击，不等于自己有攻击目标</h3><p>攻击方设置目标时，就会把自己加入 D.WhoAttack。随后才调用 JoinBattlePassive，尝试让 D 反击。但这个函数可以提前返回。</p><pre>// JoinBattlePassive · ctl_battle.go（关键片段）
+march, exist := beAtk.GetMarch()
+if !cspb.IsMapUnitNpcTroop(beAtk) && exist &&
+    march.GetAction() != cspb.MarchActStubAct {
+    return false // 赴矿行军的个人队伍在这里返回
+}
+// 只有通过判断，才设置防守方的攻击目标
+battle.SetBattleCurTarget(beAtk, atk)</pre><pre>X.CurTarget = D    // X 正在追击 D
+D.WhoAttack = [X]  // D 知道有人攻击自己
+D.CurTarget = nil  // D 继续行军，没有设置反击目标</pre><p>到矿后行军结束，这个行军条件不再拦截。所以“赴矿追击”与“矿点围攻”可以表现不同。</p><h3>留下引用后，个人部队在这个分支直接返回</h3><pre>// WMap.giveUpTarget · ctl_battle.go（省略日志与注释）
+ownerBatCtx.GiveupTarget() // 已经设置 D.EndAttackInfo
+// ……
+if targetCtx.GetCurTarget() == nil {
+    if targetBatUnit, ok := melem.UnitToIBattleUnit(target); ok {
+        wmap.settleBattle(targetBatUnit, owner)
+        if _, isRt := melem.UnitToRallyTroop(target); isRt &&
+            !targetBatUnit.BatCtx().InBattle() {
+            wmap.battleEnd(targetBatUnit)
+        }
+        return true
+    }
+}</pre><div class="note warn"><b>D 没主目标 → 进入分支；D 是个人编队 → isRt=false；跳过 battleEnd(D) → 直接 return。</b><br>settleBattle 的交战结算不等价于整套部队收尾。这条路径没有清掉 D.EndAttackInfo。</div><h3>实际清理在哪里</h3><pre>// DelUnionAttackInfo · ctl_union.go（个人部队分支片段）
+if pt.CityID == 0 {
+    return
+}
+// ……
+ptBatCtx := pt.BattleBehavior.BatCtx()
+atkIds = ptBatCtx.GetAttackTroopIds()
+ptBatCtx.SetEndAttackInfo(nil)</pre><p>相关收尾链是 <code>battleEnd → pTroopBattleEndAlive → 对应分支调用 DelUnionAttackInfo</code>。前面的提前返回漏掉这次清理。清理函数自身也有条件，不能说每次 battleEnd 都必然清空名单。</p><p>最后一个追击者退出后，D 的 WhoAttack 已空、CurTarget 为空，InBattle 返回 false；普通非战斗 tick 不会自动补做这份名单的清理，因此旧引用有机会留到后续交战。</p></section>
+<section id="residue"><h2>③ 为什么死亡攻击者会残留</h2><h3>顺序决定结果：先删除，再被写回</h3><pre>// WMap.battleTroopDead · ctl_battle.go（关键片段）
+unitCtx := unit.BatCtx()       // unitCtx = 死亡的 A
+exitTroops := unitCtx.TroopDead() // 通知 D.otherDead(A)，先删掉 A
+// ……
+for _, id := range exitTroops {
+    // ……查找对应地图部队……
+    atackCtx := atkBatUnit.BatCtx() // 处理到 D 时，atackCtx = D
+    atackCtx.EndAttackInfo = append(atackCtx.EndAttackInfo, unitCtx)
+    wmap.battleEnd(atkBatUnit)
+}</pre><p>A 正在攻击 D 时，TroopDead 会把自己的目标 D 纳入返回名单。不能因为变量叫 atk，就认为这个循环不会处理 D。</p><pre>正确删除 A 后： WhoAttack = [B,C]
+收尾 append A： WhoAttack = [B,A]  ← C 被覆盖
+B 后来死亡：    WhoAttack = [A]
+C 后来死亡：    名单里已没有 C，无法删除
+A 已死过：      正常死亡清理不会自动再执行一次</pre><div class="grid"><div class="card"><h3>清掉 EndAttackInfo 也无法撤销覆盖</h3><p><code>EndAttackInfo = nil</code> 只是扔掉一张登记卡。数组第二格已经被写成 A，WhoAttack 仍拿着这份错误数据。</p></div><div class="card"><h3>地图实体删除，不会自动清理所有引用</h3><p>其他名单仍可持有 A 的 BatCtx 指针。Go GC 不负责修复业务关系，也不会自动从 D.WhoAttack 删除 A。这是业务失效引用，不是内存悬空指针。</p></div></div><h3>由残留关系演变为卡战斗和采集异常</h3><pre>WhoAttack=[A] 且 StartBattleTime&gt;0
+                 ↓
+InBattle() 仍为 true，但主目标为空
+                 ↓
+battlePrepare：找不到目标0 → giveUpTarget → battleEnd
+                 ↓                  ↓
+     无主目标直接返回       pTroopBattleEndAlive
+     不清 WhoAttack                 ↓
+                         TroopResetGatherCtx
+                                    ↓
+                 LastCalcAt / EmptyAt / FullLoadAt 重建
+                                    ↓
+                 未结算时间丢失，完成时间不断后移</pre><p>战斗状态判断又排在采集、行军状态之后，客户端持续显示「战斗中」。重登只重新获取服务器状态；本案回城销毁 D 的地图实体后恢复。</p><p class="muted">这是定时器反复执行异常收尾，不是阻塞事件循环的紧循环。本次线上采样间隔约1.1秒。“残留”指正常事件无法自然清掉，仍可能被显式修复或实体销毁打断。</p></section>
+<section id="boundary"><h2>触发边界：共享数组，不代表每次都出错</h2><p>对于本例两个切片起点相同的情况，令 <code>e=len(EndAttackInfo)</code>、<code>w=len(WhoAttack)</code>，其中 w 是死亡删除后的长度。</p><div class="note"><b>覆盖有效元素需要同时满足：</b>仍共享数组；<code>e &lt; cap(EndAttackInfo)</code>，追加不扩容；<code>e &lt; w</code>，写入点落在受击名单有效范围内。</div><div class="grid"><div class="card"><h3>后续只有一支敌军 C</h3><p>C 死亡后 WhoAttack.len=0。即使收尾名单追加写了下标1，也不会把 WhoAttack 的长度变回非零。因此不会形成这里讲的死亡对象回写残留。</p></div><div class="card"><h3>后续三支敌军 A/B/C</h3><p>A 死亡后 WhoAttack.len=2，旧 EndAttackInfo.len=1；追加写下标1，恰好覆盖有效的 C。若此前扩容或旧引用先被清掉，则这条覆盖链不成立。</p></div></div><h3>建议：复制数组，保留原对象指针</h3><pre>// GiveupTarget 中，替换直接共享切片的语句
+curTarget.SetEndAttackInfo(
+    append([]*BatCtx(nil), curTarget.GetWhoAttack()...),
+)
+
+// 结果：两份独立的数组，元素指向原来的战斗对象
+WhoAttack     → 数组① [A指针 | B指针]
+EndAttackInfo → 数组② [A指针 | B指针]</pre><p>这里不需要深拷贝整个 BatCtx。不要向旧名单逐个追加 <code>&amp;BatCtx{TroopID: ...}</code>：会改变替换语义、累积重复记录，旧数组仍可能共享，并且丢掉 PlayerID 等字段。龙巢宝箱相关读取方确实使用 EndAttackInfo 元素的 PlayerID。</p><p>如果没有其他赋值路径，新建 BatCtx 的 EndAttackInfo 默认是 nil；第一次 <code>append(nil, A)</code> 会分配独立数组，不会产生上述覆盖。</p><p class="muted">建议尚未实施。仍需评估其他直接赋值路径、遗漏收尾以及历史失效关系的清理。不能直接手改生成 accessor，也不能把所有相似赋值都认定为相同故障。</p></section>
+<section><h2>本案证据与报告边界</h2><div class="tablewrap"><table><thead><tr><th>北京时间</th><th>本次复核确认的日志</th></tr></thead><tbody><tr><td>10月15日 23:53:26.154</td><td>最后一个追击者放弃，目标 CurTarget=0。</td></tr><tr><td>23:56:20.085</td><td>防守方联盟清理名单连续出现敌军尾号5863、5859，与覆盖结果吻合。</td></tr><tr><td>23:58:30.266起</td><td>抽查可见 target 0 cannot found 与 giveUpTarget no target 重复出现。</td></tr><tr><td>10月16日 09:51:55.073</td><td>召回结算仅361毫秒、6水晶。</td></tr><tr><td>09:54:48.115</td><td>返城销毁时仍发现死亡敌军尾号5859不存在。</td></tr></tbody></table></div><p>核心缺陷与关键日志吻合，但没有重新核验全部战斗波次、整段十小时日志或截图的精确秒数。cap=8 是示意条件，日志没有直接打印线上数组容量。矿点剩余量不直接等于补偿量。</p><p>源码依据：<code>battle/battlectx.go</code> 的 GiveupTarget、TroopDead、otherDead、InBattle；<code>battle/utils.go</code> 的原地删除；<code>ctl_battle.go</code> 的 giveUpTarget、JoinBattlePassive、battleTroopDead、battlePrepare；以及 ctl_union、ctl_playertroop、ctl_gather 和 munit/gather 中的清理与采集路径。路径均相对于 <code>game/wmap/internal/</code>。</p><p class="muted">线上抽查使用项目 ES CLI。gsh 辅助请求返回 HTTP 400，未产出有效复核结果，不计入证据。数组动画是教学模型，不是测试服实跑或线上回放。</p></section><footer>离线单文件 · 无外部脚本、字体或网络请求 · 支持打印（保留完整状态表） · 配套案例：2026-10-16-矿点卡战斗与受击切片别名污染</footer>
+</main><script>
+'use strict';
+const steps=[
+ {t:'1 / 8　X 放弃前：保存共享引用',a:['X','·','·','·','·','·','·','·'],w:1,e:1,txt:'两份切片头指向同一个 arr，长度都是1。此时还没有发生覆盖错误。',code:'D.EndAttackInfo = D.WhoAttack',input:'WhoAttack=[X]，cap=8',action:'复制切片头，不复制数组',output:'两份切片共同读取 arr[0]',moves:[]},
+ {t:'2 / 8　删除 X：只缩短受击名单',a:['X','·','·','·','·','·','·','·'],w:0,e:1,txt:'WhoAttack 变成空切片，但数组中的 X 没被擦除；EndAttackInfo 的长度仍是1。',code:'D.WhoAttack = append(D.WhoAttack[:0], D.WhoAttack[1:]...)',input:'两份切片 len=1',action:'删除最后一个元素',output:'WhoAttack.len=0；EndAttackInfo.len=1',moves:[]},
+ {t:'3 / 8　A、B、C 加入：从下标0重新写',a:['A','B','C','·','·','·','·','·'],w:3,e:1,txt:'append 从 WhoAttack.len 开始写。A 覆盖旧 X，B/C 依次填入。旧 EndAttackInfo 仍只看第一格，现在看到的是 A。',code:'D.WhoAttack = append(D.WhoAttack, A, B, C)',input:'WhoAttack.len=0，仍有容量8',action:'依次写下标0、1、2',output:'WhoAttack=[A,B,C]；EndAttackInfo=[A]',moves:[['A',-1,0],['B',-1,1],['C',-1,2]]},
+ {t:'4 / 8　A 阵亡：B、C 复制到前面',a:['B','C','C','·','·','·','·','·'],w:2,e:1,txt:'删除 A 会把 B/C 左移复制，最后一个旧 C 没擦掉。WhoAttack 长度为2，仍然正确；EndAttackInfo 现在看到 B。',code:'D.otherDead(A) → removeBattleTroop(&D.WhoAttack, A.TroopID)',input:'WhoAttack=[A,B,C]',action:'B：1→0；C：2→1；长度减1',output:'数组[B,C,C]；WhoAttack=[B,C]',moves:[['B',1,0],['C',2,1]]},
+ {t:'5 / 8　关键覆盖：向收尾名单追加死亡 A',a:['B','A','C','·','·','·','·','·'],w:2,e:2,txt:'EndAttackInfo.len=1，所以 append 写下标1。这里仍是 WhoAttack 有效范围内的 C，结果 C 被死亡 A 覆盖。',code:'D.EndAttackInfo = append(D.EndAttackInfo, A)',input:'EndAttackInfo.len=1；WhoAttack.len=2',action:'写 arr[1]=A，覆盖 C',output:'WhoAttack 错误地变成 [B,A]',moves:[['A',-1,1]],bad:true},
+ {t:'6 / 8　清空收尾名单：无法撤销覆盖',a:['B','A','C','·','·','·','·','·'],w:2,e:null,txt:'置 nil 只丢弃 EndAttackInfo 的切片头，不会把数组内容恢复。WhoAttack 仍保留错误的 [B,A]。',code:'D.SetEndAttackInfo(nil)',input:'两个列表都看到 [B,A]',action:'丢弃 EndAttackInfo 的引用',output:'WhoAttack 仍然是 [B,A]',moves:[],bad:true},
+ {t:'7 / 8　B 阵亡：只删除 B',a:['A','A','C','·','·','·','·','·'],w:1,e:null,txt:'按 B 的部队 ID 删除 B，A 被左移到第一格。这里聚焦受击名单，省略 B 死亡的临时收尾名单处理。',code:'D.otherDead(B) → removeBattleTroop(&D.WhoAttack, B.TroopID)',input:'WhoAttack=[B,A]',action:'删除 B，把后面的 A 左移',output:'WhoAttack=[A]',moves:[['A',1,0]],bad:true},
+ {t:'8 / 8　C 阵亡：找不到 C，A 继续残留',a:['A','A','C','·','·','·','·','·'],w:1,e:null,txt:'删除函数只遍历 WhoAttack 的有效范围，下标2的旧 C 不在范围内。A 早已走完死亡清理，不会自动再删一次。',code:'removeBattleTroop(&D.WhoAttack, C.TroopID) // 无匹配',input:'WhoAttack=[A]，len=1',action:'在有效范围查找 C，没有找到',output:'死亡 A 残留；满足时间条件时 InBattle=true',moves:[],bad:true}
+];
+const $=id=>document.getElementById(id),canvas=$('diagram'),ctx=canvas.getContext('2d');
+let current=0,playing=false,started=0,frame=0,rate=1;
+const x0=260,y0=160,cw=76,ch=58,baseDuration=1650;
+function box(x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(x,y,w,h)}
+function label(s,x,y,color='#182d40',size=16){ctx.fillStyle=color;ctx.font=`${size}px system-ui, sans-serif`;ctx.fillText(s,x,y)}
+function range(n,y,color,name){label(name,24,y+20,color,16);if(n===null){label('nil · 无数组引用',x0,y+20,color,16);return}label(`len=${n}  cap=8`,24,y+44,color,14);if(n===0){label('[] · 不读取任何格子',x0,y+25,color,16);return}ctx.strokeStyle=color;ctx.lineWidth=3;ctx.strokeRect(x0-3,y,n*cw-4,36);label(`arr[0:${n}]`,x0+8,y+24,color,15)}
+function draw(p){const s=steps[current],before=steps[Math.max(0,current-1)],active=p<1&&current>0;ctx.clearRect(0,0,1000,380);box(0,0,1000,380,'#f7faff');label('D 的切片头',24,30,'#586c7e',14);label('同一个底层数组 arr · 格子保存 BatCtx 指针',x0,30,'#586c7e',15);range(s.w,55,'#2464d9','WhoAttack');range(s.e,278,'#bb650e','EndAttackInfo');label('数组下标',24,y0-18,'#586c7e',14);label('真实格子内容',24,y0+35,'#182d40',15);let values=active&&s.moves.length?before.a:s.a;for(let i=0;i<8;i++){let v=values[i],valid=i<s.w||(s.e!==null&&i<s.e),bad=s.bad&&v==='A'&&i<s.w;label(String(i),x0+i*cw+24,y0-18,'#586c7e',14);box(x0+i*cw,y0,cw-8,ch,bad?'#ffe0e5':valid?'#e5efff':'#e9edf2');label(v,x0+i*cw+23,y0+37,bad?'#c13949':valid?'#182d40':'#8b98a6',24)}if(active){s.moves.forEach((m,i)=>{let q=Math.max(0,Math.min(1,p*1.7-i*.22)),ease=q*q*(3-2*q);if(q<=0)return;let fromX=m[1]<0?x0+m[2]*cw:x0+m[1]*cw,fromY=m[1]<0?y0-62:y0;let xx=fromX+(x0+m[2]*cw-fromX)*ease,yy=fromY+(y0-fromY)*ease-(m[1]>=0?Math.sin(q*Math.PI)*50:0);box(xx,yy,cw-8,ch,'#c13949');label(m[0],xx+23,yy+37,'white',24)})}if(s.bad)label('红色 A：已死亡，却仍在 WhoAttack 有效范围内',x0,252,'#c13949',15);else label('范围外的旧值不会被 WhoAttack 的 range 遍历',x0,252,'#586c7e',14)}
+function update(){const s=steps[current];$('stepTitle').textContent=s.t;$('stepText').textContent=s.txt;$('stepCode').textContent=s.code;$('input').textContent=s.input;$('action').textContent=s.action;$('output').textContent=s.output;$('prev').disabled=current===0;$('next').disabled=current===steps.length-1;Array.from($('steps').children).forEach((b,i)=>{if(i===current)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')})}
+function syncPlay(){ $('play').textContent=playing?'暂停播放':'自动播放';$('play').setAttribute('aria-pressed',String(playing))}
+function tick(now){const p=Math.min(1,(now-started)/(baseDuration/rate));draw(p);if(p<1){frame=requestAnimationFrame(tick);return}if(playing){if(now-started<(baseDuration+2400)/rate){frame=requestAnimationFrame(tick);return}if(current<steps.length-1){go(current+1);return}playing=false;syncPlay()}frame=0}
+function go(index){cancelAnimationFrame(frame);current=Math.max(0,Math.min(steps.length-1,index));started=performance.now();update();draw(0);frame=requestAnimationFrame(tick)}
+function manual(index){playing=false;syncPlay();go(index)}
+steps.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.textContent=String(i+1);b.setAttribute('aria-label',s.t);b.addEventListener('click',()=>manual(i));$('steps').appendChild(b)});
+$('prev').addEventListener('click',()=>manual(current-1));$('next').addEventListener('click',()=>manual(current+1));$('reset').addEventListener('click',()=>manual(0));$('play').addEventListener('click',()=>{playing=!playing;syncPlay();if(playing)go(current===steps.length-1?0:current);else{cancelAnimationFrame(frame);draw(1)}});$('speed').addEventListener('change',e=>{rate=Number(e.target.value)});document.addEventListener('keydown',e=>{if(['INPUT','SELECT','BUTTON','TEXTAREA'].includes(document.activeElement.tagName))return;if(e.key==='ArrowRight'){e.preventDefault();manual(current+1)}else if(e.key==='ArrowLeft'){e.preventDefault();manual(current-1)}else if(e.code==='Space'){e.preventDefault();$('play').click()}});update();draw(1);
+</script></body></html>

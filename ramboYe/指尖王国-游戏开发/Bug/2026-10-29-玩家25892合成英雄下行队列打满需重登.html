@@ -1,0 +1,142 @@
+<title>合成英雄队列打满</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f5f7f9; --surface:#ffffff; --ink:#18212b; --muted:#5b6876; --line:#dbe2e8;
+  --accent:#2a6a96; --accent-soft:#e3eef6; --crit:#b23a30; --crit-soft:#f8e6e3;
+  --ok:#2f7a4f; --code-bg:#eef2f5;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#11171d; --surface:#18212a; --ink:#e4eaf0; --muted:#97a5b3; --line:#2a3743;
+    --accent:#7db5dd; --accent-soft:#1c3142; --crit:#ef8a7f; --crit-soft:#3a201d;
+    --ok:#7cc79a; --code-bg:#1d2832;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#11171d; --surface:#18212a; --ink:#e4eaf0; --muted:#97a5b3; --line:#2a3743;
+  --accent:#7db5dd; --accent-soft:#1c3142; --crit:#ef8a7f; --crit-soft:#3a201d;
+  --ok:#7cc79a; --code-bg:#1d2832;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.75;padding-inline:16px;padding-block:40px 64px}
+.wrap{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+header{display:flex;flex-direction:column;gap:14px}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--accent);font-weight:500}
+h1{font-size:28px;line-height:1.35;margin:0;text-wrap:balance;font-weight:700}
+h2{font-size:19px;margin:0 0 14px;text-wrap:balance;font-weight:700}
+p{margin:0}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.meta div{background:var(--surface);padding:10px 14px;display:flex;flex-direction:column}
+.meta dt{font-size:12px;color:var(--muted)}
+.meta dd{margin:0;font-weight:500;font-variant-numeric:tabular-nums}
+.verdict{background:var(--crit-soft);border-left:3px solid var(--crit);padding:14px 18px;border-radius:0 6px 6px 0}
+.verdict strong{color:var(--crit)}
+code,.mono{font-family:var(--mono);font-size:.86em}
+code{background:var(--code-bg);padding:1px 5px;border-radius:3px;word-break:break-word}
+section{display:flex;flex-direction:column}
+.timeline{list-style:none;margin:0;padding:0;border-left:2px solid var(--line);display:flex;flex-direction:column}
+.timeline li{position:relative;padding:8px 0 8px 22px;display:grid;grid-template-columns:76px 1fr;gap:12px;align-items:baseline}
+.timeline li::before{content:"";position:absolute;left:-6px;top:17px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--accent)}
+.timeline li.crit::before{background:var(--crit);border-color:var(--crit)}
+.timeline li.miss::before{border-color:var(--muted);border-style:dashed}
+.timeline time{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.timeline li.crit time,.timeline li.crit span{color:var(--crit);font-weight:500}
+.timeline li.miss span{color:var(--muted)}
+.chain{display:flex;flex-direction:column;gap:10px;margin:0;padding-left:20px}
+.chain li::marker{color:var(--accent);font-weight:700}
+.note{color:var(--muted);font-size:14px;margin-top:12px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;min-width:480px;background:var(--surface)}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.04em;background:var(--code-bg)}
+tr:last-child td{border-bottom:none}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:500}
+.fixes{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
+.fixes li{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 16px}
+.fixes b{display:block;margin-bottom:2px}
+.code-block{background:var(--code-bg);border-radius:6px;padding:12px 14px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.6;white-space:pre;margin-top:12px}
+footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:480px){
+  h1{font-size:23px}
+  .timeline li{grid-template-columns:1fr;gap:0}
+}
+</style>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">线上排查 · h5prod · 2026-10-29</div>
+  <h1>game2 玩家 25892 合成英雄后卡住，需重登才显示</h1>
+  <dl class="meta">
+    <div><dt>服务器</dt><dd>game2</dd></div>
+    <div><dt>玩家</dt><dd>25892</dd></div>
+    <div><dt>入口</dt><dd><code>ItemMergeReq</code> 碎片合成</dd></div>
+    <div><dt>丢弃消息</dt><dd>当日 2572 条</dd></div>
+  </dl>
+  <p class="verdict"><strong>结论：</strong>玩家一次合成大量英雄时，服务端每加一个英雄就推两条大包（全量天赋树 + 全部同名英雄数据），超过了单玩家下行队列 256 条的上限。之后的消息被 gsgate 直接丢弃，其中就有带新英雄的 <code>HeroInfoNtf</code>、祭坛通知和合成回包 <code>ItemMergeAck</code>，所以客户端卡住、重登后才显示。英雄数据本身没有丢。这不是近期改动引入的问题，是老代码在数量大时暴露出来的。</p>
+</header>
+
+<section>
+  <h2>丢弃时间分布（北京时间 = 日志 UTC + 8）</h2>
+  <div class="tbl"><table>
+    <tr><th>时间</th><th>丢弃条数</th><th>主要内容</th></tr>
+    <tr><td class="num">15:22</td><td class="num">31</td><td><code>TreeList</code> 9、<code>heroes</code> 8、lineup / propMap 等</td></tr>
+    <tr><td class="num">19:51</td><td class="num">74</td><td><code>heroes</code> 36、<code>TreeList</code> 36</td></tr>
+    <tr><td class="num">20:13</td><td class="num">410</td><td><code>heroes</code> 198、<code>TreeList</code> 195、<code>NewAltarList</code>（单条约 149KB）</td></tr>
+    <tr><td class="num">20:17 ~ 20:36</td><td class="num">1292</td><td>多次合成，结构相同；20:27 丢了 <code>errCode:ErrCodeItemMergeHeroCapacityLimit</code> 回包</td></tr>
+    <tr><td class="num">20:44</td><td class="num">352</td><td><code>heroes</code> 165、<code>TreeList</code> 166，合成回包（带 <code>rewards</code>）也被丢</td></tr>
+    <tr><td class="num">20:46</td><td class="num">115</td><td><code>heroes</code> 52、<code>TreeList</code> 49、<code>NewAltarList</code>、<code>GetHeroCountNtf</code></td></tr>
+    <tr><td class="num">20:47</td><td class="num">33</td><td><code>heroes</code> 17、<code>TreeList</code> 16</td></tr>
+  </table></div>
+  <p class="note">日志位置：<code>game/gsgate/internal/agent.go:263</code> <code>player25892 sendMQ full, drop msg</code>。被丢的 <code>heroes</code>（<code>HeroInfoNtf</code>）每条带 60～115 个英雄，单条约 30KB。同时段 <code>reqstat</code> 记录 <code>ItemMergeAck</code> 耗时 1～2 秒（20:36:03 2069ms、20:46:02 1178ms、20:47:39 1008ms）。</p>
+</section>
+
+<section>
+  <h2>消息链路与放大原因</h2>
+  <ol class="chain">
+    <li><code>OnItemMergeReq</code>（<code>game/play/internal/ctl_item.go</code>）扣碎片后调用 <code>AddAssets</code> 发放英雄道具（<code>item_hero</code>）。</li>
+    <li><code>AddAssets</code> → <code>CheckAndUseItem</code> → <code>useItemHero</code>，按数量循环调用 <code>AddHero</code>（<code>ctl_item.go:1319</code>）。</li>
+    <li><code>AddHero</code>（<code>game/play/internal/ctl_hero.go:104-112</code>）每加一个英雄，就把玩家<b>全部</b>天赋树打包成 <code>NewHeroTalentTreeNtf</code> 发一次。</li>
+    <li><code>AddHero</code> 每次都调用 <code>DealWithSpecialSkill</code> → <code>ulockSkill</code>（<code>ctl_hero.go:2944</code>），把特殊技能组里<b>所有</b>同名英雄打包成 <code>HeroInfoNtf</code> 发出去，不管状态有没有变化。</li>
+    <li>真正带新英雄的 <code>HeroInfoNtf</code>、<code>NewAltarInfoNtf</code>、<code>GetHeroCountNtf</code> 在 <code>AddAssets</code> 的 defer 里最后才发（<code>game/play/internal/ctl_asset.go:335</code>），合成回包 <code>ItemMergeAck</code> 也在最后。</li>
+    <li>单玩家下行队列 <code>SingleClientSendMqLen = 256</code>（<code>game/gsgate/internal/def.go:83</code>），满了 <code>streamSend</code> 直接丢弃，不会重发。合成 N 个英雄会先产生 2N 条以上的大包，最后这些关键消息正好被丢掉。</li>
+  </ol>
+  <div class="code-block">// game/gsgate/internal/agent.go
+func (agent *GSAgent) streamSend(msg interface{}) {
+	select {
+	case agent.sendMQ &lt;- msg:
+	default:
+		tlog.Errorf("player%d sendMQ full, drop msg: %v", agent.PlayerID(), msg)
+	}
+}</div>
+</section>
+
+<section>
+  <h2>近期改动排查</h2>
+  <div class="tbl"><table>
+    <tr><th>改动</th><th>影响</th></tr>
+    <tr><td>H5-12647（9/28）去掉 <code>WarSoulEntryReq</code></td><td>只影响战魂入口红点，与合成无关</td></tr>
+    <tr><td>红点系统（9/29）新增 <code>AssetValChange</code> 事件</td><td>只打脏标记，1 秒统一重算，不阻断通知</td></tr>
+    <tr><td><code>AddAssets</code> 海岸保卫战自动提交（10/27）</td><td>只处理炮弹道具，与英雄无关</td></tr>
+    <tr><td><code>AddHero</code> / <code>useItemHero</code> / <code>OnItemMergeReq</code></td><td>最后一次改动在 2025-12 ～ 2026-01，近期没人动</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>建议</h2>
+  <ul class="fixes">
+    <li><b>临时规避</b>让玩家少量多次合成（一次几十个以内）。已经卡住的，重新登录就能看到英雄。</li>
+    <li><b>服务端修复</b>把天赋树通知和 <code>DealWithSpecialSkill</code> 从 <code>AddHero</code> 里移出去，整批合成完只发一次；<code>ulockSkill</code> 只通知激活状态真正变化的英雄。改完后合成 N 个英雄只发几条消息。</li>
+    <li><b>可选</b>评估 <code>NewAltarInfoNtf</code> 的组装：<code>AddHero</code> 每加一个英雄都把全部祭坛槽位追加一遍，批量时单条会膨胀到 100KB 以上。</li>
+  </ul>
+</section>
+
+<footer>数据来源：Kibana 索引 game-h5prod-2026.10.28 / 2026.10.29，serverid=game2，message 含 <code>player25892 sendMQ full</code>。分支 h5_new_tf_v1054_remote_fight_light。</footer>
+</div>
+</body>

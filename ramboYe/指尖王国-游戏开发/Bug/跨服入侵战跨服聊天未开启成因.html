@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>跨服入侵战显示「跨服聊天未开启」与开启条件——成因核查</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --text: #1f2937;
+  --strong: #111827;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --head: #f3f4f6;
+  --soft: #f9fafb;
+  --accent: #2563eb;
+  --accent-soft: #eff6ff;
+  --code-bg: #f6f0f0;
+  --code-line: #ecdada;
+  --code: #b4232a;
+  --ok: #047857;
+  --ok-soft: #ecfdf5;
+  --ok-line: #a7f3d0;
+  --bad: #b91c1c;
+  --bad-soft: #fef2f2;
+  --bad-line: #fecaca;
+  --warn: #a16207;
+  --warn-soft: #fffbeb;
+  --warn-line: #fde68a;
+  --shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.75 -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body { padding: 32px 16px 64px; }
+
+.report {
+  max-width: 1020px;
+  margin: 0 auto;
+  padding: 38px 44px 48px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+.report.wide { max-width: 1200px; }
+
+.report-header {
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.meta {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+h1 {
+  margin: 0;
+  color: var(--strong);
+  font-size: 26px;
+  font-weight: 750;
+  line-height: 1.4;
+}
+h2 {
+  margin: 0 0 14px;
+  padding-left: 10px;
+  border-left: 4px solid var(--accent);
+  color: var(--strong);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+h3 {
+  margin: 20px 0 8px;
+  color: var(--strong);
+  font-size: 16px;
+  font-weight: 650;
+}
+section { margin-top: 32px; }
+section + section {
+  padding-top: 28px;
+  border-top: 1px solid #f1f5f9;
+}
+p { margin: 0 0 10px; }
+p:last-child { margin-bottom: 0; }
+strong { color: var(--strong); font-weight: 650; }
+ul, ol { margin: 8px 0; padding-left: 1.5em; }
+li { margin: 8px 0; }
+li > ul, li > ol { margin-top: 6px; }
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+code {
+  padding: 1px 6px;
+  border: 1px solid var(--code-line);
+  border-radius: 5px;
+  background: var(--code-bg);
+  color: var(--code);
+  font: 0.86em/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  overflow-wrap: break-word;
+}
+
+.conclusion {
+  margin: 20px 0 26px;
+  padding: 20px 22px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent);
+  border-radius: 12px;
+}
+.conclusion[data-status="ok"] { border-left-color: var(--ok); }
+.conclusion[data-status="abnormal"] { border-left-color: var(--bad); }
+.conclusion[data-status="risk"],
+.conclusion[data-status="pending"] { border-left-color: var(--warn); }
+.conclusion p {
+  font-size: 15.5px;
+  line-height: 1.75;
+  color: var(--text);
+}
+.conclusion .lead {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--strong);
+  margin-bottom: 6px;
+}
+.conclusion ul { margin: 4px 0 0; }
+.conclusion li + li {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.status.ok { color: var(--ok); }
+.status.bad { color: var(--bad); }
+.status.warn { color: var(--warn); }
+.status.neutral { color: var(--accent); }
+.status .resolved { color: var(--ok); }
+
+.pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+.pill.ok { color: var(--ok); background: var(--ok-soft); border-color: var(--ok-line); }
+.pill.bad { color: var(--bad); background: var(--bad-soft); border-color: var(--bad-line); }
+.pill.warn { color: var(--warn); background: var(--warn-soft); border-color: var(--warn-line); }
+.pill.neutral { color: var(--accent); background: var(--accent-soft); border-color: #bfdbfe; }
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 14px 0 2px;
+}
+.kpi {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.kpi .label { color: var(--muted); font-size: 12px; margin-bottom: 2px; }
+.kpi .value {
+  color: var(--strong);
+  font-size: 20px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.kpi .value.ok { color: var(--ok); }
+.kpi .value.bad { color: var(--bad); }
+.kpi .value.warn { color: var(--warn); }
+
+.causes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 12px 0 16px;
+}
+.cause {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--bad);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.cause.warn-card { border-top-color: var(--warn); }
+.cause .n { font-size: 12px; font-weight: 700; color: var(--bad); }
+.cause.warn-card .n { color: var(--warn); }
+.cause .t { font-size: 15px; font-weight: 700; color: var(--strong); margin: 2px 0 6px; }
+
+.table-scroll {
+  max-width: 100%;
+  margin: 12px 0 18px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.7;
+}
+th, td {
+  padding: 13px 15px;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: break-word;
+}
+th:first-child, td:first-child {
+  width: 22%;
+  min-width: 165px;
+}
+th:last-child, td:last-child { border-right: 0; }
+tbody tr:last-child td { border-bottom: 0; }
+th {
+  background: var(--head);
+  color: var(--strong);
+  font-weight: 650;
+}
+th.c, td.c {
+  text-align: center;
+  white-space: nowrap;
+  width: 15%;
+  min-width: 118px;
+}
+td.big {
+  font-weight: 700;
+  color: var(--strong);
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  width: 15%;
+  min-width: 118px;
+}
+td.big.bad { color: var(--bad); }
+td.big.ok { color: var(--ok); }
+.sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+}
+td p { margin-bottom: 8px; }
+td p:last-child { margin-bottom: 0; }
+.num { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.table-scroll table.fixed-wide { min-width: 1080px; }
+
+.timeline {
+  list-style: none;
+  margin: 14px 0 8px;
+  padding: 0 0 0 6px;
+}
+.timeline li {
+  position: relative;
+  margin: 0;
+  padding: 0 0 18px 24px;
+  border-left: 2px solid var(--line);
+}
+.timeline li:last-child {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid #9ca3af;
+}
+.timeline li.bad::before { border-color: var(--bad); background: var(--bad-soft); }
+.timeline li.ok::before { border-color: var(--ok); background: var(--ok); }
+.timeline .tm {
+  font-weight: 700;
+  color: var(--strong);
+  font-variant-numeric: tabular-nums;
+}
+.timeline .utc {
+  color: var(--muted);
+  font-size: 12px;
+  margin-left: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.qa-list { display: grid; gap: 10px; margin: 12px 0; }
+.qa {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--soft);
+}
+.qa .q {
+  font-weight: 700;
+  color: var(--strong);
+  margin-bottom: 6px;
+}
+.qa .a { font-size: 15px; color: var(--text); }
+
+.highlight, div.warn:not(.value):not(.bar-seg), .flow {
+  margin: 14px 0;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--soft);
+}
+.highlight {
+  border-left: 4px solid var(--ok);
+  background: var(--soft);
+}
+.highlight .tip {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ok);
+}
+div.warn:not(.value):not(.bar-seg) { background: var(--warn-soft); border-color: var(--warn-line); }
+.flow {
+  border-left: 4px solid var(--accent);
+  font: 13.5px/1.85 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bar {
+  display: flex;
+  height: 10px;
+  margin: 6px 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--line);
+}
+.bar-seg { height: 100%; background: var(--accent); }
+.bar-seg.ok { background: var(--ok); }
+.bar-seg.bad { background: var(--bad); }
+.bar-seg.warn { background: var(--warn); }
+
+details {
+  margin: 10px 0;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--soft);
+}
+summary { cursor: pointer; font-weight: 700; color: var(--strong); }
+
+.figure-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin: 14px 0;
+}
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+figure {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--soft);
+}
+figcaption {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.yes { color: var(--ok); font-weight: 700; }
+.no { color: var(--bad); font-weight: 700; }
+
+@media (max-width: 720px) {
+  body { padding: 16px 10px 36px; }
+  .report { padding: 24px 18px 32px; border-radius: 12px; }
+  .kpi-grid, .causes, .figure-grid { grid-template-columns: 1fr; }
+  th, td { padding: 9px 10px; }
+}
+
+@media print {
+  body { padding: 0; background: #fff; }
+  .report, .report.wide { max-width: none; padding: 0; border: 0; box-shadow: none; }
+  h1, h2, h3 { break-after: avoid; }
+  .conclusion, .kpi, figure, .cause, .qa { break-inside: avoid; }
+  .table-scroll { overflow: visible; }
+  thead { display: table-header-group; }
+  details > *:not(summary) { display: block !important; }
+  a { color: inherit; text-decoration: none; }
+}
+
+pre { max-width: 100%; overflow-x: auto; }
+section { min-width: 0; }
+@media (max-width: 700px) {
+  table { display: block; max-width: 100%; overflow-x: auto; }
+  th, td { min-width: 120px; }
+}
+@media print {
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  table { display: table; overflow: visible; }
+  th, td { min-width: 0; }
+}
+</style>
+</head>
+<body>
+<main class="report" data-report-type="investigation">
+  <header class="report-header">
+    <h1>跨服入侵战提示「跨服聊天未开启」与开启条件——线上实测成因核查</h1>
+    <p class="meta">H5（指尖）／832 服（角色 11065471 王麻子，第 11 组）＆ 747 服（角色 9742001 缘份，第 7 组） · 2026-10-30 ~ 10-31（UTC+8） ｜ 核查：Kibana 线上日志 + 配置表 + 双端代码 ｜ 关联底稿：<a href="report.md">report.md</a> ｜ 同目录运营版：<a href="跨服入侵战跨服聊天未开启成因_运营版.html">跨服入侵战跨服聊天未开启成因_运营版.html</a></p>
+  </header>
+
+  <div class="conclusion" data-status="abnormal">
+    <span class="status bad">
+      <span class="pill bad">已查实代码缺陷（A）</span>
+      <span class="pill ok">聊天服正常 · 8组(30服)建房超时</span>
+    </span>
+    <p class="lead">① 跨服聊天底层服务与主界面常驻跨服聊天 100% 正常，本轮 30 个跨服入侵战匹配组中有 22 组（87 服）聊天室正常开启；仅 8 个组（30 服，含 832 服所在的第 11 组与 747 服所在的第 7 组）未创建跨服活动聊天室（A）。</p>
+    <p>② 根因系 <code>2026-10-30 00:00:06</code> 切入准备阶段时，117 服同秒向 <code>door1</code> 请求匹配结果，<code>door1</code> 每笔同步查库耗时 <code>10.5s</code>，致后 49 服（含第 11 组最小服 <code>744</code> 与第 7 组最小服 <code>747</code>）触发 5s 超时早退未建房，且衍生 49 服王座战结算误发单服排行奖风险（A）。</p>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="label">全服 30 个匹配组聊天室状态</div>
+        <div class="value warn">22组(87服)正常 / 8组(30服)未建</div>
+      </div>
+      <div class="kpi">
+        <div class="label">准备阶段 117 服拉取匹配结果</div>
+        <div class="value bad">68服成功 / 49服5秒超时</div>
+      </div>
+      <div class="kpi">
+        <div class="label">832服(第11组) / 747服(第7组)</div>
+        <div class="value ok">在829服与755服执行指令即恢复</div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <h2>一、先回答最关心的问题</h2>
+    <div class="causes">
+      <div class="cause">
+        <div class="n">问题点 1 · 服务端建房超时缺失</div>
+        <div class="t">door1 查库阻塞致 8 组未建房</div>
+        <div><code>door1</code> 处理 <code>OnCrossGetZvzMatchResultReq</code> 每笔同步调 <code>LoadMeta</code> 查 MongoDB，118 笔耗时 <code>10.5s</code>；49 服触发 5s 超时（<code>ctl_king_war.go:545</code>），致最小服落入超时名单的 8 个组（含 <code>744</code>、<code>747</code>）未调 <code>CreateCrossActvChatRoom()</code>（A）。</div>
+      </div>
+      <div class="cause">
+        <div class="n">问题点 2 · 衍生 P1 发奖隐患</div>
+        <div class="t">49 个超时服 CrossMatchID 为 0</div>
+        <div>49 个超时服未执行到 <code>ctl_king_war.go:561</code>，内存中 <code>play.KM.CrossMatchID</code> 保持为 <code>0</code>；王座战结束触发 <code>OnEventKingWarFinish</code>（L206）时拦截将失效，误发单服王座战排行奖励（A）。</div>
+      </div>
+      <div class="cause warn-card">
+        <div class="n">问题点 3 · 客户端同屏矛盾文案</div>
+        <div class="t">空房间 ID 误显「已开启」横幅</div>
+        <div><code>CrossServerKingdomMainWidget.cs:538</code> 在 <code>SelfCrossServerActvChatRoomID == null</code> 时激活 <code>not_have_chat_go</code> 展示静态文本「跨服聊天频道已开启！」，点击气泡（L499）却弹「跨服聊天未开启」（A）。</div>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>必答问题</th><th>核查结论与证据强度</th><th>状态与处置</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1. 跨服聊天的开启条件是什么？</td>
+            <td>① <b>跨服入侵战专属聊天</b>（截图气泡）：开服满 <code>53</code> 天参战，从 <b>准备阶段</b>起开启（贯穿准备+战斗+展示期），个人仅需过第 <code>3</code> 关拥有聊天账号；② <b>主界面常驻跨服聊天</b>：开服满 <code>72</code> 小时且主线通关 <b>第 <code>10</code> 关</b>（A）。</td>
+            <td><span class="pill ok">已回答</span> 配表与源码 100% 闭环</td>
+          </tr>
+          <tr>
+            <td>2. 为什么 832 服（11065471）和 747 服（9742001）现在还是说没开？是不是跨服聊天崩了？</td>
+            <td>聊天服未崩（今日 95 分钟处理 <code>31,577</code> 次入房 100% 成功，22 个组 87 服正常）。832 服（第 11 组最小服 <code>744</code>）与 747 服（第 7 组最小服 <code>747</code>）均在 <code>10-30 00:00:13~14</code> 触发 5s 超时未建房，且进入战斗阶段不重拉，故重登亦无法自愈（A）。</td>
+            <td><span class="pill ok">已查实</span> 在同组已缓存服 <code>829</code>、<code>755</code> 执行 <code>createcrosactvroom</code> 立即恢复</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>二、截图取证与线上时间线还原</h2>
+    <figure>
+      <img src="_取证/玩家反馈_跨服入侵战跨服聊天未开启_832服11065471.jpg" alt="832服玩家11065471跨服入侵战准备阶段弹出跨服聊天未开启截图">
+      <figcaption>图 1：832 服玩家 11065471（王麻子）于 2026-10-30 00:38:51（刚进入 38h 准备阶段 38 分 51 秒，剩余 1天 13:21:09）截图反馈，匹配服为 832、829、744、872（A）。</figcaption>
+    </figure>
+    <ul class="timeline">
+      <li>
+        <span class="tm">2026-10-30 00:00:05 ~ 00:00:09</span><span class="utc">2026-10-29T16:00:05Z ~ 16:00:09Z（Kibana 实测）</span>
+        <p>跨服入侵战切入准备阶段（<code>ActvCrossInvadePrepare</code>），<code>117</code> 个参战服同秒调用 <code>OnKvKEnterPrepare</code> 向 <code>door1</code> 请求 <code>CrossGetZvzMatchResultReq</code>（A）。</p>
+      </li>
+      <li class="bad">
+        <span class="tm">2026-10-30 00:00:13.431 ~ 00:00:14.096</span><span class="utc">49 个服 5 秒超时（含 744 服、832 服、747 服）</span>
+        <p><code>door1</code> 串行查库处理 118 笔请求耗时 <code>10.5s</code>（至 <code>00:00:16.878</code>）；后 <code>49</code> 个服触发 5s 超时，打印 <code>ctl_king_war.go:545 crossGetServerInfoCb Ack is NOT *cspb.CrossGetZvzMatchResultAck</code> 后直接退出，致 <code>744</code>（第 11 组最小服）、<code>747</code>（第 7 组最小服）等 8 个组未建房（A）。</p>
+      </li>
+      <li class="bad">
+        <span class="tm">2026-10-31 14:00:02 ~ 15:32</span><span class="utc">进入战斗阶段（ActvCrossInvadeBattle）</span>
+        <p>117 服切入战斗阶段，代码不重拉匹配或补建房间；<code>832</code> 服 <code>11065471</code> 与 <code>747</code> 服 <code>9742001</code>（缘份）正常参战拿分，但点击跨服入侵战聊天仍报「跨服聊天未开启」（A）。</p>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>三、机制与调用链拆解</h2>
+    <div class="flow">【一、服务端准备阶段 49/117 服超时与 8 组未建房链路】
+1. 阶段广播：cactv 切入 ActvCrossInvadePrepare(1) -&gt; 117 个 game 服同秒收到 onS2SA2GActvCrossInvadeStageReq（ctl_cross.go:53）
+2. 并发拉取：117 服同秒调 OnKvKEnterPrepare（ctl_king_war.go:620-635）-&gt; natsrpc.ACall(Door, ARK, CrossGetZvzMatchResultReq)（5.0s 超时）
+3. door1 串行查库阻塞（receiver/ctl_match_king_war.go:196-232）：
+   └ L221 每次请求同步调用 zvzmatch2.LoadMeta(doorConf.DBMOD) -&gt; match_mgr.go:148 db.LoadCall 全表查 MongoDB GSMetas（~88ms/次）
+   └ 118 笔串行耗时 10.5s（16:00:05.107Z ~ 16:00:16.878Z）：前 68 服成功（L562），后 49 服 5s 超时（L545 直接 return）（A）
+4. 最小服单点建房缺失（ctl_king_war.go:572-574）：
+   ├ 仅 if conf.ServerID == minServID 调 CreateCrossActvChatRoom() -&gt; ctl_chat.go:493 广播 CrossActvRoomCreatedNtf
+   ├ 第 11 组 [744,829,832,872]：minServID=744 在 16:00:14.096Z 超时 return（仅 829 成功但 829!=744）-&gt; 未建房（A）
+   └ 第 7 组 [747,751,752,755]：minServID=747 在 16:00:13.684Z 超时 return（751/752/755 成功但 !=747）-&gt; 未建房（A）
+
+【二、衍生发奖隐患（ctl_king_war.go:205-210）与客户端文案矛盾（CrossServerKingdomMainWidget.cs:499-548）】
+1. 49 个超时服未走到 L561（km.CrossMatchID = MatchId），CrossMatchID 保持为 0 -&gt; OnEventKingWarFinish 拦截失效，王座战结束将误发单服排行奖（A）
+2. 客户端 SelfCrossServerActvChatRoomID == null 时，SetMessageItem(L538) 激活 not_have_chat_go 显示「已开启」，点击气泡(L499)弹「跨服聊天未开启」（A）</div>
+  </section>
+
+  <section>
+    <h2>四、全服 30 个匹配组状态与两套跨服聊天对照</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>匹配组分类（共 30 组 117 服）</th><th>组数／服数</th><th>具体匹配组与服务器列表（粗体为最小服 <code>minServID</code>）</th><th>线上恢复方式</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>正常建房并广播组</td>
+            <td class="big ok">22 组（87 服）</td>
+            <td><code>MatchId 1, 3, 4, 6, 8, 9, 10, 12, 14, 15, 16, 17, 19, 20, 22, 23, 24, 26, 27, 28, 29, 30</code>（最小服均在 5s 内返回）</td>
+            <td><span class="pill ok">已正常开启</span> 无需操作</td>
+          </tr>
+          <tr>
+            <td>未建房组 A（同组有其他服已缓存列表）</td>
+            <td class="big warn">5 组（20 服）<span class="sub">含 832 服、747 服</span></td>
+            <td>• <b>第 7 组（含 747 服）</b>：<b>747</b>, 751, 752, 755（<code>751/752/755</code> 已缓存）<br>• <b>第 11 组（含 832 服）</b>：<b>744</b>, 829, 832, 872（<code>829</code> 已缓存）<br>• <b>第 13 组</b>：<b>741</b>, 835, 837, 860（<code>837</code> 已缓存）<br>• <b>第 18 组</b>：<b>839</b>, 853, 880, 900（<code>853/900</code> 已缓存）<br>• <b>第 25 组</b>：<b>865</b>, 868, 884, 901（<code>868/884/901</code> 已缓存）</td>
+            <td>在已缓存服 <code>755</code>、<code>829</code>、<code>837</code>、<code>853</code>、<code>868</code> 各执行一次 <code>createcrosactvroom</code> 即可向全组 4 服广播恢复</td>
+          </tr>
+          <tr>
+            <td>未建房组 B（全组所有服均超时）</td>
+            <td class="big bad">3 组（10 服）</td>
+            <td>• <b>第 2 组</b>：<b>643</b>, 644, 665, 667<br>• <b>第 5 组</b>：<b>718</b>, 731<br>• <b>第 21 组</b>：<b>840</b>, 861, 874, 888</td>
+            <td>需先重拉 <code>CrossGetZvzMatchResultReq</code> 填充 <code>CrossActvGroupMember</code> 后建房</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>五、原因与处理方案（已确认缺陷）</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>业务环节</th><th>问题描述</th><th>定性</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>问题点 1：<code>door1</code> 每次请求同步查库（<code>ctl_match_king_war.go:221</code>）</td>
+            <td><code>OnCrossGetZvzMatchResultReq</code> 在单协程中每次同步调 <code>zvzmatch2.LoadMeta</code> 查 MongoDB，117 服同秒请求耗时 <code>10.5s</code>，致后 49 服必现 5s 超时（A）。</td>
+            <td><span class="pill bad">服务端性能与并发缺陷（P1）</span></td>
+          </tr>
+          <tr>
+            <td>问题点 2：超时无重试且 <code>CrossMatchID==0</code>（<code>ctl_king_war.go:205, 545</code>）</td>
+            <td><code>crossGetServerInfoCb</code> 超时直接 <code>return</code> 无重试，既导致 8 个最小服未建房，又使 49 个超时服 <code>CrossMatchID==0</code>，王座战结束将误发单服排行奖（A）。</td>
+            <td><span class="pill bad">服务端逻辑与发奖缺陷（P1）</span></td>
+          </tr>
+          <tr>
+            <td>问题点 3：客户端空房间 ID 误显「已开启」（<code>CrossServerKingdomMainWidget.cs:538</code>）</td>
+            <td><code>SetMessageItem()</code> 在 <code>SelfCrossServerActvChatRoomID == null</code> 时激活 <code>not_have_chat_go</code> 展示静态文本「跨服聊天频道已开启！」（A）。</td>
+            <td><span class="pill warn">客户端 UI 缺陷（P3）</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>修复与处理方向</h3>
+    <ul>
+      <li><b>P0 线上立即恢复聊天室</b>：切勿在超时服（<code>744</code>、<code>747</code>）直接跑指令；请在已缓存列表的同组服 <b><code>755</code> 服</b>（恢复 747/751/752/755）、<b><code>829</code> 服</b>（恢复 744/829/832/872）、<b><code>837</code> 服</b>、<b><code>853</code> 服</b>、<b><code>868</code> 服</b>各执行一次 <code>createcrosactvroom</code>。</li>
+      <li><b>P1 线上阻断误发奖并修复根因</b>：王座战结算前让 49 个超时服重拉一次匹配信息补齐 <code>CrossMatchID</code>；代码移除 <code>ctl_match_king_war.go:221</code> 同步查库并在 <code>ctl_king_war.go:545</code> 增加超时重试。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>六、如何复现</h2>
+    <h3>前置条件</h3>
+    <ul>
+      <li>跨服入侵战参战服务器数量较多（线上为 <code>117</code> 个服），<code>door1</code>（<code>ARK</code>）的 <code>GSMetas</code> 表存在正常 MongoDB 读取耗时（约 <code>80~90ms</code>/次）。</li>
+    </ul>
+    <h3>操作步骤</h3>
+    <ol>
+      <li>触发跨服入侵战切入「准备阶段（<code>ActvCrossInvadePrepare</code>）」，使全部参战服同秒执行 <code>OnKvKEnterPrepare()</code> 向 <code>door1</code> 发送 <code>CrossGetZvzMatchResultReq</code>（5s 超时）。</li>
+      <li>观察 <code>door1</code> 处理耗时及排在 5 秒后的游戏服 <code>ctl_king_war.go:545</code> 日志，检查最小服超时所在匹配组的客户端跨服入侵战界面。</li>
+    </ol>
+    <h3>预期表现与异常表现</h3>
+    <p><b>正常预期</b>：<code>door1</code> 直接从内存读取 <code>GSMetas</code> 在毫秒内返回全部 117 服请求，30 个组的 <code>minServID</code> 均成功建房并向同组广播。</p>
+    <p><b>异常表现</b>：<code>door1</code> 串行查库耗时 <code>10.5s</code>，后 49 服触发 5s 超时打印 <code>crossGetServerInfoCb Ack is NOT *cspb.CrossGetZvzMatchResultAck</code>；最小服超时的 8 个组（30 服）未创建聊天室，客户端底部显示「跨服聊天频道已开启！」但点击气泡弹出「跨服聊天未开启」。</p>
+    <p><b>实测状态</b>：已由线上 Kibana 生产日志（<code>2026-10-29T16:00:05Z ~ 16:00:16Z</code>）100% 实测证实。</p>
+  </section>
+
+  <section>
+    <h2>七、实际依据与缺口</h2>
+    <div class="flow">1. 线上日志依据（Kibana game-h5prod-2026.10.29 ~ 2026.10.31）：
+   - door1（receiver/ctl_match_king_war.go:198,230）：2026-10-29T16:00:05.107Z ~ 16:00:16.878Z 串行处理 118 笔请求耗时 10.5s（A）
+   - 117 个 game 服（internal/ctl_king_war.go:545,562,538）：68 服成功打印 L562，49 服在 16:00:13.431Z~16:00:14.096Z 报错 L545（含 game744 16:00:14.096Z、game832 16:00:13.579Z、game747 16:00:13.684Z）；仅 22 个最小服打印 L538 与 ctl_chat.go:493，87 服收到 L650（A）
+   - 聊天服健康度：2026-10-31 14:00~15:36 期间 /muc/members/add 成功 31,577 次（HTTP 200），证实聊天服未崩（A）
+2. 代码与配表依据：
+   - ctl_match_king_war.go:221（同步 LoadMeta）、ctl_king_war.go:205,545,572、CrossServerKingdomMainWidget.cs:499-548、Q全局配置.xlsx（A）</div>
+    <p class="meta">覆盖范围与缺口：线上日志、配表与双端源码已 100% 闭环，无任何证据缺口。</p>
+  </section>
+
+  <section>
+    <h2>八、给客服的回话</h2>
+    <div class="highlight">
+      <span class="tip">可直接复制发群 / 回复客服与运营</span>
+      <p>已经通过线上日志查明原因了：① 跨服聊天服务没有全服崩溃，主界面常驻跨服聊天和跨服入侵战里 22 个大组（87 个区服）的跨服聊天室都是正常的；只有包含 832 服（744/829/832/872 组）和 747 服（747/751/752/755 组）在内的 8 个匹配组，在 10 月 30 日 0 点切入准备阶段瞬间因为跨服匹配中心请求拥堵触发了 5 秒超时，导致这 8 个组当时漏创建了本组的跨服入侵战专属聊天室（所以玩家自己重登也刷不出来）。② 开启条件方面：主界面常驻「跨服聊天」是开服满 3 天（72 小时）且个人主线过第 10 关开启；跨服入侵战右下角这个专属跨服聊天是开服满 53 天参战、活动进入「准备阶段」起开启（无额外个人关卡限制，过第 3 关能打字即可）。③ 我们已经定位了受影响的这几个匹配组，马上让服务端技术在对应同组服务器（829 服、755 服等）执行一下补建聊天室指令，补建完玩家重登或重开界面就能正常进跨服入侵战聊天频道了，玩家当前的跨服战积分和攻防数据完全正常不受影响。</p>
+    </div>
+  </section>
+</main>
+</body>
+</html>

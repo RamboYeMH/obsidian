@@ -1,0 +1,221 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>万圣节南瓜大奖排查</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f5f7f9; --surface:#ffffff; --ink:#18212b; --muted:#5b6876; --line:#dbe2e8;
+  --accent:#2a6a96; --accent-soft:#e3eef6; --crit:#b23a30; --crit-soft:#f8e6e3;
+  --ok:#2f7a4f; --code-bg:#eef2f5;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#11171d; --surface:#18212a; --ink:#e4eaf0; --muted:#97a5b3; --line:#2a3743;
+    --accent:#7db5dd; --accent-soft:#1c3142; --crit:#ef8a7f; --crit-soft:#3a201d;
+    --ok:#7cc79a; --code-bg:#1d2832;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#11171d; --surface:#18212a; --ink:#e4eaf0; --muted:#97a5b3; --line:#2a3743;
+  --accent:#7db5dd; --accent-soft:#1c3142; --crit:#ef8a7f; --crit-soft:#3a201d;
+  --ok:#7cc79a; --code-bg:#1d2832;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.75;padding-inline:16px;padding-block:40px 64px}
+.wrap{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+header{display:flex;flex-direction:column;gap:14px}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--accent);font-weight:500}
+h1{font-size:28px;line-height:1.35;margin:0;text-wrap:balance;font-weight:700}
+h2{font-size:19px;margin:0 0 14px;text-wrap:balance;font-weight:700}
+p{margin:0}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.meta div{background:var(--surface);padding:10px 14px;display:flex;flex-direction:column}
+.meta dt{font-size:12px;color:var(--muted)}
+.meta dd{margin:0;font-weight:500;font-variant-numeric:tabular-nums}
+.verdict{background:var(--crit-soft);border-left:3px solid var(--crit);padding:14px 18px;border-radius:0 6px 6px 0}
+.verdict strong{color:var(--crit)}
+code,.mono{font-family:var(--mono);font-size:.86em}
+code{background:var(--code-bg);padding:1px 5px;border-radius:3px;word-break:break-word}
+section{display:flex;flex-direction:column}
+.timeline{list-style:none;margin:0;padding:0;border-left:2px solid var(--line);display:flex;flex-direction:column}
+.timeline li{position:relative;padding:8px 0 8px 22px;display:grid;grid-template-columns:76px 1fr;gap:12px;align-items:baseline}
+.timeline li::before{content:"";position:absolute;left:-6px;top:17px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--accent)}
+.timeline li.crit::before{background:var(--crit);border-color:var(--crit)}
+.timeline li.miss::before{border-color:var(--muted);border-style:dashed}
+.timeline time{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.timeline li.crit time,.timeline li.crit span{color:var(--crit);font-weight:500}
+.timeline li.miss span{color:var(--muted)}
+.chain{display:flex;flex-direction:column;gap:10px;margin:0;padding-left:20px}
+.chain li::marker{color:var(--accent);font-weight:700}
+.note{color:var(--muted);font-size:14px;margin-top:12px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;min-width:480px;background:var(--surface)}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.04em;background:var(--code-bg)}
+tr:last-child td{border-bottom:none}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:500}
+.fixes{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
+.fixes li{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 16px}
+.fixes b{display:block;margin-bottom:2px}
+.code-block{background:var(--code-bg);border-radius:6px;padding:12px 14px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.6;white-space:pre;margin-top:12px}
+footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:480px){
+  h1{font-size:23px}
+  .timeline li{grid-template-columns:1fr;gap:0}
+}
+.verdict.ok{background:color-mix(in srgb,var(--ok) 12%,var(--surface));border-left-color:var(--ok)}
+.verdict.ok strong{color:var(--ok)}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="eyebrow">线上排查 · h5prod · game559</div>
+  <h1>玩家 7225180 万圣节「诡笑南瓜」与 1020391 大奖获取排查</h1>
+  <dl class="meta">
+    <div><dt>玩家</dt><dd>7225180（毛毛）</dd></div>
+    <div><dt>服务器</dt><dd>game559 / 大奖分组 61</dd></div>
+    <div><dt>活动</dt><dd>1020391（type 122，content 1003）</dd></div>
+    <div><dt>道具</dt><dd>诡笑南瓜 3210079</dd></div>
+    <div><dt>数据范围</dt><dd>2026-10-27 ~ 11-02（北京时间）</dd></div>
+    <div><dt>排查日期</dt><dd>2026-11-01</dd></div>
+  </dl>
+  <p class="verdict ok"><strong>结论：正常获取，没有发现作弊或程序漏洞。</strong>南瓜主要来自付费礼包，打怪掉落没超过保底上限。大奖他中了 8 次，按概率算理论上应中 6.2 次，在正常波动范围内。他攻击 BOSS 的次数全组第一，所以中奖机会也最多。另外发现一笔支付异常：玩家多付了 18 元没拿到东西，需要运营处理。</p>
+</header>
+
+<section>
+  <h2>一、南瓜来源核算</h2>
+  <p>当前持有 <code>3210079</code> 共 <b>661</b> 个（Mongo <code>player.assetunite.assets.item</code>）。已核实的获取量超过 4717 个，剩余的大部分已在活动中用掉，账目对得上。</p>
+  <div class="tbl" style="margin-top:12px"><table>
+    <thead><tr><th>来源</th><th>数量</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>付费礼包</td><td class="num">2158</td><td>4100311/12/13 每天各买 1 次，共 6 天 → 1104；4100314、4100315 各 1 次 → 382；4100316 买 2 次 → 672（每天限购 3 次，未超限）。活动期间礼包充值约 2400 元。</td></tr>
+      <tr><td>打怪 / 集结掉落</td><td class="num">175</td><td>作为队长打了约 890 场，掉率约 20%。按配置，普通怪每 20 次最多掉 5 个，集结怪每 10 次最多掉 5 个（<code>SlgDropSwitchCfg</code> 1041/1042），他没超过这个上限。</td></tr>
+      <tr><td>1020391 大奖（南瓜秘藏）</td><td class="num">2384</td><td>8 次大奖，每次发 <code>ceil(奖池 × 4%)</code> 个南瓜，明细见第五节。</td></tr>
+      <tr><td>消耗钻石、加速、采集的任务奖励</td><td class="num">未统计</td><td>道具流水只上报数数 BI，ES 和 Mongo 里查不到。</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">纠正过的误判：最开始按"战报内容里带他的 ID"统计，算出 391 个（10/31 单日 221 个）。实际上集结战报会给同队 5 个人各发一封，内容里都带着队长 ID，把队友的南瓜也算进来了。改用 <code>mail/send.go:278</code> 的收件人日志，按 <code>log.offset</code> 和 <code>:284</code> 的内容日志逐封配对后，真正发给他本人的是 175 个。掉落只给队长计算，见 <code>game/wmap/internal/ctl_battle_settle.go:724</code>。</p>
+</section>
+
+<section>
+  <h2>二、1020391 大奖（南瓜秘藏）</h2>
+  <p>分组 61 包含 553/554/555/556/557/559/563/576 共 8 个服，402 名参与者，活动期间共开出 <b>98</b> 次大奖，所有人攻击 BOSS 合计 26792 次。</p>
+  <div class="tbl" style="margin-top:12px"><table>
+    <thead><tr><th>玩家</th><th>攻击 BOSS 次数</th><th>大奖次数</th></tr></thead>
+    <tbody>
+      <tr><td><b>毛毛 7225180</b></td><td class="num">812（全组第 1）</td><td class="num">8</td></tr>
+      <tr><td>缅A一万点 7408423</td><td class="num">761</td><td class="num">5</td></tr>
+      <tr><td>二哥 7267073</td><td class="num">654</td><td class="num">5</td></tr>
+      <tr><td>时髦的小猪 7326500</td><td class="num">525</td><td class="num">5</td></tr>
+      <tr><td>没有人在 / 闹闹</td><td class="num">469 / 453</td><td class="num">4 / 4</td></tr>
+    </tbody>
+  </table></div>
+  <ol class="chain" style="margin-top:16px">
+    <li><b>概率正常：</b>他一共参与了 528 次大奖判定（<code>onAttackBossV2</code> 日志），把每次的中奖概率加起来，理论上应中 <b>6.2</b> 次，实际中了 8 次。中 8 次及以上的概率约 28%，算运气偏好，但不算异常。每次中奖时的概率在 0.46%–2.31% 之间，都符合公式（<code>actv/cactv/internal/activity/template/christmas_tree/lottery_v2.go</code>）。</li>
+    <li><b>门槛都满足：</b>攻击 BOSS 的次数门槛会随中奖次数提高：14 → 70 → 150 → 250，之后每中一次再加 100。他 8 次中奖时累计攻击 BOSS 次数分别是 85 / 182 / 374 / 426 / 524 / 560 / 768 / 约 800，每次都超过了当时的门槛。</li>
+    <li><b>规则本身偏向打得多的人：</b>门槛按累计攻击次数计算，攻击少于 14 次的玩家完全没有资格，所以大奖集中在头部玩家手里是设计如此。</li>
+    <li><b>排除了 GM 必中：</b>他 528 次判定只中了 8 次，说明 GM 必中开关没有生效。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>三、1020391 活动总抽奖次数</h2>
+  <p>活动里每攻击一次就是一次抽奖。数据取自 actv1 <code>actvprogress</code>（comptype 0）在 2026-11-01 的快照，活动还在进行，数字还会增加。</p>
+  <div class="tbl" style="margin-top:12px"><table>
+    <thead><tr><th>项目</th><th>次数</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>攻击幽蓝幻骑（普通怪）</td><td class="num">6542</td><td><code>attacknormalcnt</code></td></tr>
+      <tr><td>攻击烛魂战骑（BOSS）</td><td class="num">812</td><td><code>attackbosscnt</code></td></tr>
+      <tr><td><b>总攻击（抽奖）次数</b></td><td class="num"><b>7354</b></td><td>每次攻击加 2 分，累计积分 14708 ÷ 2 = 7354，两边对得上</td></tr>
+      <tr><td>其中真正参与了大奖判定</td><td class="num">528</td><td>只有攻击 BOSS 并且满足门槛才会判定，按 <code>onAttackBossV2</code> 日志统计到 11/01 UTC</td></tr>
+      <tr><td>中大奖</td><td class="num">8</td><td><code>luckycnt</code></td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">活动有"下次攻击免费"机制，免费的那几次不消耗南瓜，所以实际消耗的南瓜会比 7354 少。免费次数没有单独记录，没法精确算出消耗了多少南瓜。</p>
+</section>
+
+<section>
+  <h2>四、大奖判定公式</h2>
+  <p>代码在 <code>actv/cactv/internal/activity/template/christmas_tree/lottery_v2.go</code>（V2 算法），入口是 <code>ctl.go</code> 的 <code>onActvChristmasTreeAttack</code>。参数取自 <code>ActivityChristmasTreeSubCfg</code> 表 id=1003。</p>
+  <div class="tbl" style="margin-top:12px"><table>
+    <thead><tr><th>字段</th><th>值</th><th>含义</th></tr></thead>
+    <tbody>
+      <tr><td><code>base_piont</code></td><td class="num">3000</td><td>有人中奖后，奖池重置到这个值</td></tr>
+      <tr><td><code>pond_increase</code></td><td class="num">2</td><td>每次攻击给奖池加的分数</td></tr>
+      <tr><td><code>min_piont</code></td><td class="num">5000</td><td>奖池达到这个值才开始判定大奖</td></tr>
+      <tr><td><code>base_max_piont</code></td><td class="num">6000</td><td>奖池超过这个值后，开始给概率加成</td></tr>
+      <tr><td><code>min_act_time</code></td><td class="num">[14,70,150,250]</td><td>攻击 BOSS 次数门槛，按已中奖次数取值</td></tr>
+      <tr><td><code>big_reward_pro</code></td><td class="num">[1,1500,2000]</td><td>概率公式的基础值、系数、上限（万分比）</td></tr>
+      <tr><td><code>growth_min</code></td><td class="num">3000</td><td>RandScore 每次至少追上差距的 30%</td></tr>
+      <tr><td><code>rand_score_once</code></td><td class="num">20</td><td>每积累 20 点 RandScore 换一次判定机会</td></tr>
+      <tr><td><code>public_pro_ratio</code></td><td class="num">100</td><td>奖池加成系数</td></tr>
+      <tr><td><code>win_deduction</code></td><td class="num">[6000,10000,10000,800]</td><td>中奖后扣减 HideScore 的参数</td></tr>
+      <tr><td><code>ex_ratio</code></td><td class="num">[3210079,400]</td><td>大奖发南瓜，数量是奖池的 4%</td></tr>
+    </tbody>
+  </table></div>
+
+  <ol class="chain" style="margin-top:16px">
+    <li><b>每次攻击都会记分</b>（<code>ctl.go:163</code>）：玩家的隐藏分 <code>HideScore</code> 加 1（攻击普通怪和 BOSS 都算），所在分组的奖池 <code>LuckyScore</code> 加 2。</li>
+    <li><b>只有攻击 BOSS 时才可能判定，需要先过门槛</b>：奖池 ≥ 5000，且活动内累计攻击 BOSS 次数 <code>NewLotteryCnt</code> ≥ <code>LimitTimes</code>。<code>LimitTimes</code> 按已中奖次数取值：第 1 次中奖要 14 次，第 2 次 70，第 3 次 150，第 4 次 250，之后每多中一次门槛再加 100（350、450、550……）。</li>
+    <li><b>参与分 RandScore 追赶隐藏分</b>：RandScore 会越来越接近 HideScore，每次至少追上差距的 30%。
+      <div class="code-block">增长系数 = max(1 - (HideScore - RandScore) / HideScore, 0.3)
+RandScore += (HideScore - RandScore) × 增长系数</div></li>
+    <li><b>判断这次有没有判定机会</b>：不满足就直接跳过，不打日志，所以只有通过这一步的才算进那 528 次判定。
+      <div class="code-block">RandScore ≥ (RandTimes + 1) × 20  →  这次参与判定，RandTimes + 1</div></li>
+    <li><b>计算中奖概率</b>：概率上限是 20%。RandScore 越高（打得越多）、奖池越大，中奖概率越高。
+      <div class="code-block">奖池加成 = 1 + (奖池 - 6000) / 10000     （奖池 ≤ 6000 时为 1，即每超过 100 分加 1%）
+中奖概率 = min((1 + 1500 × RandScore / 10000) × 奖池加成, 2000) / 10000</div></li>
+    <li><b>中奖后结算</b>：中奖者获得 <code>ceil(奖池 × 4%)</code> 个南瓜；奖池重置为 3000；中奖者扣减 HideScore（可以扣成负数，所以他的数据里出现过 -474、-76）；<b>同一分组所有玩家</b>的 RandScore 和 RandTimes 都清零，大家重新开始积累。
+      <div class="code-block">扣减比例 = min(60% × (1 + (奖池 - 5000) / 5000), 100%)
+HideScore -= max(HideScore × 扣减比例, 800)</div></li>
+  </ol>
+
+  <h2 style="margin-top:24px">代入验算</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>中奖</th><th>RandScore</th><th>奖池</th><th>计算</th><th>日志 prob</th><th>获得南瓜</th></tr></thead>
+    <tbody>
+      <tr><td>第 1 次（10-28 00:26）</td><td class="num">804</td><td class="num">7032</td><td>(1 + 120) × 1.1032 ≈ 133</td><td class="num">133 ✅</td><td class="num">ceil(7032 × 4%) = 282 ✅</td></tr>
+      <tr><td>第 2 次（10-28 16:35）</td><td class="num">871</td><td class="num">8352</td><td>(1 + 130) × 1.2352 ≈ 161</td><td class="num">161 ✅</td><td class="num">ceil(8352 × 4%) = 335 ✅</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">他中得多的原因：HideScore 来自累计攻击次数。他一共攻击了 7354 次，全组最多，所以 RandScore 能积累得很高，每次判定的概率也更高。而且门槛按累计攻击 BOSS 次数计算，他每次都远超门槛。"理论应中 6.2 次"就是把他 528 次判定的概率逐次相加得到的。</p>
+</section>
+
+<section>
+  <h2>五、8 次中奖过程</h2>
+  <p>数据来自 actv1 日志 <code>onAttackBossV2</code>（判定）、<code>deductHideScoreOnWinV2</code>（扣分）、<code>onActvChristmasTreeAttack 命中大奖</code>，并已和 Mongo 分组中奖记录逐条核对。时间为北京时间。「期间判定 / 期望中奖」是指距离上一次中奖之间参与判定的次数，以及这些判定的中奖概率之和。</p>
+  <div class="tbl" style="margin-top:12px"><table style="min-width:980px">
+    <thead><tr><th>#</th><th>时间</th><th>累计攻击 BOSS</th><th>门槛 LimitTimes</th><th>期间判定</th><th>期间期望中奖</th><th>Hide / Rand / RandTimes</th><th>奖池</th><th>中奖概率</th><th>获得南瓜</th><th>中奖后 HideScore</th></tr></thead>
+    <tbody>
+      <tr><td class="num">1</td><td class="num">10-28 00:26</td><td class="num">85</td><td class="num">14</td><td class="num">54</td><td class="num">0.45</td><td class="num">805 / 804 / 11</td><td class="num">7032</td><td class="num">1.33%</td><td class="num">282</td><td class="num">805 → 5（扣 800，最小扣减）</td></tr>
+      <tr><td class="num">2</td><td class="num">10-28 16:35</td><td class="num">182</td><td class="num">70</td><td class="num">66</td><td class="num">0.58</td><td class="num">872 / 871 / 11</td><td class="num">8352</td><td class="num">1.61%</td><td class="num">335</td><td class="num">872 → 0（扣 100%）</td></tr>
+      <tr><td class="num">3</td><td class="num">10-30 13:11</td><td class="num">374</td><td class="num">150</td><td class="num">128</td><td class="num">2.12</td><td class="num">1752 / 525 / 1</td><td class="num">6082</td><td class="num">0.79%</td><td class="num">244</td><td class="num">1752 → 474（扣 72.98%）</td></tr>
+      <tr><td class="num">4</td><td class="num">10-31 00:51</td><td class="num">426</td><td class="num">250</td><td class="num">47</td><td class="num">0.45</td><td class="num">956 / 950 / 5</td><td class="num">6678</td><td class="num">1.52%</td><td class="num">268</td><td class="num">956 → 156（扣 800）</td></tr>
+      <tr><td class="num">5</td><td class="num">10-31 10:40</td><td class="num">524</td><td class="num">350</td><td class="num">80</td><td class="num">0.87</td><td class="num">1044 / 1043 / 28</td><td class="num">10746</td><td class="num">2.31%</td><td class="num">430</td><td class="num">1044 → 0（扣 100%）</td></tr>
+      <tr><td class="num">6</td><td class="num">10-31 22:48</td><td class="num">560</td><td class="num">450</td><td class="num">18</td><td class="num">0.06</td><td class="num">326 / 297 / 4</td><td class="num">6260</td><td class="num">0.46%</td><td class="num">251</td><td class="num">326 → -474（扣 800）</td></tr>
+      <tr><td class="num">7</td><td class="num">11-01 22:00</td><td class="num">768</td><td class="num">550</td><td class="num">108</td><td class="num">1.51</td><td class="num">1354 / 1267 / 4</td><td class="num">6380</td><td class="num">1.98%</td><td class="num">256</td><td class="num">1354 → 318（扣 76.56%）</td></tr>
+      <tr><td class="num">8</td><td class="num">11-02 01:36</td><td class="num">804</td><td class="num">650</td><td class="num">27</td><td class="num">0.20</td><td class="num">644 / 643 / 21</td><td class="num">7946</td><td class="num">1.15%</td><td class="num">318</td><td class="num">644 → -156（扣 800）</td></tr>
+      <tr><td class="num"><b>合计</b></td><td></td><td></td><td></td><td class="num"><b>528</b></td><td class="num"><b>6.24</b></td><td></td><td></td><td></td><td class="num"><b>2384</b></td><td></td></tr>
+    </tbody>
+  </table></div>
+  <ul class="fixes" style="margin-top:16px">
+    <li><b>门槛：</b>每次中奖时，累计攻击 BOSS 次数都超过了当时的门槛（85≥14、182≥70 …… 804≥650）。</li>
+    <li><b>中奖间隔：</b>两次中奖之间参与判定了 18 到 128 次。第 3 次中奖前判定了 128 次，期望中奖 2.12 次，属于运气偏差；第 6 次中奖前只判定了 18 次，期望中奖 0.06 次，属于运气偏好。8 次加起来期望 6.24 次，实际 8 次，在正常波动范围内。</li>
+    <li><b>中奖后扣分：</b>每次中奖都按公式扣了 HideScore（最少扣 800，最多扣 100%），之后分组所有人的 RandScore 都清零，他需要重新积累才能获得较高的中奖概率。第 3 次中奖时 RandScore 只有 525（HideScore 1752），就是因为分组里其他人刚中过奖，他的 RandScore 被清零后还没追上来。</li>
+    <li><b>南瓜：</b>8 次大奖一共获得 2384 个南瓜，每次都等于 <code>ceil(奖池 × 4%)</code>，和分组中奖记录完全一致。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>六、附带发现</h2>
+  <ul class="fixes">
+    <li><b>支付：订单 <code>mohe_6ae21da3000f0534</code> 玩家多付了 18 元没拿到东西</b>10/28 北京时间 00:06，玩家几乎同时下了两笔 4100311 订单，两笔都付了款，第二笔因为礼包已达限购被拒（<code>ctl_d2iap.go:250</code>）。之后平台每 5 分钟重推一次回调，一共推了 61 次，最后一次在北京时间 10/29 05:05，现在已经停止。没有重复发货，<b>需要运营确认退款或补发</b>。</li>
+  </ul>
+</section>
+
+<footer>数据来源：Kibana（game-h5prod-2026.10.26 ~ 11.02）、Mongo game559.player、actv1.actvprogress（actvid 7701006928741537411）。日志时间为 UTC，表中时间已换算为北京时间。</footer>
+</div></body></html>
