@@ -24,6 +24,7 @@ tags:
 | [[switch-branch]] | 项目 gs | 85 | gdconfig / gs / protocol 三仓库联动切分支 |
 | [[check-afterload]] | 项目 gs | 71 | 检测 gdconf afterLoad 回调漏注册 |
 | [[jumpserver]] | 全局 | 81 | 通过 JumpServer 堡垒机搜索资产并执行命令 |
+| [[jenkins-benchmark]] | 全局 | 35 + build.sh | 选分支/环境触发 Jenkins h5-benchmark 打机器人镜像 |
 
 > `jira` / `online-logs` 归档已**脱敏**。Claude 原凭据仍在本机 `.claude/`；Codex 副本已把凭据拆到各 skill 的 `credentials.env`（权限 `600`）。两处都不要提交或复制到笔记。
 
